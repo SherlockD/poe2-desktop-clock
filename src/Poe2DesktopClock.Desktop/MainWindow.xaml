@@ -8,6 +8,8 @@
         Height="760"
         MinWidth="920"
         MinHeight="640"
+        Background="{StaticResource WindowBackgroundBrush}"
+        Foreground="{StaticResource MainTextBrush}"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModels:DashboardViewModel}">
@@ -63,17 +65,17 @@
 
                     <ToggleButton Content="◷  Обзор"
                                   Style="{StaticResource NavigationButtonStyle}"
-                                  IsChecked="{Binding IsDashboardSelected}"
+                                  IsChecked="{Binding IsDashboardSelected, Mode=OneWay}"
                                   Command="{Binding ShowDashboardCommand}" />
                     <ToggleButton Content="⚙  Настройки"
                                   Margin="0,8,0,0"
                                   Style="{StaticResource NavigationButtonStyle}"
-                                  IsChecked="{Binding IsSettingsSelected}"
+                                  IsChecked="{Binding IsSettingsSelected, Mode=OneWay}"
                                   Command="{Binding ShowSettingsCommand}" />
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom">
-                    <Border Background="#122A2C" CornerRadius="8" Padding="12">
+                        <Border Background="#16353A" CornerRadius="8" Padding="12">
                         <StackPanel>
                             <TextBlock Text="Состояние игры" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
                             <TextBlock Text="{Binding GameStatus}" Margin="0,4,0,0" TextWrapping="Wrap" />

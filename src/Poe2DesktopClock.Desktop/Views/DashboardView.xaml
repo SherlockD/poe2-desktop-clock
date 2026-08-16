@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              MinWidth="0"
              MinHeight="0">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource WindowBackgroundBrush}">
         <Grid Margin="42,36,42,38">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -25,7 +25,7 @@
                         VerticalAlignment="Center" />
             </Grid>
 
-            <Border Grid.Row="2" Background="#0A111B" BorderBrush="#2C4650" BorderThickness="1" CornerRadius="22" Padding="36,30">
+            <Border Grid.Row="2" Background="#0B1220" BorderBrush="#42617C" BorderThickness="1" CornerRadius="22" Padding="36,30">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -34,7 +34,7 @@
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="0">
                         <TextBlock Text="ВИРТУАЛЬНЫЕ ЧАСЫ" Foreground="{StaticResource AccentBrush}" FontSize="13" FontWeight="SemiBold" />
-                        <Border DockPanel.Dock="Right" Background="#173934" CornerRadius="10" Padding="10,4">
+                        <Border DockPanel.Dock="Right" Background="#164E4A" CornerRadius="10" Padding="10,4">
                             <TextBlock Text="{Binding EstimateQuality}" Foreground="{StaticResource AccentBrush}" FontSize="12" />
                         </Border>
                     </DockPanel>
