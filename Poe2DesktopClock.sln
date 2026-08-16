@@ -1,0 +1,39 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Core", "src\Poe2DesktopClock.Core\Poe2DesktopClock.Core.csproj", "{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Infrastructure.Windows", "src\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj", "{0A1B5651-880C-422F-A1BB-58BB9A26A971}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.ConsoleDebug", "src\Poe2DesktopClock.ConsoleDebug\Poe2DesktopClock.ConsoleDebug.csproj", "{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Desktop", "src\Poe2DesktopClock.Desktop\Poe2DesktopClock.Desktop.csproj", "{AEC8E73F-7EA5-4B23-A048-687237B33D99}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Debug|x64.ActiveCfg = Debug|x64
+		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Debug|x64.Build.0 = Debug|x64
+		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Release|x64.ActiveCfg = Release|x64
+		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Release|x64.Build.0 = Release|x64
+		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Debug|x64.ActiveCfg = Debug|x64
+		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Debug|x64.Build.0 = Debug|x64
+		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Release|x64.ActiveCfg = Release|x64
+		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Release|x64.Build.0 = Release|x64
+		{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}.Debug|x64.ActiveCfg = Debug|x64
+		{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}.Debug|x64.Build.0 = Debug|x64
+		{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}.Release|x64.ActiveCfg = Release|x64
+		{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}.Release|x64.Build.0 = Release|x64
+		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Debug|x64.ActiveCfg = Debug|x64
+		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Debug|x64.Build.0 = Debug|x64
+		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Release|x64.ActiveCfg = Release|x64
+		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

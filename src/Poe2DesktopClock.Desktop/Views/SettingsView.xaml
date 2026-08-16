@@ -1,0 +1,108 @@
+<UserControl x:Class="Poe2DesktopClock.Desktop.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="42,36,42,38">
+            <TextBlock Text="Настройки" FontSize="30" FontWeight="SemiBold" />
+            <TextBlock Text="Все параметры трекера в одном месте." Margin="0,7,0,25" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
+
+            <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Аккаунт и лига" FontSize="18" FontWeight="SemiBold" />
+                    <Grid Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Имя аккаунта" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                            <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}" ToolTip="Например: SherlockDmt#3728" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Лига" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                            <DockPanel LastChildFill="True">
+                                <Button DockPanel.Dock="Right"
+                                        Content="Обновить"
+                                        Command="{Binding RefreshLeaguesCommand}"
+                                        Margin="10,0,0,0" />
+                                <ComboBox ItemsSource="{Binding Leagues}"
+                                          SelectedItem="{Binding SelectedLeague}"
+                                          IsEditable="True" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Currency-вкладка" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="Программа считывает только заданную область игры и только когда вкладка открыта." Margin="0,7,0,14" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                    <WrapPanel Margin="0,0,0,12">
+                        <CheckBox Content="Отслеживать изменения Currency-вкладки"
+                                  IsChecked="{Binding IsCurrencyTrackingEnabled}"
+                                  VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" Margin="28,0,0,0">
+                            <TextBlock Text="Частота:" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,8,0" />
+                            <ComboBox Width="78"
+                                      ItemsSource="{Binding CaptureFrequencies}"
+                                      SelectedItem="{Binding SelectedCaptureFps}" />
+                            <TextBlock Text="кадра/с" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <Button Content="Выбрать область вкладки" Command="{Binding SelectCurrencyAreaCommand}" Margin="0,0,10,0" />
+                        <Button Content="Проверить ячейки" Command="{Binding CalibrateCurrencyCommand}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Публичные вкладки" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="Сделайте вкладки публичными и укажите в игре эти точные имена. Цена служит уникальной меткой, а не оценкой предметов." Margin="0,7,0,14" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding PublicTabs}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                    <Border Grid.Column="1" Background="#121923" BorderBrush="#3A4A61" BorderThickness="1" CornerRadius="5" Padding="9,6">
+                                        <TextBlock Text="{Binding RequiredName}" FontFamily="Consolas" Foreground="{StaticResource AccentBrush}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <WrapPanel Margin="0,16,0,0">
+                        <CheckBox Content="Обновлять публичные вкладки автоматически"
+                                  IsChecked="{Binding IsAutomaticPublicRefreshEnabled}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,22,0" />
+                        <TextBlock Text="Полный пересчёт вкладок:" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,10,0" />
+                        <TextBox Width="54" Text="{Binding PublicRefreshMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="минут" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="8,0,22,0" />
+                        <TextBlock Text="Обновление цен:" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,10,0" />
+                        <TextBox Width="54" Text="{Binding PriceRefreshMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="минут" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="8,0,0,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22">
+                <StackPanel>
+                    <TextBlock Text="Приложение" FontSize="18" FontWeight="SemiBold" />
+                    <CheckBox Content="Запускать свёрнутым" IsChecked="{Binding StartMinimized}" Margin="0,14,0,16" />
+                    <WrapPanel>
+                        <Button Content="Сохранить настройки" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                        <TextBlock Text="{Binding Notice}" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="16,0,0,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

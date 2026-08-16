@@ -4,28 +4,23 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$projectPath = Join-Path $PSScriptRoot 'Poe2DeskTracker.csproj'
-$taskNugetCache = 'C:\Temp\Poe2DeskTrackerNuGet'
-$taskIntermediate = 'C:\Temp\Poe2DeskTrackerBuild\obj\'
-$taskExtensions = 'C:\Temp\Poe2DeskTrackerBuild\msbuild\'
-$buildProperties = @(
-    "-p:BaseIntermediateOutputPath=$taskIntermediate",
-    "-p:MSBuildProjectExtensionsPath=$taskExtensions",
-    '-p:Platform=x64'
-)
+$solutionPath = Join-Path $PSScriptRoot 'Poe2DesktopClock.sln'
+$desktopProjectPath = Join-Path $PSScriptRoot 'src\Poe2DesktopClock.Desktop\Poe2DesktopClock.Desktop.csproj'
+$taskNugetCache = 'C:\Temp\Poe2DesktopClockNuGet'
+$buildProperties = @('-p:Platform=x64')
 
 $env:NUGET_PACKAGES = $taskNugetCache
 
-dotnet restore $projectPath @buildProperties
+dotnet restore $solutionPath @buildProperties
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
 if ($BuildOnly) {
-    dotnet build $projectPath --no-restore @buildProperties
+    dotnet build $solutionPath --no-restore @buildProperties
 }
 else {
-    dotnet run --project $projectPath --no-restore @buildProperties
+    dotnet run --project $desktopProjectPath --no-restore @buildProperties
 }
 
 exit $LASTEXITCODE
