@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Headers;
 using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Services;
 using Poe2DesktopClock.Infrastructure.Windows.Runtime;
@@ -13,12 +14,20 @@ namespace Poe2DesktopClock.Composition;
 
 public static class Poe2DesktopClockComposition
 {
+    private static readonly Uri TradeApiBaseUri = new("https://www.pathofexile.com/");
+    private static readonly Uri PoeNinjaBaseUri = new("https://poe.ninja/");
+
     public static IServiceCollection CreateServiceCollection()
     {
         var services = new ServiceCollection();
+        var desktopDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Poe2DesktopClock");
 
         services.AddSingleton<PoeProcessLocator>();
         services.AddSingleton<WindowsGraphicsCaptureService>();
+        services.AddHttpClient(TradeApiClient.HttpClientName, client => ConfigurePoeApiClient(client, TradeApiBaseUri));
+        services.AddHttpClient(PoeNinjaPriceClient.HttpClientName, client => ConfigurePoeApiClient(client, PoeNinjaBaseUri));
         services.AddSingleton<TradeApiClient>();
         services.AddSingleton<PoeNinjaPriceClient>();
         services.AddSingleton<IPriceSnapshotProvider, PoeNinjaPriceSnapshotProvider>();
@@ -27,6 +36,7 @@ public static class Poe2DesktopClockComposition
         services.AddSingleton<IGameStatusReader, WindowsGameStatusReader>();
         services.AddSingleton<IPublicTabsValuationReader, PublicTabsValuationReader>();
         services.AddSingleton<IPublicTabMarkerProvider, StoredPublicTabMarkerProvider>();
+        services.AddSingleton(new PublicTabsSnapshotStore(Path.Combine(desktopDataDirectory, "public-tabs-snapshot.json")));
         services.AddSingleton<IClockSnapshotComposer, ClockSnapshotComposer>();
         services.AddSingleton<ITrackerSnapshotPublisher, TrackerSnapshotPublisher>();
         services.AddSingleton<DesktopClockRuntime>();
@@ -39,5 +49,13 @@ public static class Poe2DesktopClockComposition
         services.AddSingleton<ICurrencySetupUseCase>(provider => provider.GetRequiredService<DesktopClockRuntime>());
         services.AddSingleton<ILeagueCatalog>(provider => provider.GetRequiredService<TradeApiClient>());
         return services;
+    }
+
+    private static void ConfigurePoeApiClient(HttpClient client, Uri baseAddress)
+    {
+        client.BaseAddress = baseAddress;
+        client.Timeout = TimeSpan.FromSeconds(30);
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Poe2DeskTracker", "0.1"));
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 }

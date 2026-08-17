@@ -78,18 +78,10 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <WrapPanel Margin="0,16,0,0">
-                        <CheckBox Content="Обновлять публичные вкладки автоматически"
-                                  IsChecked="{Binding IsAutomaticPublicRefreshEnabled}"
-                                  VerticalAlignment="Center"
-                                  Margin="0,0,22,0" />
-                        <TextBlock Text="Полный пересчёт вкладок:" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,10,0" />
-                        <TextBox Width="54" Text="{Binding PublicRefreshMinutes, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="минут" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="8,0,22,0" />
-                        <TextBlock Text="Обновление цен:" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,10,0" />
-                        <TextBox Width="54" Text="{Binding PriceRefreshMinutes, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="минут" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" Margin="8,0,0,0" />
-                    </WrapPanel>
+                    <TextBlock Margin="0,16,0,0"
+                               Text="Проверка изменений вкладок выполняется автоматически каждые 2 минуты. Полная сверка — каждые 15 минут; цены обновляются каждые 30 минут."
+                               Foreground="{StaticResource MutedTextBrush}"
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

@@ -24,8 +24,9 @@ public sealed class TrackerSettingsTests
         Assert.Equal("account#1", normalized.AccountName);
         Assert.Equal("League", normalized.League);
         Assert.Equal(2, normalized.CurrencyScreensPerSecond);
-        Assert.Equal(10, normalized.PublicRefreshIntervalMinutes);
-        Assert.Equal(1, normalized.PriceRefreshIntervalMinutes);
+        Assert.True(normalized.IsAutomaticPublicRefreshEnabled);
+        Assert.Equal(2, normalized.PublicRefreshIntervalMinutes);
+        Assert.Equal(30, normalized.PriceRefreshIntervalMinutes);
     }
 
     [Theory]

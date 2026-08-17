@@ -11,19 +11,16 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
 {
     private readonly ITrackerRefreshUseCase _refresh;
     private readonly ITrackerMonitoringUseCase _monitoring;
-    private readonly ITrackerSettingsUseCase _settings;
     private ClockSnapshot? _clockSnapshot;
     private ClockMonitorStatus _monitorStatus = ClockMonitorStatus.Stopped;
     private string? _lastError;
 
     public RuntimeTrackerStatusProvider(
         ITrackerRefreshUseCase refresh,
-        ITrackerMonitoringUseCase monitoring,
-        ITrackerSettingsUseCase settings)
+        ITrackerMonitoringUseCase monitoring)
     {
         _refresh = refresh;
         _monitoring = monitoring;
-        _settings = settings;
         _refresh.ClockSnapshotChanged += OnClockSnapshotChanged;
         _monitoring.MonitorStatusChanged += OnMonitorStatusChanged;
     }
@@ -49,15 +46,15 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         try
         {
             _clockSnapshot = await _refresh.RefreshAsync(refreshPublicTabs: false);
-            if (_settings.GetSettings().IsCurrencyMonitoringEnabled)
-            {
-                await _monitoring.StartCurrencyMonitoringAsync();
-            }
         }
         catch (Exception exception)
         {
             _lastError = $"Не удалось обновить данные: {exception.Message}";
         }
+
+        // Start the automatic loop even if the first price request failed; it
+        // will retry on the next scheduled public-tab check.
+        await _monitoring.StartCurrencyMonitoringAsync();
 
         PublishCurrent();
     }

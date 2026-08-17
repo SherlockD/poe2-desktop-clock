@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Poe2DeskTracker.Pricing;
@@ -9,8 +8,10 @@ namespace Poe2DeskTracker.Pricing;
 /// is Divine Orb, so every matched item can be valued without a second currency
 /// conversion step.
 /// </summary>
-public sealed class PoeNinjaPriceClient : IDisposable
+public sealed class PoeNinjaPriceClient
 {
+    public const string HttpClientName = "PoeNinja";
+
     private static readonly string[] EconomyTypes =
     [
         "Currency",
@@ -26,24 +27,17 @@ public sealed class PoeNinjaPriceClient : IDisposable
         "Verisium",
     ];
 
-    private static readonly Uri BaseUri = new("https://poe.ninja/");
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
     };
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly object _sync = new();
     private readonly Dictionary<string, CachedPriceSnapshot> _snapshots = new(StringComparer.Ordinal);
 
-    public PoeNinjaPriceClient()
+    public PoeNinjaPriceClient(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = new HttpClient
-        {
-            BaseAddress = BaseUri,
-            Timeout = TimeSpan.FromSeconds(30),
-        };
-        _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Poe2DeskTracker", "0.1"));
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task<PoeNinjaPriceSnapshot> GetPricesAsync(
@@ -66,7 +60,9 @@ public sealed class PoeNinjaPriceClient : IDisposable
         foreach (var economyType in EconomyTypes)
         {
             var relativeUri = $"poe2/api/economy/exchange/current/overview?league={Uri.EscapeDataString(cacheKey)}&type={Uri.EscapeDataString(economyType)}";
-            using var response = await _httpClient.GetAsync(relativeUri, cancellationToken);
+            using var response = await _httpClientFactory
+                .CreateClient(HttpClientName)
+                .GetAsync(relativeUri, cancellationToken);
             var payload = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
@@ -113,8 +109,6 @@ public sealed class PoeNinjaPriceClient : IDisposable
 
         return snapshot;
     }
-
-    public void Dispose() => _httpClient.Dispose();
 
     public static string NormalizeItemName(string itemName) =>
         string.Join(' ', itemName.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).ToUpperInvariant();

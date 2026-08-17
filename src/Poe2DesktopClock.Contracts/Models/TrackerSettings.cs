@@ -19,9 +19,9 @@ public sealed record TrackerSettings(
         string.Empty,
         CurrencyScreensPerSecond: 2,
         IsCurrencyMonitoringEnabled: true,
-        IsAutomaticPublicRefreshEnabled: false,
-        PublicRefreshIntervalMinutes: 15,
-        PriceRefreshIntervalMinutes: 5,
+        IsAutomaticPublicRefreshEnabled: true,
+        PublicRefreshIntervalMinutes: 2,
+        PriceRefreshIntervalMinutes: 30,
         StartMinimized: false);
 
     public TrackerSettings Normalize() => this with
@@ -29,7 +29,10 @@ public sealed record TrackerSettings(
         AccountName = AccountName?.Trim() ?? string.Empty,
         League = League?.Trim() ?? string.Empty,
         CurrencyScreensPerSecond = CurrencyScreensPerSecond is 2 or 3 ? CurrencyScreensPerSecond : 2,
-        PublicRefreshIntervalMinutes = Math.Max(10, PublicRefreshIntervalMinutes),
-        PriceRefreshIntervalMinutes = Math.Max(1, PriceRefreshIntervalMinutes),
+        // Public tabs are tracked continuously. These values are retained in
+        // the JSON shape for backwards compatibility with prior settings.
+        IsAutomaticPublicRefreshEnabled = true,
+        PublicRefreshIntervalMinutes = 2,
+        PriceRefreshIntervalMinutes = 30,
     };
 }

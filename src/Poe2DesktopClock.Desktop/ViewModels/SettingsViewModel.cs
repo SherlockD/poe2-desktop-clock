@@ -20,10 +20,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private string _accountName = string.Empty;
     private string _selectedLeague = string.Empty;
     private bool _isCurrencyTrackingEnabled = true;
-    private bool _isAutomaticPublicRefreshEnabled;
     private int _selectedCaptureFps = 2;
-    private int _publicRefreshMinutes = 15;
-    private int _priceRefreshMinutes = 5;
     private bool _startMinimized;
     private string _notice = "Настройте источник данных и подтвердите изменения.";
 
@@ -70,28 +67,10 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _isCurrencyTrackingEnabled, value);
     }
 
-    public bool IsAutomaticPublicRefreshEnabled
-    {
-        get => _isAutomaticPublicRefreshEnabled;
-        set => SetProperty(ref _isAutomaticPublicRefreshEnabled, value);
-    }
-
     public int SelectedCaptureFps
     {
         get => _selectedCaptureFps;
         set => SetProperty(ref _selectedCaptureFps, value);
-    }
-
-    public int PublicRefreshMinutes
-    {
-        get => _publicRefreshMinutes;
-        set => SetProperty(ref _publicRefreshMinutes, Math.Max(10, value));
-    }
-
-    public int PriceRefreshMinutes
-    {
-        get => _priceRefreshMinutes;
-        set => SetProperty(ref _priceRefreshMinutes, Math.Max(1, value));
     }
 
     public bool StartMinimized
@@ -127,19 +106,13 @@ public sealed class SettingsViewModel : ViewModelBase
             SelectedLeague,
             SelectedCaptureFps,
             IsCurrencyTrackingEnabled,
-            IsAutomaticPublicRefreshEnabled,
-            PublicRefreshMinutes,
-            PriceRefreshMinutes,
+            IsAutomaticPublicRefreshEnabled: true,
+            PublicRefreshIntervalMinutes: 2,
+            PriceRefreshIntervalMinutes: 30,
             StartMinimized);
         _settings.SaveSettings(settings);
-        if (settings.IsCurrencyMonitoringEnabled)
-        {
-            await _monitoring.StartCurrencyMonitoringAsync();
-        }
-        else
-        {
-            await _monitoring.StopCurrencyMonitoringAsync();
-        }
+        await _monitoring.StopCurrencyMonitoringAsync();
+        await _monitoring.StartCurrencyMonitoringAsync();
 
         Notice = "Настройки сохранены. Currency-вкладка использует выбранную частоту кадров.";
     }
@@ -213,9 +186,6 @@ public sealed class SettingsViewModel : ViewModelBase
         SelectedLeague = settings.League;
         IsCurrencyTrackingEnabled = settings.IsCurrencyMonitoringEnabled;
         SelectedCaptureFps = settings.CurrencyScreensPerSecond;
-        IsAutomaticPublicRefreshEnabled = settings.IsAutomaticPublicRefreshEnabled;
-        PublicRefreshMinutes = settings.PublicRefreshIntervalMinutes;
-        PriceRefreshMinutes = settings.PriceRefreshIntervalMinutes;
         StartMinimized = settings.StartMinimized;
     }
 

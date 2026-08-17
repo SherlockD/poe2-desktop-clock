@@ -36,18 +36,19 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     public Task StartCurrencyMonitoringAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_runTask is { IsCompleted: false })
+        if (_cancellation is not null)
         {
             return Task.CompletedTask;
         }
 
         _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var settings = _settings.GetSettings();
-        var period = TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond);
-        _runTask = _monitor.RunAsync(period, _cancellation.Token);
-        _automaticRefreshTask = settings.IsAutomaticPublicRefreshEnabled
-            ? RefreshPublicTabsPeriodicallyAsync(TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes), _cancellation.Token)
-            : null;
+        _runTask = settings.IsCurrencyMonitoringEnabled
+            ? _monitor.RunAsync(TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond), _cancellation.Token)
+            : Task.CompletedTask;
+        _automaticRefreshTask = RefreshPublicTabsPeriodicallyAsync(
+            TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes),
+            _cancellation.Token);
         return Task.CompletedTask;
     }
 
@@ -119,11 +120,29 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     {
         try
         {
-            await _refresh.RefreshAsync(refreshPublicTabs: true, cancellationToken: cancellationToken);
-            using var timer = new PeriodicTimer(interval);
-            while (await timer.WaitForNextTickAsync(cancellationToken))
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await _refresh.RefreshAsync(refreshPublicTabs: true, cancellationToken: cancellationToken);
+                var startedAt = DateTimeOffset.UtcNow;
+                try
+                {
+                    await _refresh.RefreshAsync(refreshPublicTabs: true, cancellationToken: cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch
+                {
+                    // A transient Trade API or price-source failure must not
+                    // stop automatic public-tab refreshes permanently.
+                    MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Error);
+                }
+
+                var remaining = interval - (DateTimeOffset.UtcNow - startedAt);
+                if (remaining > TimeSpan.Zero)
+                {
+                    await Task.Delay(remaining, cancellationToken);
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
+using Poe2DesktopClock.Composition;
 using Poe2DeskTracker.Capture;
 using Poe2DeskTracker.Currency;
 using Poe2DeskTracker.Game;
@@ -34,8 +36,9 @@ var regionStore = new RegionStore(regionConfigurationPath, legacyRegionConfigura
 var configurationDirectory = Path.GetDirectoryName(regionConfigurationPath)!;
 var currencyLayoutStore = new CurrencyLayoutStore(Path.Combine(configurationDirectory, "currency-layouts.json"));
 var publicStashSettingsStore = new PublicStashSettingsStore(Path.Combine(configurationDirectory, "public-stash.json"));
-using var tradeApiClient = new TradeApiClient();
-using var poeNinjaPriceClient = new PoeNinjaPriceClient();
+using var serviceProvider = Poe2DesktopClockComposition.CreateServiceCollection().BuildServiceProvider();
+var tradeApiClient = serviceProvider.GetRequiredService<TradeApiClient>();
+var poeNinjaPriceClient = serviceProvider.GetRequiredService<PoeNinjaPriceClient>();
 
 Console.WriteLine("PoE 2 Desk Tracker");
 Console.WriteLine("Commands: status, debug-frame, currency, public, worth, help, exit");
@@ -196,7 +199,7 @@ static async Task SetupPublicStashAsync(
     if (string.IsNullOrWhiteSpace(defaultLeague))
     {
         Console.WriteLine("Looking up current PoE 2 leagues...");
-        var leagues = await tradeApiClient.GetPoe2LeagueNamesAsync();
+        var leagues = await tradeApiClient.GetPoe2LeaguesAsync();
         defaultLeague = leagues.FirstOrDefault(league =>
                             !league.StartsWith("HC", StringComparison.OrdinalIgnoreCase) &&
                             !string.Equals(league, "Standard", StringComparison.OrdinalIgnoreCase) &&

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Poe2DesktopClock.Composition\Poe2DesktopClock.Composition.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Contracts\Poe2DesktopClock.Contracts.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.PoeApi\Poe2DesktopClock.Infrastructure.PoeApi.csproj" />
