@@ -1,5 +1,5 @@
-using Poe2DesktopClock.Core.Interfaces;
-using Poe2DesktopClock.Core.Models;
+using Poe2DesktopClock.Application.Interfaces;
+using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Models;
 
 namespace Poe2DesktopClock.Desktop.Services;
@@ -9,16 +9,23 @@ namespace Poe2DesktopClock.Desktop.Services;
 /// </summary>
 public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyncDisposable
 {
-    private readonly IClockRuntime _runtime;
+    private readonly ITrackerRefreshUseCase _refresh;
+    private readonly ITrackerMonitoringUseCase _monitoring;
+    private readonly ITrackerSettingsUseCase _settings;
     private ClockSnapshot? _clockSnapshot;
     private ClockMonitorStatus _monitorStatus = ClockMonitorStatus.Stopped;
     private string? _lastError;
 
-    public RuntimeTrackerStatusProvider(IClockRuntime runtime)
+    public RuntimeTrackerStatusProvider(
+        ITrackerRefreshUseCase refresh,
+        ITrackerMonitoringUseCase monitoring,
+        ITrackerSettingsUseCase settings)
     {
-        _runtime = runtime;
-        _runtime.ClockSnapshotChanged += OnClockSnapshotChanged;
-        _runtime.MonitorStatusChanged += OnMonitorStatusChanged;
+        _refresh = refresh;
+        _monitoring = monitoring;
+        _settings = settings;
+        _refresh.ClockSnapshotChanged += OnClockSnapshotChanged;
+        _monitoring.MonitorStatusChanged += OnMonitorStatusChanged;
     }
 
     public event EventHandler<TrackerStatusSnapshot>? StatusChanged;
@@ -26,7 +33,7 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
     public TrackerStatusSnapshot GetCurrent()
     {
         var snapshot = _clockSnapshot;
-        var gameStatus = _runtime.GetGameStatus();
+        var gameStatus = _monitoring.GetGameStatus();
         return new TrackerStatusSnapshot(
             snapshot?.TotalDivines ?? 0m,
             snapshot?.CurrencyUpdatedAt,
@@ -41,10 +48,10 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
     {
         try
         {
-            _clockSnapshot = await _runtime.RefreshAsync(refreshPublicTabs: false);
-            if (_runtime.GetSettings().IsCurrencyMonitoringEnabled)
+            _clockSnapshot = await _refresh.RefreshAsync(refreshPublicTabs: false);
+            if (_settings.GetSettings().IsCurrencyMonitoringEnabled)
             {
-                await _runtime.StartCurrencyMonitoringAsync();
+                await _monitoring.StartCurrencyMonitoringAsync();
             }
         }
         catch (Exception exception)
@@ -60,7 +67,7 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         try
         {
             _lastError = null;
-            _clockSnapshot = await _runtime.RefreshAsync(refreshPublicTabs: true);
+            _clockSnapshot = await _refresh.RefreshAsync(refreshPublicTabs: true);
         }
         catch (Exception exception)
         {
@@ -70,11 +77,11 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         PublishCurrent();
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        _runtime.ClockSnapshotChanged -= OnClockSnapshotChanged;
-        _runtime.MonitorStatusChanged -= OnMonitorStatusChanged;
-        await _runtime.DisposeAsync();
+        _refresh.ClockSnapshotChanged -= OnClockSnapshotChanged;
+        _monitoring.MonitorStatusChanged -= OnMonitorStatusChanged;
+        return ValueTask.CompletedTask;
     }
 
     private void OnClockSnapshotChanged(object? sender, ClockSnapshot snapshot)

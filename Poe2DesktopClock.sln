@@ -2,13 +2,35 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Core", "src\Poe2DesktopClock.Core\Poe2DesktopClock.Core.csproj", "{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{932DF3D0-29A3-4EA7-ADCB-EA3D5D3B11F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{7F26F878-E334-4F1E-9616-98A2F48132CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19BCF0B0-3603-49AC-AC0D-835E2D36FCA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Domain", "src\Poe2DesktopClock.Domain\Poe2DesktopClock.Domain.csproj", "{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Contracts", "src\Poe2DesktopClock.Contracts\Poe2DesktopClock.Contracts.csproj", "{53B63079-5794-4B78-8FAA-3B098FA0D90F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Composition", "src\Poe2DesktopClock.Composition\Poe2DesktopClock.Composition.csproj", "{DDA59A9F-6E75-4D36-BB10-3F0353357CDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Application", "src\Poe2DesktopClock.Application\Poe2DesktopClock.Application.csproj", "{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Infrastructure.PoeApi", "src\Poe2DesktopClock.Infrastructure.PoeApi\Poe2DesktopClock.Infrastructure.PoeApi.csproj", "{7EEB7D8D-41CA-430A-9B73-4057E73D38C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Infrastructure.Storage", "src\Poe2DesktopClock.Infrastructure.Storage\Poe2DesktopClock.Infrastructure.Storage.csproj", "{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Infrastructure.Windows", "src\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj", "{0A1B5651-880C-422F-A1BB-58BB9A26A971}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.ConsoleDebug", "src\Poe2DesktopClock.ConsoleDebug\Poe2DesktopClock.ConsoleDebug.csproj", "{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Desktop", "src\Poe2DesktopClock.Desktop\Poe2DesktopClock.Desktop.csproj", "{AEC8E73F-7EA5-4B23-A048-687237B33D99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Contracts.Tests", "tests\Poe2DesktopClock.Contracts.Tests\Poe2DesktopClock.Contracts.Tests.csproj", "{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poe2DesktopClock.Infrastructure.Windows.Tests", "tests\Poe2DesktopClock.Infrastructure.Windows.Tests\Poe2DesktopClock.Infrastructure.Windows.Tests.csproj", "{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +42,26 @@ Global
 		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Debug|x64.Build.0 = Debug|AnyCPU
 		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Release|x64.ActiveCfg = Release|AnyCPU
 		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440}.Release|x64.Build.0 = Release|AnyCPU
+		{53B63079-5794-4B78-8FAA-3B098FA0D90F}.Debug|x64.ActiveCfg = Debug|AnyCPU
+		{53B63079-5794-4B78-8FAA-3B098FA0D90F}.Debug|x64.Build.0 = Debug|AnyCPU
+		{53B63079-5794-4B78-8FAA-3B098FA0D90F}.Release|x64.ActiveCfg = Release|AnyCPU
+		{53B63079-5794-4B78-8FAA-3B098FA0D90F}.Release|x64.Build.0 = Release|AnyCPU
+		{DDA59A9F-6E75-4D36-BB10-3F0353357CDE}.Debug|x64.ActiveCfg = Debug|x64
+		{DDA59A9F-6E75-4D36-BB10-3F0353357CDE}.Debug|x64.Build.0 = Debug|x64
+		{DDA59A9F-6E75-4D36-BB10-3F0353357CDE}.Release|x64.ActiveCfg = Release|x64
+		{DDA59A9F-6E75-4D36-BB10-3F0353357CDE}.Release|x64.Build.0 = Release|x64
+		{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606}.Debug|x64.ActiveCfg = Debug|AnyCPU
+		{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606}.Debug|x64.Build.0 = Debug|AnyCPU
+		{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606}.Release|x64.ActiveCfg = Release|AnyCPU
+		{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606}.Release|x64.Build.0 = Release|AnyCPU
+		{7EEB7D8D-41CA-430A-9B73-4057E73D38C6}.Debug|x64.ActiveCfg = Debug|AnyCPU
+		{7EEB7D8D-41CA-430A-9B73-4057E73D38C6}.Debug|x64.Build.0 = Debug|AnyCPU
+		{7EEB7D8D-41CA-430A-9B73-4057E73D38C6}.Release|x64.ActiveCfg = Release|AnyCPU
+		{7EEB7D8D-41CA-430A-9B73-4057E73D38C6}.Release|x64.Build.0 = Release|AnyCPU
+		{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6}.Debug|x64.ActiveCfg = Debug|AnyCPU
+		{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6}.Debug|x64.Build.0 = Debug|AnyCPU
+		{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6}.Release|x64.ActiveCfg = Release|AnyCPU
+		{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6}.Release|x64.Build.0 = Release|AnyCPU
 		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Debug|x64.ActiveCfg = Debug|x64
 		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Debug|x64.Build.0 = Debug|x64
 		{0A1B5651-880C-422F-A1BB-58BB9A26A971}.Release|x64.ActiveCfg = Release|x64
@@ -32,8 +74,31 @@ Global
 		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Debug|x64.Build.0 = Debug|x64
 		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Release|x64.ActiveCfg = Release|x64
 		{AEC8E73F-7EA5-4B23-A048-687237B33D99}.Release|x64.Build.0 = Release|x64
+		{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE}.Debug|x64.ActiveCfg = Debug|AnyCPU
+		{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE}.Debug|x64.Build.0 = Debug|AnyCPU
+		{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE}.Release|x64.ActiveCfg = Release|AnyCPU
+		{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE}.Release|x64.Build.0 = Release|AnyCPU
+		{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B}.Debug|x64.ActiveCfg = Debug|x64
+		{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B}.Debug|x64.Build.0 = Debug|x64
+		{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B}.Release|x64.ActiveCfg = Release|x64
+		{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D0FB7546-0BFA-45A6-98D7-7E4B7185E440} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{53B63079-5794-4B78-8FAA-3B098FA0D90F} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{DDA59A9F-6E75-4D36-BB10-3F0353357CDE} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{B4E4B6ED-E26F-4D0A-B2B7-BAB299F22606} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{932DF3D0-29A3-4EA7-ADCB-EA3D5D3B11F3} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{7F26F878-E334-4F1E-9616-98A2F48132CD} = {0CE7C2A3-6C70-4C86-81E3-19AB15B3A63E}
+		{7EEB7D8D-41CA-430A-9B73-4057E73D38C6} = {932DF3D0-29A3-4EA7-ADCB-EA3D5D3B11F3}
+		{80E55F66-6C5F-43AB-89B1-967A9AFA8BE6} = {932DF3D0-29A3-4EA7-ADCB-EA3D5D3B11F3}
+		{0A1B5651-880C-422F-A1BB-58BB9A26A971} = {932DF3D0-29A3-4EA7-ADCB-EA3D5D3B11F3}
+		{AEC8E73F-7EA5-4B23-A048-687237B33D99} = {7F26F878-E334-4F1E-9616-98A2F48132CD}
+		{C79A2D9F-BE05-4E0C-9F91-5F645D1EBF4C} = {7F26F878-E334-4F1E-9616-98A2F48132CD}
+		{9B246B5E-4D77-48F0-A5F2-BD1D45BAFDCE} = {19BCF0B0-3603-49AC-AC0D-835E2D36FCA7}
+		{F448274F-C07B-4039-BAE2-6AB2B8CA5B7B} = {19BCF0B0-3603-49AC-AC0D-835E2D36FCA7}
 	EndGlobalSection
 EndGlobal

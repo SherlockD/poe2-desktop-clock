@@ -40,13 +40,17 @@
 
 ```text
 src/
-  Poe2DesktopClock.Core                   Контракты и общие модели
-  Poe2DesktopClock.Infrastructure.Windows Захват окна, OCR, Trade API, poe.ninja и хранилища
+  Poe2DesktopClock.Domain                 Правила продукта и value objects
+  Poe2DesktopClock.Contracts              DTO для границ приложения
+  Poe2DesktopClock.Application            Контракты пользовательских сценариев
+  Poe2DesktopClock.Infrastructure.PoeApi  Адаптеры Trade API и poe.ninja
+  Poe2DesktopClock.Infrastructure.Storage JSON-хранилища настроек
+  Poe2DesktopClock.Infrastructure.Windows Захват окна, OCR, Win32 и калибровка
   Poe2DesktopClock.Desktop                Основное WPF-приложение
   Poe2DesktopClock.ConsoleDebug           Отладочная консоль
 ```
 
-`Core` не зависит от UI, Win32, OCR или сети. WPF-интерфейс зависит от контрактов Core, а Windows-адаптеры изолированы в Infrastructure. Основные классы и интерфейсы вынесены по отдельным файлам; служебные приватные DTO остаются рядом с сетевыми и алгоритмическими адаптерами, которым они принадлежат.
+`Domain` не зависит от UI, Win32, OCR, сети или application-контрактов; здесь лежат только правила продукта. `Contracts` содержит DTO для границ приложения: настройки, снимки и статусы. `Application` содержит use case-контракты. HTTP- и JSON-адаптеры независимы от Windows и могут работать в `net8.0`; в Windows-сборке остаются только platform-specific части. WPF и инфраструктура зависят от application-контрактов, а граф конкретных зависимостей собирается в `App`, не в `MainWindow`.
 
 Старые калибровки и настройки публичных вкладок продолжают читаться из `%LOCALAPPDATA%\Poe2DeskTracker`, поэтому перенос проекта не сбрасывает уже сделанную настройку. Новые настройки Desktop-приложения хранятся в `%LOCALAPPDATA%\Poe2DesktopClock\settings.json`.
 

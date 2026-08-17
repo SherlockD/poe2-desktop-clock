@@ -1,8 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Poe2DesktopClock.Core.Interfaces;
-using Poe2DesktopClock.Core.Models;
+using Poe2DesktopClock.Application.Interfaces;
+using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Infrastructure;
+using Poe2DesktopClock.Domain.Tracking;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
@@ -12,7 +13,10 @@ namespace Poe2DesktopClock.Desktop.ViewModels;
 /// </summary>
 public sealed class SettingsViewModel : ViewModelBase
 {
-    private readonly IClockRuntime _runtime;
+    private readonly ITrackerSettingsUseCase _settings;
+    private readonly ILeagueCatalog _leagueCatalog;
+    private readonly ICurrencySetupUseCase _currencySetup;
+    private readonly ITrackerMonitoringUseCase _monitoring;
     private string _accountName = string.Empty;
     private string _selectedLeague = string.Empty;
     private bool _isCurrencyTrackingEnabled = true;
@@ -23,9 +27,16 @@ public sealed class SettingsViewModel : ViewModelBase
     private bool _startMinimized;
     private string _notice = "Настройте источник данных и подтвердите изменения.";
 
-    public SettingsViewModel(IClockRuntime runtime)
+    public SettingsViewModel(
+        ITrackerSettingsUseCase settings,
+        ILeagueCatalog leagueCatalog,
+        ICurrencySetupUseCase currencySetup,
+        ITrackerMonitoringUseCase monitoring)
     {
-        _runtime = runtime;
+        _settings = settings;
+        _leagueCatalog = leagueCatalog;
+        _currencySetup = currencySetup;
+        _monitoring = monitoring;
         CaptureFrequencies = new ObservableCollection<int>([2, 3]);
         Leagues = [];
         PublicTabs = new ObservableCollection<PublicTabMarkerViewModel>(CreateDefaultPublicTabs());
@@ -105,7 +116,7 @@ public sealed class SettingsViewModel : ViewModelBase
 
     public async Task LoadAsync()
     {
-        ApplySettings(_runtime.GetSettings());
+        ApplySettings(_settings.GetSettings());
         await RefreshLeaguesAsync();
     }
 
@@ -120,14 +131,14 @@ public sealed class SettingsViewModel : ViewModelBase
             PublicRefreshMinutes,
             PriceRefreshMinutes,
             StartMinimized);
-        _runtime.SaveSettings(settings);
+        _settings.SaveSettings(settings);
         if (settings.IsCurrencyMonitoringEnabled)
         {
-            await _runtime.StartCurrencyMonitoringAsync();
+            await _monitoring.StartCurrencyMonitoringAsync();
         }
         else
         {
-            await _runtime.StopCurrencyMonitoringAsync();
+            await _monitoring.StopCurrencyMonitoringAsync();
         }
 
         Notice = "Настройки сохранены. Currency-вкладка использует выбранную частоту кадров.";
@@ -137,7 +148,7 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         try
         {
-            var leagues = await _runtime.GetPoe2LeaguesAsync();
+            var leagues = await _leagueCatalog.GetPoe2LeaguesAsync();
             Leagues.Clear();
             foreach (var league in leagues)
             {
@@ -166,7 +177,7 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         try
         {
-            await _runtime.SelectCurrencyRegionAsync();
+            await _currencySetup.SelectCurrencyRegionAsync();
             Notice = "Область выбрана. Теперь нажмите «Проверить ячейки».";
         }
         catch (OperationCanceledException)
@@ -183,7 +194,7 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         try
         {
-            await _runtime.CalibrateCurrencySlotsAsync();
+            await _currencySetup.CalibrateCurrencySlotsAsync();
             Notice = "Ячейки Currency-вкладки сохранены. Отслеживание можно включить.";
         }
         catch (OperationCanceledException)
@@ -210,7 +221,7 @@ public sealed class SettingsViewModel : ViewModelBase
 
     private static IEnumerable<PublicTabMarkerViewModel> CreateDefaultPublicTabs()
     {
-        var labels = new[] { "Разлом", "Бездна", "Ритуал", "Экспедиция", "Делириум", "Сущности", "Руны", "Фрагменты" };
-        return labels.Select((label, index) => new PublicTabMarkerViewModel(label, $"~price {1001 + index} mirror"));
+        return PublicTabDefaults.Items
+            .Select(tab => new PublicTabMarkerViewModel(tab.Label, tab.RequiredTabName));
     }
 }

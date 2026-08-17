@@ -7,9 +7,14 @@ using Poe2DeskTracker.Interop;
 using Poe2DeskTracker.Pricing;
 using Poe2DeskTracker.PublicStash;
 using Poe2DeskTracker.Regions;
+using Poe2DesktopClock.Contracts.Models;
+using Poe2DesktopClock.Domain.Tracking;
+using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
+using Poe2DesktopClock.ConsoleDebug.Services;
 
 var locator = new PoeProcessLocator();
 using var capture = new WindowsGraphicsCaptureService();
+var gameWindowDebug = new GameWindowDebugService(locator, capture);
 var regionConfigurationPath = Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
     "Poe2DeskTracker",
@@ -44,11 +49,11 @@ while (true)
     switch (command)
     {
         case "status":
-            PrintStatus(locator);
+            gameWindowDebug.PrintStatus();
             break;
 
         case "debug-frame":
-            await SaveDebugFrameAsync(locator, capture);
+            await gameWindowDebug.SaveFrameAsync();
             break;
 
         case "currency":
@@ -207,11 +212,11 @@ static async Task SetupPublicStashAsync(
     }
 
     Console.WriteLine("Set each in-game tab Public and use the following unique deliberately-high default prices:");
-    var suggestedLabels = GetSuggestedPublicTabLabels();
-    for (var index = 0; index < suggestedLabels.Count; index++)
+    var suggestedTabs = PublicTabDefaults.Items;
+    for (var index = 0; index < suggestedTabs.Count; index++)
     {
-        var label = suggestedLabels[index];
-        Console.WriteLine($"  {label}: {FormatPublicTabName(1001m + index, "mirror")}");
+        var tab = suggestedTabs[index];
+        Console.WriteLine($"  {tab.Label}: {tab.RequiredTabName}");
     }
 
     Console.WriteLine("Every item in one tracked tab must inherit that tab's default price. Do not set individual item prices.");
@@ -223,8 +228,8 @@ static async Task SetupPublicStashAsync(
         return;
     }
 
-    var markers = suggestedLabels
-        .Select((label, index) => new PublicStashTabMarker(label, FormatPublicTabName(1001m + index, "mirror"), 1001m + index, "mirror"))
+    var markers = suggestedTabs
+        .Select(tab => new PublicStashTabMarker(tab.Label, tab.RequiredTabName, tab.MarkerPrice, tab.MarkerCurrency))
         .ToList();
 
     settingsStore.Save(new PublicStashSettings(accountName, league, [], markers));
@@ -645,9 +650,6 @@ static string FormatMarkerPrice(decimal amount, string currency)
     return string.IsNullOrWhiteSpace(currency) ? price : $"{price} {currency}";
 }
 
-static string FormatPublicTabName(decimal amount, string currency) =>
-    $"~price {FormatMarkerPrice(amount, currency)}";
-
 static string? GetSafeSetupDefault(string? value)
 {
     if (string.IsNullOrWhiteSpace(value))
@@ -697,18 +699,6 @@ static decimal? PromptPositiveDecimal(string label, decimal defaultValue)
             ? invariantValue
             : null;
 }
-
-static IReadOnlyList<string> GetSuggestedPublicTabLabels() =>
-[
-    "Разлом",
-    "Бездна",
-    "Ритуал",
-    "Экспедиция",
-    "Делириум",
-    "Сущности",
-    "Руны",
-    "Фрагменты",
-];
 
 static string? NormalizeTabNameArgument(string? argument)
 {
@@ -1014,47 +1004,4 @@ static async Task<bool> WaitForStableClientBoundsAsync(nint windowHandle, TimeSp
     }
 
     return false;
-}
-
-static void PrintStatus(PoeProcessLocator locator)
-{
-    var gameWindow = locator.FindGameWindow();
-    if (gameWindow is null)
-    {
-        Console.WriteLine("PoE 2: NOT FOUND");
-        Console.WriteLine("Waiting...");
-        return;
-    }
-
-    Console.WriteLine($"PoE 2: FOUND (PID {gameWindow.ProcessId}, {gameWindow.Title})");
-    Console.WriteLine($"Window: {gameWindow.Width}x{gameWindow.Height}");
-    Console.WriteLine("Capture: READY");
-}
-
-static async Task SaveDebugFrameAsync(PoeProcessLocator locator, WindowsGraphicsCaptureService capture)
-{
-    var gameWindow = locator.FindGameWindow();
-    if (gameWindow is null)
-    {
-        Console.WriteLine("PoE 2: NOT FOUND — start the game and try again.");
-        return;
-    }
-
-    var outputPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "debug", "frame.png"));
-
-    try
-    {
-        Console.WriteLine($"Capturing PID {gameWindow.ProcessId}...");
-        var result = await capture.SaveSingleFrameAsync(gameWindow.Handle, outputPath, TimeSpan.FromSeconds(5));
-        Console.WriteLine($"Capture: ACTIVE ({result.Width}x{result.Height}, {result.Elapsed.TotalMilliseconds:F0} ms)");
-        Console.WriteLine($"Debug frame: {outputPath}");
-    }
-    catch (OperationCanceledException)
-    {
-        Console.WriteLine("Capture timed out. Ensure PoE 2 is visible and not minimized.");
-    }
-    catch (Exception exception)
-    {
-        Console.WriteLine($"Capture failed: {exception.Message}");
-    }
 }

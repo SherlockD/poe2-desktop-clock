@@ -61,7 +61,7 @@ public sealed class DashboardViewModel : ViewModelBase
 
     private void OnStatusChanged(object? sender, TrackerStatusSnapshot status)
     {
-        var dispatcher = Application.Current?.Dispatcher;
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null || dispatcher.CheckAccess())
         {
             UpdateStatus(status);
