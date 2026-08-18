@@ -27,12 +27,19 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
             new WindowsGraphicsCaptureService(),
             CreateRegionStore(),
             CreateLayoutStore(),
-            ownsCapture: true)
+            ownsCapture: true,
+            publicStashSettingsStore: null)
     {
     }
 
     public DesktopClockRuntime(PoeProcessLocator processLocator, WindowsGraphicsCaptureService capture)
-        : this(processLocator, capture, CreateRegionStore(), CreateLayoutStore(), ownsCapture: false)
+        : this(
+            processLocator,
+            capture,
+            CreateRegionStore(),
+            CreateLayoutStore(),
+            ownsCapture: false,
+            publicStashSettingsStore: null)
     {
     }
 
@@ -41,7 +48,34 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
         WindowsGraphicsCaptureService capture,
         RegionStore regionStore,
         CurrencyLayoutStore layoutStore)
-        : this(processLocator, capture, regionStore, layoutStore, ownsCapture: false)
+        : this(
+            processLocator,
+            capture,
+            regionStore,
+            layoutStore,
+            ownsCapture: false,
+            publicStashSettingsStore: null)
+    {
+    }
+
+    /// <summary>
+    /// Production composition shares the public-tab store with setup and
+    /// background valuation, so a later settings save cannot restore markers
+    /// that the initial setup explicitly excluded.
+    /// </summary>
+    public DesktopClockRuntime(
+        PoeProcessLocator processLocator,
+        WindowsGraphicsCaptureService capture,
+        RegionStore regionStore,
+        CurrencyLayoutStore layoutStore,
+        PublicStashSettingsStore publicStashSettingsStore)
+        : this(
+            processLocator,
+            capture,
+            regionStore,
+            layoutStore,
+            ownsCapture: false,
+            publicStashSettingsStore: publicStashSettingsStore)
     {
     }
 
@@ -50,13 +84,15 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
         WindowsGraphicsCaptureService capture,
         RegionStore regionStore,
         CurrencyLayoutStore layoutStore,
-        bool ownsCapture)
+        bool ownsCapture,
+        PublicStashSettingsStore? publicStashSettingsStore)
     {
         _capture = capture;
         _ownsCapture = ownsCapture;
         var legacyDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DeskTracker");
         var desktopDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DesktopClock");
-        var publicTabStore = new PublicStashSettingsStore(Path.Combine(legacyDirectory, "public-stash.json"));
+        var publicTabStore = publicStashSettingsStore ?? new PublicStashSettingsStore(
+            Path.Combine(legacyDirectory, "public-stash.json"));
         _settings = new TrackerSettingsService(
             new DesktopSettingsStore(Path.Combine(desktopDirectory, "settings.json")),
             publicTabStore);

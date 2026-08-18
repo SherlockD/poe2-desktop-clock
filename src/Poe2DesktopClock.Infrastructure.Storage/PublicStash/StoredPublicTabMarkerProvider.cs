@@ -10,9 +10,13 @@ public sealed class StoredPublicTabMarkerProvider : IPublicTabMarkerProvider
     private readonly PublicStashSettingsStore _store;
 
     public StoredPublicTabMarkerProvider()
+        : this(CreateStore())
     {
-        var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DeskTracker");
-        _store = new PublicStashSettingsStore(Path.Combine(directory, "public-stash.json"));
+    }
+
+    public StoredPublicTabMarkerProvider(PublicStashSettingsStore store)
+    {
+        _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     public IReadOnlyList<PublicTabMarker> GetMarkers()
@@ -22,5 +26,11 @@ public sealed class StoredPublicTabMarkerProvider : IPublicTabMarkerProvider
             ? stored.TabMarkers!
             : PublicTabMarkerCatalog.CreateDefaultMarkers();
         return markers.Select(marker => new PublicTabMarker(marker.Label, marker.TabName, marker.PriceAmount, marker.PriceCurrency)).ToArray();
+    }
+
+    private static PublicStashSettingsStore CreateStore()
+    {
+        var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DeskTracker");
+        return new PublicStashSettingsStore(Path.Combine(directory, "public-stash.json"));
     }
 }

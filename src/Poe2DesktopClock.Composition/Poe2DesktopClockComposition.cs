@@ -6,6 +6,7 @@ using Poe2DesktopClock.Infrastructure.Windows.Runtime;
 using Poe2DesktopClock.Infrastructure.Windows.Monitoring;
 using Poe2DesktopClock.Infrastructure.Storage.Snapshots;
 using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
+using Poe2DesktopClock.Infrastructure.Storage.Onboarding;
 using Poe2DeskTracker.Capture;
 using Poe2DeskTracker.Currency;
 using Poe2DeskTracker.Game;
@@ -38,21 +39,31 @@ public static class Poe2DesktopClockComposition
         services.AddHttpClient(PoeNinjaPriceClient.HttpClientName, client => ConfigurePoeApiClient(client, PoeNinjaBaseUri));
         services.AddSingleton<TradeApiClient>();
         services.AddSingleton<PoeNinjaPriceClient>();
+        services.AddSingleton(new PublicStashSettingsStore(Path.Combine(legacyDataDirectory, "public-stash.json")));
         services.AddSingleton<IPriceSnapshotProvider, PoeNinjaPriceSnapshotProvider>();
         services.AddSingleton<ICurrencyValuationReader, WindowsCurrencyValuationReader>();
         services.AddSingleton<ICurrencyChangeMonitor, WindowsCurrencyChangeMonitor>();
         services.AddSingleton<IGameStatusReader, WindowsGameStatusReader>();
         services.AddSingleton<IPublicTabsValuationReader, PublicTabsValuationReader>();
         services.AddSingleton<IPublicTabMarkerProvider, StoredPublicTabMarkerProvider>();
+        services.AddSingleton<IPublicTabsSetupTradeGateway, TradeApiPublicTabsSetupGateway>();
+        services.AddSingleton<IPublicTabsSetupUseCase, PublicTabsSetupUseCase>();
         services.AddSingleton(new PublicTabsSnapshotStore(Path.Combine(desktopDataDirectory, "public-tabs-snapshot.json")));
         services.AddSingleton<ILastClockSnapshotStore>(
             new LastClockSnapshotStore(Path.Combine(desktopDataDirectory, "last-clock-snapshot.json")));
+        services.AddSingleton<IInitialSetupStateStore>(
+            new InitialSetupStateStore(Path.Combine(desktopDataDirectory, "onboarding.json")));
         services.AddSingleton<IClockSnapshotComposer, ClockSnapshotComposer>();
         services.AddSingleton<ITrackerSnapshotPublisher, TrackerSnapshotPublisher>();
         services.AddSingleton<IDeviceSynchronizationUseCase, StubDeviceSynchronizationUseCase>();
         services.AddSingleton<DeviceSnapshotRelay>();
         services.AddSingleton<IGameSessionUseCase, GameSessionUseCase>();
-        services.AddSingleton<DesktopClockRuntime>();
+        services.AddSingleton<DesktopClockRuntime>(provider => new DesktopClockRuntime(
+            provider.GetRequiredService<PoeProcessLocator>(),
+            provider.GetRequiredService<WindowsGraphicsCaptureService>(),
+            provider.GetRequiredService<RegionStore>(),
+            provider.GetRequiredService<CurrencyLayoutStore>(),
+            provider.GetRequiredService<PublicStashSettingsStore>()));
         services.AddSingleton<ITrackerRefreshUseCase, RefreshTrackerUseCase>();
         services.AddSingleton<ITrackerMonitoringUseCase, CurrencyMonitoringUseCase>();
 

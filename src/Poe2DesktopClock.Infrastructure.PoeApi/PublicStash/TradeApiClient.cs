@@ -183,7 +183,8 @@ public sealed class TradeApiClient : ILeagueCatalog
                     Math.Max(1, result.Item?.StackSize ?? 1),
                     result.Listing?.Stash?.X,
                     result.Listing?.Stash?.Y,
-                    batch.MarkerLabel));
+                    batch.MarkerLabel,
+                    result.Listing?.Stash?.Id));
             }
         }
 
@@ -294,7 +295,7 @@ public sealed class TradeApiClient : ILeagueCatalog
 
     private sealed record TradeListing(TradeStash? Stash);
 
-    private sealed record TradeStash(string? Name, int? X, int? Y);
+    private sealed record TradeStash(string? Id, string? Name, int? X, int? Y);
 
     private sealed record TradeItem(string? Id, string? TypeLine, string? BaseType, long? StackSize);
 

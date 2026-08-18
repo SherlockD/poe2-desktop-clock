@@ -18,6 +18,10 @@
         <DataTemplate DataType="{x:Type viewModels:SettingsViewModel}">
             <views:SettingsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:InitialSetupViewModel}">
+            <views:InitialSetupView />
+        </DataTemplate>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <Style x:Key="NavigationButtonStyle" TargetType="{x:Type ToggleButton}">
             <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
             <Setter Property="Background" Value="Transparent" />
@@ -52,6 +56,10 @@
     </Window.Resources>
 
     <Grid>
+        <ContentControl Content="{Binding InitialSetup}"
+                        Visibility="{Binding IsInitialSetupActive, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <Grid Visibility="{Binding IsApplicationReady, Converter={StaticResource BooleanToVisibilityConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="250" />
             <ColumnDefinition Width="*" />
@@ -117,5 +125,6 @@
         </Border>
 
         <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+        </Grid>
     </Grid>
 </Window>

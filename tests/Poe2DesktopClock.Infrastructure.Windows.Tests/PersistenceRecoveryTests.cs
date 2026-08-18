@@ -1,3 +1,4 @@
+using System.IO;
 using Poe2DeskTracker.Currency;
 using Poe2DeskTracker.Regions;
 using Xunit;

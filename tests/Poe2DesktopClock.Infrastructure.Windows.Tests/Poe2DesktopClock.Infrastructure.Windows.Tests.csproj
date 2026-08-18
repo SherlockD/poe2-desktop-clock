@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Poe2DesktopClock.Application\Poe2DesktopClock.Application.csproj" />
+    <ProjectReference Include="..\..\src\Poe2DesktopClock.Composition\Poe2DesktopClock.Composition.csproj" />
+    <ProjectReference Include="..\..\src\Poe2DesktopClock.Desktop\Poe2DesktopClock.Desktop.csproj" />
     <ProjectReference Include="..\..\src\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj" />
   </ItemGroup>
 </Project>

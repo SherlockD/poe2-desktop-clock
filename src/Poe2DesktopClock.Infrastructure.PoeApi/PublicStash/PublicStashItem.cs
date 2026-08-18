@@ -7,4 +7,5 @@ public sealed record PublicStashItem(
     long StackSize,
     int? X,
     int? Y,
-    string MarkerLabel);
+    string MarkerLabel,
+    string? StashId = null);

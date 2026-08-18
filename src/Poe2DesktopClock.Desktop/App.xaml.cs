@@ -11,6 +11,7 @@ public partial class App : System.Windows.Application
 {
     private ITrackerStatusProvider? _statusProvider;
     private IServiceProvider? _services;
+    private Task? _runtimeInitializationTask;
     private bool _isShuttingDown;
 
     protected override void OnStartup(StartupEventArgs eventArgs)
@@ -21,11 +22,13 @@ public partial class App : System.Windows.Application
         services.AddSingleton<ITrackerStatusProvider, RuntimeTrackerStatusProvider>();
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<InitialSetupViewModel>();
         services.AddSingleton<MainViewModel>();
 
         _services = services.BuildServiceProvider();
         _statusProvider = _services.GetRequiredService<ITrackerStatusProvider>();
         var viewModel = _services.GetRequiredService<MainViewModel>();
+        viewModel.InitialSetupCompleted += OnInitialSetupCompleted;
         var mainWindow = new MainWindow(viewModel);
         MainWindow = mainWindow;
         mainWindow.Loaded += OnMainWindowLoaded;
@@ -37,13 +40,40 @@ public partial class App : System.Windows.Application
     {
         var mainWindow = (MainWindow)sender;
         var viewModel = (MainViewModel)mainWindow.DataContext;
-        // Loading saved settings is synchronous up to its first await; refresh
-        // the remote league list in parallel so session monitoring starts as
-        // close to game launch as possible.
+        var requiresInitialSetup = await viewModel.InitializeAsync();
+        if (!requiresInitialSetup)
+        {
+            await InitializeRuntimeAsync(viewModel, mainWindow, applyStartMinimized: true);
+        }
+    }
+
+    private async void OnInitialSetupCompleted(object? sender, EventArgs eventArgs)
+    {
+        if (sender is not MainViewModel viewModel || MainWindow is not MainWindow mainWindow)
+        {
+            return;
+        }
+
+        await InitializeRuntimeAsync(viewModel, mainWindow, applyStartMinimized: false);
+    }
+
+    private Task InitializeRuntimeAsync(
+        MainViewModel viewModel,
+        MainWindow mainWindow,
+        bool applyStartMinimized) =>
+        _runtimeInitializationTask ??= InitializeRuntimeCoreAsync(viewModel, mainWindow, applyStartMinimized);
+
+    private async Task InitializeRuntimeCoreAsync(
+        MainViewModel viewModel,
+        MainWindow mainWindow,
+        bool applyStartMinimized)
+    {
+        // Loading saved settings applies local state before its first await;
+        // remote league loading may proceed while the tracker starts.
         var settingsLoadTask = viewModel.Settings.LoadAsync();
         await _statusProvider!.InitializeAsync();
         await settingsLoadTask;
-        if (viewModel.Settings.StartMinimized)
+        if (applyStartMinimized && viewModel.Settings.StartMinimized)
         {
             mainWindow.WindowState = WindowState.Minimized;
         }
@@ -56,10 +86,27 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        if (sender is MainWindow setupWindow &&
+            setupWindow.DataContext is MainViewModel { IsInitialSetupActive: true } &&
+            MessageBox.Show(
+                "Настройка ещё не завершена. Закрыть приложение? Прогресс первых шагов сохранится.",
+                "Первоначальная настройка",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            eventArgs.Cancel = true;
+            return;
+        }
+
         eventArgs.Cancel = true;
         _isShuttingDown = true;
         try
         {
+            if (sender is MainWindow { DataContext: MainViewModel viewModel })
+            {
+                viewModel.InitialSetup.CancelPendingOperations();
+            }
+
             if (_services is IAsyncDisposable services)
             {
                 await services.DisposeAsync();

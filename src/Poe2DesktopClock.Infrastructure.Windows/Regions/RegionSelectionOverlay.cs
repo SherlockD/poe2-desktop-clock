@@ -118,6 +118,11 @@ internal sealed class RegionSelectionOverlay : Form
         {
             UpdateSelection(CreateRectangle(start, eventArgs.Location));
             _selectionStart = null;
+
+            if (HasValidSelection())
+            {
+                SaveSelectionAndClose();
+            }
         }
     }
 
@@ -129,25 +134,13 @@ internal sealed class RegionSelectionOverlay : Form
             return;
         }
 
-        if (eventArgs.KeyCode == Keys.Enter && _selection.Width >= 4 && _selection.Height >= 4)
-        {
-            SelectedRegion = new RegionDefinition(
-                _regionName,
-                (double)_selection.Left / ClientSize.Width,
-                (double)_selection.Top / ClientSize.Height,
-                (double)_selection.Width / ClientSize.Width,
-                (double)_selection.Height / ClientSize.Height,
-                ClientSize.Width,
-                ClientSize.Height);
-            Close();
-        }
     }
 
     protected override void OnPaint(PaintEventArgs eventArgs)
     {
         base.OnPaint(eventArgs);
 
-        const string instructions = "Drag to select a region · Enter saves · Esc cancels · Right-click resets";
+        const string instructions = "Drag to select a region · Selection saves immediately · Esc cancels · Right-click resets";
         using var instructionBackground = new SolidBrush(Color.FromArgb(180, Color.Black));
         eventArgs.Graphics.FillRectangle(instructionBackground, 0, 0, ClientSize.Width, 38);
         TextRenderer.DrawText(
@@ -274,5 +267,20 @@ internal sealed class RegionSelectionOverlay : Form
             Math.Min(start.Y, end.Y),
             Math.Max(start.X, end.X),
             Math.Max(start.Y, end.Y));
+    }
+
+    private bool HasValidSelection() => _selection.Width >= 4 && _selection.Height >= 4;
+
+    private void SaveSelectionAndClose()
+    {
+        SelectedRegion = new RegionDefinition(
+            _regionName,
+            (double)_selection.Left / ClientSize.Width,
+            (double)_selection.Top / ClientSize.Height,
+            (double)_selection.Width / ClientSize.Width,
+            (double)_selection.Height / ClientSize.Height,
+            ClientSize.Width,
+            ClientSize.Height);
+        Close();
     }
 }

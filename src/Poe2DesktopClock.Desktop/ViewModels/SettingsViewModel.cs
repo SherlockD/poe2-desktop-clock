@@ -3,7 +3,6 @@ using System.Windows.Input;
 using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Infrastructure;
-using Poe2DesktopClock.Domain.Tracking;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
@@ -17,6 +16,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private readonly ILeagueCatalog _leagueCatalog;
     private readonly ICurrencySetupUseCase _currencySetup;
     private readonly ITrackerMonitoringUseCase _monitoring;
+    private readonly IPublicTabsSetupUseCase _publicTabsSetup;
     private string _accountName = string.Empty;
     private string _selectedLeague = string.Empty;
     private bool _isCurrencyTrackingEnabled = true;
@@ -28,15 +28,17 @@ public sealed class SettingsViewModel : ViewModelBase
         ITrackerSettingsUseCase settings,
         ILeagueCatalog leagueCatalog,
         ICurrencySetupUseCase currencySetup,
-        ITrackerMonitoringUseCase monitoring)
+        ITrackerMonitoringUseCase monitoring,
+        IPublicTabsSetupUseCase publicTabsSetup)
     {
         _settings = settings;
         _leagueCatalog = leagueCatalog;
         _currencySetup = currencySetup;
         _monitoring = monitoring;
+        _publicTabsSetup = publicTabsSetup;
         CaptureFrequencies = new ObservableCollection<int>([2, 3]);
         Leagues = [];
-        PublicTabs = new ObservableCollection<PublicTabMarkerViewModel>(CreateDefaultPublicTabs());
+        PublicTabs = [];
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         RefreshLeaguesCommand = new AsyncRelayCommand(RefreshLeaguesAsync);
         SelectCurrencyAreaCommand = new AsyncRelayCommand(SelectCurrencyAreaAsync);
@@ -96,6 +98,7 @@ public sealed class SettingsViewModel : ViewModelBase
     public async Task LoadAsync()
     {
         ApplySettings(_settings.GetSettings());
+        LoadConfiguredPublicTabs();
         await RefreshLeaguesAsync();
     }
 
@@ -189,9 +192,12 @@ public sealed class SettingsViewModel : ViewModelBase
         StartMinimized = settings.StartMinimized;
     }
 
-    private static IEnumerable<PublicTabMarkerViewModel> CreateDefaultPublicTabs()
+    private void LoadConfiguredPublicTabs()
     {
-        return PublicTabDefaults.Items
-            .Select(tab => new PublicTabMarkerViewModel(tab.Label, tab.RequiredTabName));
+        PublicTabs.Clear();
+        foreach (var tab in _publicTabsSetup.GetTabs().Where(tab => tab.IsSelected))
+        {
+            PublicTabs.Add(new PublicTabMarkerViewModel(tab.Label, tab.TabName));
+        }
     }
 }

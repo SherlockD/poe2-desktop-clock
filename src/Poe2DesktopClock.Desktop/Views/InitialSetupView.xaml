@@ -1,0 +1,195 @@
+<UserControl x:Class="Poe2DesktopClock.Desktop.Views.InitialSetupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource WindowBackgroundBrush}">
+        <Grid Margin="48,38,48,44" HorizontalAlignment="Center" MaxWidth="920">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="22" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="24" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Первоначальная настройка" FontSize="30" FontWeight="SemiBold" />
+                <TextBlock Text="Подготовим источники данных для часов. После последнего шага откроется мониторинг."
+                           Margin="0,8,0,0"
+                           Foreground="{StaticResource MutedTextBrush}"
+                           FontSize="15"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Grid Grid.Row="2" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                    <StackPanel>
+                        <TextBlock Text="1" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="Currency-вкладка" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding CurrencyStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                    <StackPanel>
+                        <TextBlock Text="2" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="Публичные вкладки" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding PublicTabsStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                    <StackPanel>
+                        <TextBlock Text="3" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="Подключение часов" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding DeviceStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="14" Padding="28">
+                <Grid>
+                    <Grid Visibility="{Binding IsCurrencyStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="Currency-вкладка" FontSize="22" FontWeight="SemiBold" />
+                            <TextBlock Text="Откройте Currency-вкладку в игре. Сначала обведите её целиком, затем проверьте найденные ячейки."
+                                       Margin="0,8,0,22"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap" />
+
+                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="1. Выберите область вкладки" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding CurrencyAreaStatus}" Margin="0,4,0,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Выбрать область" Command="{Binding SelectCurrencyAreaCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                </Grid>
+                            </Border>
+
+                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="2. Настройте ячейки" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding CurrencySlotsStatus}" Margin="0,4,0,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Настроить ячейки" Command="{Binding CalibrateCurrencyCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="{Binding Notice}" Margin="0,18,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
+                            <WrapPanel HorizontalAlignment="Right" Margin="0,25,0,0">
+                                <Button Content="Далее" Command="{Binding CurrencyNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Visibility="{Binding IsPublicTabsStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="Лига и публичные вкладки" FontSize="22" FontWeight="SemiBold" />
+                            <TextBlock Text="Укажите аккаунт и лигу, затем оставьте только вкладки, которые хотите учитывать. Синхронизация проверит каждую из них отдельно."
+                                       Margin="0,8,0,20"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap" />
+
+                            <Grid Margin="0,0,0,18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Имя аккаунта" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                                    <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}"
+                                             IsEnabled="{Binding IsNotSynchronizing}"
+                                             ToolTip="Например: SherlockDmt#3728" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Лига" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                                    <DockPanel LastChildFill="True">
+                                        <Button DockPanel.Dock="Right" Content="Обновить" Command="{Binding RefreshLeaguesCommand}" IsEnabled="{Binding IsNotSynchronizing}" Margin="10,0,0,0" />
+                                        <ComboBox ItemsSource="{Binding Leagues}" SelectedItem="{Binding SelectedLeague}" IsEnabled="{Binding IsNotSynchronizing}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Каждая выбранная вкладка должна быть публичной, иметь указанное имя и содержать хотя бы один предмет с маркерной ценой."
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,10" />
+                            <ItemsControl ItemsSource="{Binding PublicTabs}" IsEnabled="{Binding IsNotSynchronizing}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="8" Padding="12" Margin="0,3">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="145" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="185" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsIncluded}" VerticalAlignment="Top" Margin="0,1,12,0" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Label}" FontWeight="SemiBold" VerticalAlignment="Top" />
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="{Binding RequiredName}" FontFamily="Consolas" Foreground="{StaticResource AccentBrush}" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Detail}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="3" Text="{Binding Status}" Foreground="{StaticResource WarningBrush}" VerticalAlignment="Top" TextAlignment="Right" TextWrapping="Wrap" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="{Binding PublicTabsSummary}" Margin="0,16,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Notice}" Margin="0,8,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
+                            <WrapPanel HorizontalAlignment="Right" Margin="0,22,0,0">
+                                <Button Content="Назад" Command="{Binding PublicTabsBackCommand}" Margin="0,0,10,0" />
+                                <Button Content="Синхронизировать" Command="{Binding SynchronizePublicTabsCommand}" Margin="0,0,10,0" />
+                                <Button Content="Отменить" Command="{Binding CancelSynchronizationCommand}" IsEnabled="{Binding IsSynchronizing}" Margin="0,0,10,0" />
+                                <Button Content="Далее" Command="{Binding PublicTabsNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Visibility="{Binding IsDeviceStep, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="Подключение часов" FontSize="22" FontWeight="SemiBold" />
+                            <TextBlock Text="⌚" FontSize="52" HorizontalAlignment="Center" Margin="0,22,0,10" Foreground="{StaticResource AccentBrush}" />
+                            <TextBlock Text="Подключение физических часов появится в одной из следующих версий. Источники данных уже настроены."
+                                       TextAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,22" />
+                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16">
+                                <TextBlock Text="{Binding DeviceSummary}" TextWrapping="Wrap" />
+                            </Border>
+                            <TextBlock Text="{Binding Notice}" Margin="0,18,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
+                            <WrapPanel HorizontalAlignment="Right" Margin="0,25,0,0">
+                                <Button Content="Назад" Command="{Binding DeviceBackCommand}" Margin="0,0,10,0" />
+                                <Button Content="Завершить настройку" Command="{Binding FinishCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

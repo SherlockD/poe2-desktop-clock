@@ -202,7 +202,7 @@ public sealed class PublicTabsValuationReader : IPublicTabsValuationReader
                 .ThenBy(item => item.TabName, StringComparer.Ordinal)
                 .ThenBy(item => item.X)
                 .ThenBy(item => item.Y)
-                .Select(item => string.Join('\u001f', marker.Label, item.Id, item.TabName, item.ItemName, item.StackSize, item.X, item.Y))));
+                .Select(item => string.Join('\u001f', marker.Label, item.Id, item.StashId, item.TabName, item.ItemName, item.StackSize, item.X, item.Y))));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 

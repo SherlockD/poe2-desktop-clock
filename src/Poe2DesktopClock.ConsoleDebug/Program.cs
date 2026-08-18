@@ -753,7 +753,7 @@ static async Task SetupCurrencyRegionAsync(
         return;
     }
 
-    Console.WriteLine("Opening selector. Drag to select; Enter saves; Esc cancels.");
+    Console.WriteLine("Opening selector. Drag to select; selection saves immediately; Esc cancels.");
     RegionDefinition? region;
     try
     {
