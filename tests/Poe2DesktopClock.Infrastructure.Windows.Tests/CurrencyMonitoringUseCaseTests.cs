@@ -79,6 +79,20 @@ public sealed class CurrencyMonitoringUseCaseTests
         await useCase.StopCurrencyMonitoringAsync();
     }
 
+    [Fact]
+    public async Task Dispose_is_idempotent_after_monitoring_has_stopped()
+    {
+        var useCase = new CurrencyMonitoringUseCase(
+            new TestSettingsUseCase(),
+            new ControlledRefreshUseCase(),
+            new TestCurrencyChangeMonitor(),
+            new TestGameStatusReader());
+
+        await useCase.DisposeAsync();
+        await useCase.DisposeAsync();
+        await useCase.StopCurrencyMonitoringAsync();
+    }
+
     private static CurrencyTabFrame CreateFrame(byte marker) =>
         new(new byte[] { marker }, DateTimeOffset.UtcNow);
 

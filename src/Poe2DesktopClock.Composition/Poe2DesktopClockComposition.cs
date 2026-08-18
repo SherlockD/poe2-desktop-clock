@@ -53,12 +53,10 @@ public static class Poe2DesktopClockComposition
         services.AddSingleton<DeviceSnapshotRelay>();
         services.AddSingleton<IGameSessionUseCase, GameSessionUseCase>();
         services.AddSingleton<DesktopClockRuntime>();
-        services.AddSingleton<RefreshTrackerUseCase>();
-        services.AddSingleton<CurrencyMonitoringUseCase>();
+        services.AddSingleton<ITrackerRefreshUseCase, RefreshTrackerUseCase>();
+        services.AddSingleton<ITrackerMonitoringUseCase, CurrencyMonitoringUseCase>();
 
         services.AddSingleton<ITrackerSettingsUseCase>(provider => provider.GetRequiredService<DesktopClockRuntime>());
-        services.AddSingleton<ITrackerRefreshUseCase>(provider => provider.GetRequiredService<RefreshTrackerUseCase>());
-        services.AddSingleton<ITrackerMonitoringUseCase>(provider => provider.GetRequiredService<CurrencyMonitoringUseCase>());
         services.AddSingleton<ICurrencySetupUseCase>(provider => provider.GetRequiredService<DesktopClockRuntime>());
         services.AddSingleton<ILeagueCatalog>(provider => provider.GetRequiredService<TradeApiClient>());
         return services;

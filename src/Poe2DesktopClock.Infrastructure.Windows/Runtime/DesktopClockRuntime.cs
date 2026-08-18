@@ -19,6 +19,7 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
     private readonly bool _ownsCapture;
     private readonly CurrencySetupService _currencySetup;
     private readonly TrackerSettingsService _settings;
+    private int _disposeStarted;
 
     public DesktopClockRuntime()
         : this(
@@ -81,7 +82,7 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
 
     public ValueTask DisposeAsync()
     {
-        if (_ownsCapture)
+        if (Interlocked.Exchange(ref _disposeStarted, 1) == 0 && _ownsCapture)
         {
             _capture.Dispose();
         }

@@ -20,6 +20,7 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
     private CurrencyValuation? _latestCurrency;
     private PublicTabsValuation? _latestPublicTabs;
     private ClockSnapshot? _lastSnapshot;
+    private int _disposeStarted;
 
     public RefreshTrackerUseCase(
         ITrackerSettingsUseCase settings,
@@ -90,6 +91,11 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
 
     public ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+        {
+            return ValueTask.CompletedTask;
+        }
+
         _gate.Dispose();
         return ValueTask.CompletedTask;
     }

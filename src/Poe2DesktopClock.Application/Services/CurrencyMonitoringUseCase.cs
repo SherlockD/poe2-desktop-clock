@@ -18,6 +18,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     private Task? _automaticRefreshTask;
     private Task? _currencyRefreshTask;
     private CurrencyTabFrame? _pendingCurrencyFrame;
+    private int _disposeStarted;
 
     public CurrencyMonitoringUseCase(
         ITrackerSettingsUseCase settings,
@@ -39,9 +40,11 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
 
     public async Task StartCurrencyMonitoringAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
+            ThrowIfDisposed();
             lock (_lifecycleSync)
             {
                 if (_cancellation is not null)
@@ -65,7 +68,33 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
         }
     }
 
-    public async Task StopCurrencyMonitoringAsync()
+    public Task StopCurrencyMonitoringAsync()
+    {
+        if (IsDisposed)
+        {
+            return Task.CompletedTask;
+        }
+
+        return StopCurrencyMonitoringCoreAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+        {
+            return;
+        }
+
+        await StopCurrencyMonitoringCoreAsync();
+        _monitor.CurrencyChanged -= OnCurrencyChanged;
+        _monitor.StatusChanged -= OnStatusChanged;
+
+        // The public stop operation can already be waiting for this gate when
+        // disposal begins. It is intentionally left for the GC rather than
+        // racing such a caller with SemaphoreSlim.Dispose().
+    }
+
+    private async Task StopCurrencyMonitoringCoreAsync()
     {
         await _lifecycleGate.WaitAsync();
         try
@@ -114,14 +143,6 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
         {
             _lifecycleGate.Release();
         }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await StopCurrencyMonitoringAsync();
-        _monitor.CurrencyChanged -= OnCurrencyChanged;
-        _monitor.StatusChanged -= OnStatusChanged;
-        _lifecycleGate.Dispose();
     }
 
     private void OnStatusChanged(object? sender, ClockMonitorStatus status) =>
@@ -225,6 +246,16 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
         catch
         {
             MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Error);
+        }
+    }
+
+    private bool IsDisposed => Volatile.Read(ref _disposeStarted) != 0;
+
+    private void ThrowIfDisposed()
+    {
+        if (IsDisposed)
+        {
+            throw new ObjectDisposedException(nameof(CurrencyMonitoringUseCase));
         }
     }
 }
