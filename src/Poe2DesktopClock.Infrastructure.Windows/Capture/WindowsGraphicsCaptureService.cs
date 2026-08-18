@@ -20,6 +20,7 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
 {
     private readonly D3D11Device _device = null!;
     private readonly ID3D11DeviceContext _context = null!;
+    private readonly CaptureOperationQueue _operations = new();
 
     public WindowsGraphicsCaptureService()
     {
@@ -34,18 +35,42 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
         result.CheckError();
     }
 
-    public async Task<CaptureResult> SaveSingleFrameAsync(nint windowHandle, string outputPath, TimeSpan timeout)
+    public Task<CaptureResult> SaveSingleFrameAsync(
+        nint windowHandle,
+        string outputPath,
+        TimeSpan timeout,
+        CancellationToken cancellationToken = default) =>
+        SaveFrameAsync(windowHandle, outputPath, timeout, null, cancellationToken);
+
+    public Task<CaptureResult> SaveRegionAsync(
+        nint windowHandle,
+        RegionDefinition region,
+        string outputPath,
+        TimeSpan timeout,
+        CancellationToken cancellationToken = default) =>
+        SaveFrameAsync(windowHandle, outputPath, timeout, region, cancellationToken);
+
+    private async Task<CaptureResult> SaveFrameAsync(
+        nint windowHandle,
+        string outputPath,
+        TimeSpan timeout,
+        RegionDefinition? region,
+        CancellationToken cancellationToken)
     {
-        return await SaveFrameAsync(windowHandle, outputPath, timeout, null);
+        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCancellation.CancelAfter(timeout);
+        return await _operations.RunAsync(
+            token => SaveFrameCoreAsync(windowHandle, outputPath, region, token),
+            timeoutCancellation.Token);
     }
 
-    public async Task<CaptureResult> SaveRegionAsync(nint windowHandle, RegionDefinition region, string outputPath, TimeSpan timeout)
+    private async Task<CaptureResult> SaveFrameCoreAsync(
+        nint windowHandle,
+        string outputPath,
+        RegionDefinition? region,
+        CancellationToken cancellationToken)
     {
-        return await SaveFrameAsync(windowHandle, outputPath, timeout, region);
-    }
-
-    private async Task<CaptureResult> SaveFrameAsync(nint windowHandle, string outputPath, TimeSpan timeout, RegionDefinition? region)
-    {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!GraphicsCaptureSession.IsSupported())
         {
             throw new PlatformNotSupportedException("Windows Graphics Capture is unavailable. Windows 10 version 1903 or newer is required.");
@@ -68,7 +93,6 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
         // The cursor is not part of the game's UI and its bright pixels can be
         // mistaken for a stack count when it rests over a currency slot.
         session.IsCursorCaptureEnabled = false;
-        using var cancellationSource = new CancellationTokenSource(timeout);
         var frameReady = new TaskCompletionSource<Direct3D11CaptureFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
         var started = Stopwatch.GetTimestamp();
 
@@ -91,7 +115,7 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
         try
         {
             session.StartCapture();
-            using var frame = await frameReady.Task.WaitAsync(cancellationSource.Token);
+            using var frame = await frameReady.Task.WaitAsync(cancellationToken);
             var contentSize = frame.ContentSize;
             var outputRegion = region is null
                 ? PixelRegion.Full(contentSize.Width, contentSize.Height)
@@ -151,6 +175,7 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
 
     public void Dispose()
     {
+        _operations.Dispose();
         _context.Dispose();
         _device.Dispose();
     }

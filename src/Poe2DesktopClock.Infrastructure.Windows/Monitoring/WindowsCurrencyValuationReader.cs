@@ -48,7 +48,12 @@ public sealed class WindowsCurrencyValuationReader : ICurrencyValuationReader
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(_previewPath)!);
-        await _capture.SaveRegionAsync(gameWindow.Handle, region, _previewPath, TimeSpan.FromSeconds(5));
+        await _capture.SaveRegionAsync(
+            gameWindow.Handle,
+            region,
+            _previewPath,
+            TimeSpan.FromSeconds(5),
+            cancellationToken);
         var amounts = await CurrencyAmountScanner.ScanAsync(_previewPath, layout);
 
         var totalDivines = 0m;

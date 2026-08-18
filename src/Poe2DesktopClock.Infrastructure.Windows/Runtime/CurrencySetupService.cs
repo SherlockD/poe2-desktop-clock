@@ -83,7 +83,12 @@ internal sealed class CurrencySetupService
             ?? throw new InvalidOperationException("Path of Exile 2 не найден или свёрнут.");
 
         Directory.CreateDirectory(Path.GetDirectoryName(_previewPath)!);
-        await _captureService.SaveRegionAsync(gameWindow.Handle, prerequisites.Region, _previewPath, TimeSpan.FromSeconds(5));
+        await _captureService.SaveRegionAsync(
+            gameWindow.Handle,
+            prerequisites.Region,
+            _previewPath,
+            TimeSpan.FromSeconds(5),
+            cancellationToken);
         var detectedSlots = CurrencyTabProfile.Apply(CurrencyGridDetector.Detect(_previewPath));
         if (detectedSlots.Count == 0)
         {

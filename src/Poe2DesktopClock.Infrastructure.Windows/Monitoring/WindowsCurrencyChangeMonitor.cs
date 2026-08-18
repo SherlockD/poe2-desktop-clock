@@ -65,7 +65,12 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_liveFramePath)!);
-                await _capture.SaveRegionAsync(gameWindow.Handle, region, _liveFramePath, TimeSpan.FromSeconds(2));
+                await _capture.SaveRegionAsync(
+                    gameWindow.Handle,
+                    region,
+                    _liveFramePath,
+                    TimeSpan.FromSeconds(2),
+                    cancellationToken);
                 var fingerprint = CurrencyFrameFingerprint.Create(_liveFramePath, layout);
                 var changed = !string.Equals(fingerprint, lastFingerprint, StringComparison.Ordinal);
                 var now = DateTimeOffset.UtcNow;
