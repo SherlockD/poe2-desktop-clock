@@ -8,7 +8,10 @@ namespace Poe2DesktopClock.Desktop.ViewModels;
 public sealed class DashboardViewModel : ViewModelBase
 {
     private readonly ITrackerStatusProvider _statusProvider;
+    private readonly object _pendingStatusSync = new();
     private TrackerStatusSnapshot _status;
+    private TrackerStatusSnapshot? _pendingStatus;
+    private bool _statusUpdateScheduled;
 
     public DashboardViewModel(ITrackerStatusProvider statusProvider)
     {
@@ -117,7 +120,36 @@ public sealed class DashboardViewModel : ViewModelBase
             return;
         }
 
-        dispatcher.BeginInvoke(() => UpdateStatus(status));
+        lock (_pendingStatusSync)
+        {
+            _pendingStatus = status;
+            if (_statusUpdateScheduled)
+            {
+                return;
+            }
+
+            _statusUpdateScheduled = true;
+        }
+
+        _ = dispatcher.BeginInvoke(
+            new Action(ApplyPendingStatus),
+            System.Windows.Threading.DispatcherPriority.Normal);
+    }
+
+    private void ApplyPendingStatus()
+    {
+        TrackerStatusSnapshot? status;
+        lock (_pendingStatusSync)
+        {
+            status = _pendingStatus;
+            _pendingStatus = null;
+            _statusUpdateScheduled = false;
+        }
+
+        if (status is not null)
+        {
+            UpdateStatus(status);
+        }
     }
 
     private void UpdateStatus(TrackerStatusSnapshot status)

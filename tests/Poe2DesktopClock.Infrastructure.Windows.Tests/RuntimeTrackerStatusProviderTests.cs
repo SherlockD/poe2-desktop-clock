@@ -46,6 +46,35 @@ public sealed class RuntimeTrackerStatusProviderTests
         Assert.Equal(combined, store.LastSnapshot);
     }
 
+    [Fact]
+    public async Task Repeated_monitor_status_does_not_enqueue_redundant_frontend_updates()
+    {
+        var currency = new TestCurrencyRefreshUseCase();
+        var publicTabs = new TestPublicTabsRefreshUseCase();
+        var monitoring = new TestMonitoringUseCase();
+        var store = new TestLastClockSnapshotStore();
+        var publisher = new TrackerSnapshotPublisher();
+        var device = new StubDeviceSynchronizationUseCase();
+        await using var relay = new DeviceSnapshotRelay(publisher, device);
+        await using var provider = new RuntimeTrackerStatusProvider(
+            currency,
+            publicTabs,
+            monitoring,
+            new GameSessionUseCase(store),
+            device,
+            store,
+            relay,
+            new ClockSnapshotComposer(),
+            publisher);
+        var notifications = 0;
+        provider.StatusChanged += (_, _) => notifications++;
+
+        monitoring.RaiseStatus(ClockMonitorStatus.Tracking);
+        monitoring.RaiseStatus(ClockMonitorStatus.Tracking);
+
+        Assert.Equal(1, notifications);
+    }
+
     private sealed class TestCurrencyRefreshUseCase : ICurrencyRefreshUseCase
     {
         public event EventHandler<CurrencyRefreshResult>? Refreshed;
@@ -72,11 +101,7 @@ public sealed class RuntimeTrackerStatusProviderTests
 
     private sealed class TestMonitoringUseCase : ITrackerMonitoringUseCase
     {
-        public event EventHandler<ClockMonitorStatus>? MonitorStatusChanged
-        {
-            add { }
-            remove { }
-        }
+        public event EventHandler<ClockMonitorStatus>? MonitorStatusChanged;
 
         public GameStatus GetGameStatus() => new(false, string.Empty);
 
@@ -84,6 +109,9 @@ public sealed class RuntimeTrackerStatusProviderTests
             Task.CompletedTask;
 
         public Task StopCurrencyMonitoringAsync() => Task.CompletedTask;
+
+        public void RaiseStatus(ClockMonitorStatus status) =>
+            MonitorStatusChanged?.Invoke(this, status);
     }
 
     private sealed class TestLastClockSnapshotStore : ILastClockSnapshotStore

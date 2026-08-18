@@ -205,12 +205,20 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
 
     private void OnMonitorStatusChanged(object? sender, ClockMonitorStatus status)
     {
+        var changed = false;
         lock (_stateSync)
         {
-            _monitorStatus = status;
+            if (_monitorStatus != status)
+            {
+                _monitorStatus = status;
+                changed = true;
+            }
         }
 
-        PublishCurrent();
+        if (changed)
+        {
+            PublishCurrent();
+        }
     }
 
     private void OnDeviceSynchronizationStateChanged(object? sender, DeviceSynchronizationState state)
