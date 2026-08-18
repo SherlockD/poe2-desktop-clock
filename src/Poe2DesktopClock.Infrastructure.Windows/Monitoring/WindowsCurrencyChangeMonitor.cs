@@ -1,4 +1,5 @@
 using Poe2DesktopClock.Application.Interfaces;
+using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DeskTracker.Capture;
 using Poe2DeskTracker.Currency;
@@ -17,15 +18,16 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
     private readonly CurrencyLayoutStore _layouts;
     private readonly string _liveFramePath;
 
-    public WindowsCurrencyChangeMonitor(PoeProcessLocator processLocator, WindowsGraphicsCaptureService capture)
+    public WindowsCurrencyChangeMonitor(
+        PoeProcessLocator processLocator,
+        WindowsGraphicsCaptureService capture,
+        RegionStore regions,
+        CurrencyLayoutStore layouts)
     {
         _processLocator = processLocator;
         _capture = capture;
-        var legacyDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Poe2DeskTracker");
-        _regions = new RegionStore(Path.Combine(legacyDirectory, "regions.json"));
-        _layouts = new CurrencyLayoutStore(Path.Combine(legacyDirectory, "currency-layouts.json"));
+        _regions = regions;
+        _layouts = layouts;
         _liveFramePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Poe2DesktopClock",
@@ -33,7 +35,7 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
             "currency-live.png");
     }
 
-    public event EventHandler? CurrencyChanged;
+    public event EventHandler<CurrencyTabChangedEventArgs>? CurrencyChanged;
 
     public event EventHandler<ClockMonitorStatus>? StatusChanged;
 
@@ -71,6 +73,7 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
                     _liveFramePath,
                     TimeSpan.FromSeconds(2),
                     cancellationToken);
+                var capturedAt = DateTimeOffset.UtcNow;
                 var fingerprint = CurrencyFrameFingerprint.Create(_liveFramePath, layout);
                 var changed = !string.Equals(fingerprint, lastFingerprint, StringComparison.Ordinal);
                 var now = DateTimeOffset.UtcNow;
@@ -89,7 +92,10 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
                         StatusChanged?.Invoke(this, ClockMonitorStatus.Tracking);
                         if (changed)
                         {
-                            CurrencyChanged?.Invoke(this, EventArgs.Empty);
+                            var pngBytes = await File.ReadAllBytesAsync(_liveFramePath, cancellationToken);
+                            CurrencyChanged?.Invoke(
+                                this,
+                                new CurrencyTabChangedEventArgs(new CurrencyTabFrame(pngBytes, capturedAt)));
                         }
                     }
                 }

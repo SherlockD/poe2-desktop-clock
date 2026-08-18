@@ -6,9 +6,11 @@ using Poe2DesktopClock.Infrastructure.Windows.Runtime;
 using Poe2DesktopClock.Infrastructure.Windows.Monitoring;
 using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
 using Poe2DeskTracker.Capture;
+using Poe2DeskTracker.Currency;
 using Poe2DeskTracker.Game;
 using Poe2DeskTracker.Pricing;
 using Poe2DeskTracker.PublicStash;
+using Poe2DeskTracker.Regions;
 
 namespace Poe2DesktopClock.Composition;
 
@@ -23,9 +25,14 @@ public static class Poe2DesktopClockComposition
         var desktopDataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Poe2DesktopClock");
+        var legacyDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Poe2DeskTracker");
 
         services.AddSingleton<PoeProcessLocator>();
         services.AddSingleton<WindowsGraphicsCaptureService>();
+        services.AddSingleton(new RegionStore(Path.Combine(legacyDataDirectory, "regions.json")));
+        services.AddSingleton(new CurrencyLayoutStore(Path.Combine(legacyDataDirectory, "currency-layouts.json")));
         services.AddHttpClient(TradeApiClient.HttpClientName, client => ConfigurePoeApiClient(client, TradeApiBaseUri));
         services.AddHttpClient(PoeNinjaPriceClient.HttpClientName, client => ConfigurePoeApiClient(client, PoeNinjaBaseUri));
         services.AddSingleton<TradeApiClient>();

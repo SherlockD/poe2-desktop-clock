@@ -13,17 +13,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0">
-                <StackPanel>
-                    <TextBlock Text="Обзор" FontSize="30" FontWeight="SemiBold" />
-                    <TextBlock Text="Стоимость отслеживаемого инвентаря" Margin="0,7,0,0" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
-                </StackPanel>
-                <Button Content="Обновить данные"
-                        Command="{Binding RefreshCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center" />
-            </Grid>
+            <StackPanel Grid.Row="0">
+                <TextBlock Text="Обзор" FontSize="30" FontWeight="SemiBold" />
+                <TextBlock Text="Стоимость отслеживаемого инвентаря" Margin="0,7,0,0" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
+            </StackPanel>
 
             <Border Grid.Row="2" Background="#0B1220" BorderBrush="#42617C" BorderThickness="1" CornerRadius="22" Padding="36,30">
                 <Grid>

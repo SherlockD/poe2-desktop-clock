@@ -9,6 +9,4 @@ public interface ITrackerStatusProvider
     TrackerStatusSnapshot GetCurrent();
 
     Task InitializeAsync();
-
-    Task RefreshAsync();
 }

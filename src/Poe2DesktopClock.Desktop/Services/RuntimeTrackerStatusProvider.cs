@@ -13,7 +13,6 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
     private readonly ITrackerMonitoringUseCase _monitoring;
     private ClockSnapshot? _clockSnapshot;
     private ClockMonitorStatus _monitorStatus = ClockMonitorStatus.Stopped;
-    private string? _lastError;
 
     public RuntimeTrackerStatusProvider(
         ITrackerRefreshUseCase refresh,
@@ -36,41 +35,14 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
             snapshot?.CurrencyUpdatedAt,
             snapshot?.PublicTabsUpdatedAt,
             snapshot?.PricesUpdatedAt,
-            _lastError ?? FormatCurrencyStatus(gameStatus),
+            FormatCurrencyStatus(gameStatus),
             snapshot?.RussianSummary ?? "Публичные вкладки ещё не были обновлены.",
             snapshot?.IsComplete ?? false);
     }
 
     public async Task InitializeAsync()
     {
-        try
-        {
-            _clockSnapshot = await _refresh.RefreshAsync(refreshPublicTabs: false);
-        }
-        catch (Exception exception)
-        {
-            _lastError = $"Не удалось обновить данные: {exception.Message}";
-        }
-
-        // Start the automatic loop even if the first price request failed; it
-        // will retry on the next scheduled public-tab check.
         await _monitoring.StartCurrencyMonitoringAsync();
-
-        PublishCurrent();
-    }
-
-    public async Task RefreshAsync()
-    {
-        try
-        {
-            _lastError = null;
-            _clockSnapshot = await _refresh.RefreshAsync(refreshPublicTabs: true);
-        }
-        catch (Exception exception)
-        {
-            _lastError = $"Не удалось обновить данные: {exception.Message}";
-        }
-
         PublishCurrent();
     }
 

@@ -21,23 +21,40 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
     private readonly TrackerSettingsService _settings;
 
     public DesktopClockRuntime()
-        : this(new PoeProcessLocator(), new WindowsGraphicsCaptureService(), ownsCapture: true)
+        : this(
+            new PoeProcessLocator(),
+            new WindowsGraphicsCaptureService(),
+            CreateRegionStore(),
+            CreateLayoutStore(),
+            ownsCapture: true)
     {
     }
 
     public DesktopClockRuntime(PoeProcessLocator processLocator, WindowsGraphicsCaptureService capture)
-        : this(processLocator, capture, ownsCapture: false)
+        : this(processLocator, capture, CreateRegionStore(), CreateLayoutStore(), ownsCapture: false)
     {
     }
 
-    private DesktopClockRuntime(PoeProcessLocator processLocator, WindowsGraphicsCaptureService capture, bool ownsCapture)
+    public DesktopClockRuntime(
+        PoeProcessLocator processLocator,
+        WindowsGraphicsCaptureService capture,
+        RegionStore regionStore,
+        CurrencyLayoutStore layoutStore)
+        : this(processLocator, capture, regionStore, layoutStore, ownsCapture: false)
+    {
+    }
+
+    private DesktopClockRuntime(
+        PoeProcessLocator processLocator,
+        WindowsGraphicsCaptureService capture,
+        RegionStore regionStore,
+        CurrencyLayoutStore layoutStore,
+        bool ownsCapture)
     {
         _capture = capture;
         _ownsCapture = ownsCapture;
         var legacyDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DeskTracker");
         var desktopDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Poe2DesktopClock");
-        var regionStore = new RegionStore(Path.Combine(legacyDirectory, "regions.json"));
-        var layoutStore = new CurrencyLayoutStore(Path.Combine(legacyDirectory, "currency-layouts.json"));
         var publicTabStore = new PublicStashSettingsStore(Path.Combine(legacyDirectory, "public-stash.json"));
         _settings = new TrackerSettingsService(
             new DesktopSettingsStore(Path.Combine(desktopDirectory, "settings.json")),
@@ -71,4 +88,16 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
 
         return ValueTask.CompletedTask;
     }
+
+    private static RegionStore CreateRegionStore() =>
+        new(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Poe2DeskTracker",
+            "regions.json"));
+
+    private static CurrencyLayoutStore CreateLayoutStore() =>
+        new(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Poe2DeskTracker",
+            "currency-layouts.json"));
 }

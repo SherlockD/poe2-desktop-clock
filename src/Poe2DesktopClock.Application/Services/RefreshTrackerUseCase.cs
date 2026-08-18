@@ -41,8 +41,31 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
         remove => _publisher.ClockSnapshotChanged -= value;
     }
 
-    public async Task<ClockSnapshot> RefreshAsync(
-        bool refreshPublicTabs,
+    public async Task<ClockSnapshot> RefreshCurrencyAsync(
+        CurrencyTabFrame frame,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(frame);
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            var settings = _settings.GetSettings();
+            var prices = await GetPricesAsync(settings, progress: null, cancellationToken);
+            var currency = await _currency.ReadAsync(frame, prices, cancellationToken);
+            if (currency is not null)
+            {
+                _latestCurrency = currency;
+            }
+
+            return PublishSnapshot(prices?.RetrievedAt);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<ClockSnapshot> RefreshPublicTabsAsync(
         IProgress<TrackerProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
@@ -51,20 +74,8 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
         {
             var settings = _settings.GetSettings();
             var prices = await GetPricesAsync(settings, progress, cancellationToken);
-            var currency = await _currency.ReadAsync(prices, cancellationToken);
-            if (currency is not null)
-            {
-                _latestCurrency = currency;
-            }
-
-            if (refreshPublicTabs)
-            {
-                _latestPublicTabs = await _publicTabs.ReadAsync(settings, prices, progress, cancellationToken);
-            }
-
-            var snapshot = _snapshotComposer.Compose(_latestCurrency, _latestPublicTabs, prices?.RetrievedAt);
-            _publisher.Publish(snapshot);
-            return snapshot;
+            _latestPublicTabs = await _publicTabs.ReadAsync(settings, prices, progress, cancellationToken);
+            return PublishSnapshot(prices?.RetrievedAt);
         }
         finally
         {
@@ -76,6 +87,13 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
     {
         _gate.Dispose();
         return ValueTask.CompletedTask;
+    }
+
+    private ClockSnapshot PublishSnapshot(DateTimeOffset? pricesUpdatedAt)
+    {
+        var snapshot = _snapshotComposer.Compose(_latestCurrency, _latestPublicTabs, pricesUpdatedAt);
+        _publisher.Publish(snapshot);
+        return snapshot;
     }
 
     private async Task<PriceSnapshot?> GetPricesAsync(

@@ -30,6 +30,21 @@ internal static class CurrencyAmountScanner
     internal static async Task<IReadOnlyList<CurrencyAmountScanResult>> ScanAsync(string imagePath, CurrencyLayout layout)
     {
         using var image = Image.Load<Rgba32>(imagePath);
+        return await ScanAsync(image, layout);
+    }
+
+    internal static async Task<IReadOnlyList<CurrencyAmountScanResult>> ScanAsync(
+        ReadOnlyMemory<byte> pngBytes,
+        CurrencyLayout layout)
+    {
+        using var image = Image.Load<Rgba32>(pngBytes.Span);
+        return await ScanAsync(image, layout);
+    }
+
+    private static async Task<IReadOnlyList<CurrencyAmountScanResult>> ScanAsync(
+        Image<Rgba32> image,
+        CurrencyLayout layout)
+    {
         var preparedSlots = new List<PreparedSlotAmount>(layout.Slots.Count);
 
         foreach (var slot in layout.Slots.OrderBy(slot => slot.Y).ThenBy(slot => slot.X))

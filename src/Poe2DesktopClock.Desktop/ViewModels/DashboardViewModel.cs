@@ -1,7 +1,4 @@
 using System.Globalization;
-using System.Windows;
-using System.Windows.Input;
-using Poe2DesktopClock.Desktop.Infrastructure;
 using Poe2DesktopClock.Desktop.Models;
 using Poe2DesktopClock.Desktop.Services;
 
@@ -17,7 +14,6 @@ public sealed class DashboardViewModel : ViewModelBase
         _statusProvider = statusProvider;
         _status = statusProvider.GetCurrent();
         _statusProvider.StatusChanged += OnStatusChanged;
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
     }
 
     public decimal TotalDivines => _status.TotalDivines;
@@ -38,8 +34,6 @@ public sealed class DashboardViewModel : ViewModelBase
 
     public string PricesUpdatedAt => FormatTimestamp(_status.PricesUpdatedAt);
 
-    public ICommand RefreshCommand { get; }
-
     public void Refresh()
     {
         _status = _statusProvider.GetCurrent();
@@ -52,11 +46,6 @@ public sealed class DashboardViewModel : ViewModelBase
         OnPropertyChanged(nameof(CurrencyUpdatedAt));
         OnPropertyChanged(nameof(PublicStashUpdatedAt));
         OnPropertyChanged(nameof(PricesUpdatedAt));
-    }
-
-    private async Task RefreshAsync()
-    {
-        await _statusProvider.RefreshAsync();
     }
 
     private void OnStatusChanged(object? sender, TrackerStatusSnapshot status)

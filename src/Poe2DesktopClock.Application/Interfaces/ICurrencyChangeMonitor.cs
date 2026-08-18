@@ -1,3 +1,4 @@
+using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Contracts.Models;
 
 namespace Poe2DesktopClock.Application.Interfaces;
@@ -8,7 +9,7 @@ namespace Poe2DesktopClock.Application.Interfaces;
 /// </summary>
 public interface ICurrencyChangeMonitor
 {
-    event EventHandler? CurrencyChanged;
+    event EventHandler<CurrencyTabChangedEventArgs>? CurrencyChanged;
 
     event EventHandler<ClockMonitorStatus>? StatusChanged;
 

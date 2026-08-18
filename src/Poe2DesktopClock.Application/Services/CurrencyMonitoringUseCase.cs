@@ -1,4 +1,5 @@
 using Poe2DesktopClock.Application.Interfaces;
+using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Contracts.Models;
 
 namespace Poe2DesktopClock.Application.Services;
@@ -16,6 +17,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     private Task? _runTask;
     private Task? _automaticRefreshTask;
     private Task? _currencyRefreshTask;
+    private CurrencyTabFrame? _pendingCurrencyFrame;
 
     public CurrencyMonitoringUseCase(
         ITrackerSettingsUseCase settings,
@@ -87,6 +89,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                 _runTask = null;
                 _automaticRefreshTask = null;
                 _currencyRefreshTask = null;
+                _pendingCurrencyFrame = null;
             }
 
             cancellation.Cancel();
@@ -124,34 +127,65 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     private void OnStatusChanged(object? sender, ClockMonitorStatus status) =>
         MonitorStatusChanged?.Invoke(this, status);
 
-    private void OnCurrencyChanged(object? sender, EventArgs eventArgs)
+    private void OnCurrencyChanged(object? sender, CurrencyTabChangedEventArgs eventArgs)
     {
         lock (_lifecycleSync)
         {
             if (_cancellation is null ||
-                _cancellation.IsCancellationRequested ||
-                _currencyRefreshTask is { IsCompleted: false })
+                _cancellation.IsCancellationRequested)
             {
                 return;
             }
 
-            _currencyRefreshTask = RefreshCurrencyAsync(_cancellation.Token);
+            _pendingCurrencyFrame = eventArgs.Frame;
+            if (_currencyRefreshTask is not { IsCompleted: false })
+            {
+                _currencyRefreshTask = RefreshCurrencyFramesAsync(_cancellation.Token);
+            }
         }
     }
 
-    private async Task RefreshCurrencyAsync(CancellationToken cancellationToken)
+    private async Task RefreshCurrencyFramesAsync(CancellationToken cancellationToken)
     {
-        try
+        while (true)
         {
-            await _refresh.RefreshAsync(refreshPublicTabs: false, cancellationToken: cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            // Expected shutdown path.
-        }
-        catch
-        {
-            MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Error);
+            CurrencyTabFrame? frame;
+            lock (_lifecycleSync)
+            {
+                if (cancellationToken.IsCancellationRequested || _cancellation is null)
+                {
+                    _pendingCurrencyFrame = null;
+                    _currencyRefreshTask = null;
+                    return;
+                }
+
+                frame = _pendingCurrencyFrame;
+                _pendingCurrencyFrame = null;
+                if (frame is null)
+                {
+                    _currencyRefreshTask = null;
+                    return;
+                }
+            }
+
+            try
+            {
+                await _refresh.RefreshCurrencyAsync(frame, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                lock (_lifecycleSync)
+                {
+                    _pendingCurrencyFrame = null;
+                    _currencyRefreshTask = null;
+                }
+
+                return;
+            }
+            catch
+            {
+                MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Error);
+            }
         }
     }
 
@@ -164,7 +198,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                 var startedAt = DateTimeOffset.UtcNow;
                 try
                 {
-                    await _refresh.RefreshAsync(refreshPublicTabs: true, cancellationToken: cancellationToken);
+                    await _refresh.RefreshPublicTabsAsync(cancellationToken: cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
