@@ -185,9 +185,11 @@ public sealed class PublicTabsValuationReader : IPublicTabsValuationReader
             total += unitPrice * group.Sum(item => item.StackSize);
         }
 
-        var summary = complete
-            ? $"Публичные вкладки: {selected.Count} стаков, оценка обновлена."
-            : "Публичные вкладки прочитаны частично: проверьте предупреждения и названия вкладок.";
+        var summary = !complete
+            ? "Публичные вкладки прочитаны частично: проверьте предупреждения и названия вкладок."
+            : unpriced > 0
+                ? $"Публичные вкладки прочитаны не полностью по стоимости: типов предметов без цены — {unpriced}."
+                : $"Публичные вкладки: {selected.Count} стаков, оценка обновлена.";
         return new PublicTabsValuation(total, unpriced, complete, updatedAt, summary);
     }
 

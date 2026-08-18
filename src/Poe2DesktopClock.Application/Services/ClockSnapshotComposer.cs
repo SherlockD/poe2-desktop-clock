@@ -13,7 +13,8 @@ public sealed class ClockSnapshotComposer : IClockSnapshotComposer
         DateTimeOffset? pricesUpdatedAt)
     {
         var total = (currency?.Divines ?? 0m) + (publicTabs?.Divines ?? 0m);
-        var isComplete = currency is { UnpricedItems: 0, UnreadableSlots: 0 } && publicTabs is { IsComplete: true };
+        var isComplete = currency is { UnpricedItems: 0, UnreadableSlots: 0 } &&
+                         publicTabs is { IsComplete: true, UnpricedItems: 0 };
         var publicSummary = publicTabs?.Summary ?? "Публичные вкладки ещё не были обновлены.";
         var summary = isComplete
             ? $"Итого {total:0.##} Divine. Currency-вкладка и публичные вкладки актуальны."

@@ -12,6 +12,37 @@ namespace Poe2DesktopClock.Contracts.Tests;
 public sealed class PublicTabsValuationReaderTests
 {
     [Fact]
+    public async Task ReadAsync_reports_items_without_prices()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"poe2-clock-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var reader = new PublicTabsValuationReader(
+                new TradeApiClient(new TestHttpClientFactory(new PublicTabTradeHandler())),
+                new SingleMarkerProvider(),
+                new PublicTabsSnapshotStore(Path.Combine(directory, "public-tabs-snapshot.json")));
+            var settings = TrackerSettings.Default with { AccountName = "account", League = "League" };
+            var prices = new PriceSnapshot(
+                DateTimeOffset.UtcNow,
+                new Dictionary<string, decimal>(StringComparer.Ordinal));
+
+            var valuation = await reader.ReadAsync(settings, prices);
+
+            Assert.Equal(0m, valuation.Divines);
+            Assert.Equal(1, valuation.UnpricedItems);
+            Assert.True(valuation.IsComplete);
+            Assert.Contains("без цены", valuation.Summary, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ReadAsync_skips_fetch_when_marker_search_has_not_changed()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"poe2-clock-tests-{Guid.NewGuid():N}");

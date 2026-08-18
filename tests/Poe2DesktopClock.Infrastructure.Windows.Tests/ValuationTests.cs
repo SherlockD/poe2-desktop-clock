@@ -47,4 +47,19 @@ public sealed class ValuationTests
         Assert.True(snapshot.IsComplete);
         Assert.Equal(timestamp, snapshot.PricesUpdatedAt);
     }
+
+    [Fact]
+    public void Snapshot_composer_marks_unpriced_public_items_as_incomplete()
+    {
+        var timestamp = DateTimeOffset.UtcNow;
+
+        var snapshot = new ClockSnapshotComposer().Compose(
+            new CurrencyValuation(2m, 0, 0, timestamp),
+            new PublicTabsValuation(3m, 1, true, timestamp, "Один тип предметов остался без цены."),
+            timestamp);
+
+        Assert.Equal(5m, snapshot.TotalDivines);
+        Assert.False(snapshot.IsComplete);
+        Assert.Contains("частичная оценка", snapshot.RussianSummary, StringComparison.OrdinalIgnoreCase);
+    }
 }
