@@ -121,7 +121,8 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
                 ? PixelRegion.Full(contentSize.Width, contentSize.Height)
                 : PixelRegion.FromNormalized(region, contentSize.Width, contentSize.Height);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-            SaveFrameAsPng(frame.Surface, contentSize.Width, contentSize.Height, outputRegion, outputPath);
+            var pixels = CopyFramePixels(frame.Surface, contentSize.Width, contentSize.Height, outputRegion);
+            await SavePngAsync(pixels, outputRegion, outputPath, cancellationToken);
             return new CaptureResult(outputRegion.Width, outputRegion.Height, Stopwatch.GetElapsedTime(started));
         }
         finally
@@ -131,7 +132,7 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
         }
     }
 
-    private void SaveFrameAsPng(IDirect3DSurface surface, int width, int height, PixelRegion outputRegion, string outputPath)
+    private byte[] CopyFramePixels(IDirect3DSurface surface, int width, int height, PixelRegion outputRegion)
     {
         using var source = Direct3DTextureFactory.GetTexture(surface);
         var sourceDescription = source.Description;
@@ -164,14 +165,27 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
                 Marshal.Copy(sourceRow, pixels, row * outputRegion.Width * 4, outputRegion.Width * 4);
             }
 
-            using var image = SixLabors.ImageSharp.Image.LoadPixelData<Bgra32>(pixels, outputRegion.Width, outputRegion.Height);
-            image.SaveAsPng(outputPath);
+            return pixels;
         }
         finally
         {
             _context.Unmap(staging, 0);
         }
     }
+
+    private static Task SavePngAsync(
+        byte[] pixels,
+        PixelRegion outputRegion,
+        string outputPath,
+        CancellationToken cancellationToken) =>
+        Task.Run(
+            () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                using var image = SixLabors.ImageSharp.Image.LoadPixelData<Bgra32>(pixels, outputRegion.Width, outputRegion.Height);
+                image.SaveAsPng(outputPath);
+            },
+            cancellationToken);
 
     public void Dispose()
     {

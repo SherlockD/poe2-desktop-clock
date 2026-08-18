@@ -1,6 +1,7 @@
 using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Contracts.Models;
+using System.Diagnostics;
 using Poe2DeskTracker.Capture;
 using Poe2DeskTracker.Currency;
 using Poe2DeskTracker.Game;
@@ -41,69 +42,65 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
 
     public async Task RunAsync(TimeSpan pollingPeriod, CancellationToken cancellationToken)
     {
-        string? lastFingerprint = null;
-        var lastVisibilityCheck = DateTimeOffset.MinValue;
-        var isCurrencyTabVisible = false;
+        var observation = new CurrencyFrameObservationState();
         while (!cancellationToken.IsCancellationRequested)
         {
-            var region = _regions.GetAll().FirstOrDefault(item =>
-                string.Equals(item.Name, CurrencyRegionName, StringComparison.OrdinalIgnoreCase));
-            var layout = region is null ? null : _layouts.Get(region.Name);
-            if (region is null || layout is null || layout.Slots.Count == 0)
-            {
-                StatusChanged?.Invoke(this, ClockMonitorStatus.NeedsSetup);
-                await Task.Delay(pollingPeriod, cancellationToken);
-                continue;
-            }
-
-            var gameWindow = _processLocator.FindGameWindow();
-            if (gameWindow is null)
-            {
-                StatusChanged?.Invoke(this, ClockMonitorStatus.WaitingForGame);
-                await Task.Delay(pollingPeriod, cancellationToken);
-                continue;
-            }
+            var pollStartedAt = Stopwatch.GetTimestamp();
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_liveFramePath)!);
-                await _capture.SaveRegionAsync(
-                    gameWindow.Handle,
-                    region,
-                    _liveFramePath,
-                    TimeSpan.FromSeconds(2),
-                    cancellationToken);
-                var capturedAt = DateTimeOffset.UtcNow;
-                var fingerprint = CurrencyFrameFingerprint.Create(_liveFramePath, layout);
-                var changed = !string.Equals(fingerprint, lastFingerprint, StringComparison.Ordinal);
-                var now = DateTimeOffset.UtcNow;
-                if (changed || now - lastVisibilityCheck >= TimeSpan.FromSeconds(1))
+                var region = _regions.GetAll().FirstOrDefault(item =>
+                    string.Equals(item.Name, CurrencyRegionName, StringComparison.OrdinalIgnoreCase));
+                var layout = region is null ? null : _layouts.Get(region.Name);
+                if (region is null || layout is null || layout.Slots.Count == 0)
                 {
-                    lastVisibilityCheck = now;
-                    lastFingerprint = fingerprint;
-                    var slots = CurrencyTabProfile.Apply(CurrencyGridDetector.Detect(_liveFramePath));
-                    isCurrencyTabVisible = slots.Count >= layout.Slots.Count;
-                    if (!isCurrencyTabVisible)
-                    {
-                        StatusChanged?.Invoke(this, ClockMonitorStatus.WaitingForCurrencyTab);
-                    }
-                    else
-                    {
-                        StatusChanged?.Invoke(this, ClockMonitorStatus.Tracking);
-                        if (changed)
-                        {
-                            var pngBytes = await File.ReadAllBytesAsync(_liveFramePath, cancellationToken);
-                            CurrencyChanged?.Invoke(
-                                this,
-                                new CurrencyTabChangedEventArgs(new CurrencyTabFrame(pngBytes, capturedAt)));
-                        }
-                    }
+                    StatusChanged?.Invoke(this, ClockMonitorStatus.NeedsSetup);
                 }
                 else
                 {
-                    StatusChanged?.Invoke(this, isCurrencyTabVisible
-                        ? ClockMonitorStatus.Tracking
-                        : ClockMonitorStatus.WaitingForCurrencyTab);
+                    var gameWindow = _processLocator.FindGameWindow();
+                    if (gameWindow is null)
+                    {
+                        StatusChanged?.Invoke(this, ClockMonitorStatus.WaitingForGame);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(_liveFramePath)!);
+                        await _capture.SaveRegionAsync(
+                            gameWindow.Handle,
+                            region,
+                            _liveFramePath,
+                            TimeSpan.FromSeconds(2),
+                            cancellationToken);
+                        var capturedAt = DateTimeOffset.UtcNow;
+                        var detectedGrid = await Task.Run(
+                            () => CurrencyGridDetector.DetectWithImageSize(_liveFramePath),
+                            cancellationToken);
+                        var isCurrencyTabVisible = CurrencyTabProfile.MatchesCalibratedLayout(
+                            detectedGrid.Slots,
+                            layout,
+                            detectedGrid.ImageWidth,
+                            detectedGrid.ImageHeight);
+                        if (!isCurrencyTabVisible)
+                        {
+                            observation.ShouldPublish(isCurrencyTabVisible: false, fingerprint: null);
+                            StatusChanged?.Invoke(this, ClockMonitorStatus.WaitingForCurrencyTab);
+                        }
+                        else
+                        {
+                            var fingerprint = await Task.Run(
+                                () => CurrencyFrameFingerprint.Create(_liveFramePath, layout),
+                                cancellationToken);
+                            StatusChanged?.Invoke(this, ClockMonitorStatus.Tracking);
+                            if (observation.ShouldPublish(isCurrencyTabVisible: true, fingerprint))
+                            {
+                                var pngBytes = await File.ReadAllBytesAsync(_liveFramePath, cancellationToken);
+                                CurrencyChanged?.Invoke(
+                                    this,
+                                    new CurrencyTabChangedEventArgs(new CurrencyTabFrame(pngBytes, capturedAt)));
+                            }
+                        }
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -115,7 +112,19 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
                 StatusChanged?.Invoke(this, ClockMonitorStatus.Error);
             }
 
-            await Task.Delay(pollingPeriod, cancellationToken);
+            var delay = CalculatePollingDelay(
+                pollingPeriod,
+                Stopwatch.GetElapsedTime(pollStartedAt));
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, cancellationToken);
+            }
         }
+    }
+
+    internal static TimeSpan CalculatePollingDelay(TimeSpan pollingPeriod, TimeSpan elapsed)
+    {
+        var remaining = pollingPeriod - elapsed;
+        return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
     }
 }

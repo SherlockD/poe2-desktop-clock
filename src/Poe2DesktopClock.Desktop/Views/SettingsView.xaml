@@ -200,6 +200,41 @@
                     </Grid>
                 </Grid>
             </Border>
+
+            <Border Style="{StaticResource SettingsCardStyle}" Margin="0,14,0,0" BorderBrush="{StaticResource WarningBrush}" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{StaticResource WarningBrush}" />
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="05" FontFamily="Palatino Linotype" FontSize="18" Foreground="{StaticResource WarningBrush}" />
+                            <TextBlock Text="Полный сброс" Style="{StaticResource SectionTitleStyle}" />
+                        </DockPanel>
+                        <Grid Grid.Row="1" Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Удаляет все настройки, калибровку Currency-вкладки, публичные вкладки и сохранённые оценки. После перезапуска откроется онбординг с первого шага."
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,20,0" />
+                            <Button Grid.Column="1"
+                                    Content="Полный сброс"
+                                    Command="{Binding DataContext.FullResetCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    VerticalAlignment="Top" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

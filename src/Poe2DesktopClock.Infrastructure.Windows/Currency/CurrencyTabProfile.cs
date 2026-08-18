@@ -120,7 +120,7 @@ internal static class CurrencyTabProfile
         }
 
         var rows = GroupIntoRows(slots);
-        if (!MatchesStandardLayout(rows))
+        if (!MatchesStandardRows(rows))
         {
             return slots;
         }
@@ -139,6 +139,48 @@ internal static class CurrencyTabProfile
             .OrderBy(slot => slot.Bounds.Top)
             .ThenBy(slot => slot.Bounds.Left)
             .ToArray();
+    }
+
+    /// <summary>
+    /// Returns true only for the dedicated PoE 2 Currency-tab geometry. A mere
+    /// collection of gold slot borders is not enough: regular stash grids and
+    /// decorative game scenery must never be sent to currency OCR.
+    /// </summary>
+    internal static bool MatchesStandardLayout(IReadOnlyList<DetectedCurrencySlot> slots) =>
+        slots.Count > 0 && MatchesStandardRows(GroupIntoRows(slots));
+
+    /// <summary>
+    /// Verifies both the unique standard row pattern and its normalized
+    /// position against the user's saved calibration. This prevents a
+    /// coincidental 33-frame pattern elsewhere on screen from being accepted.
+    /// </summary>
+    internal static bool MatchesCalibratedLayout(
+        IReadOnlyList<DetectedCurrencySlot> slots,
+        CurrencyLayout layout,
+        int imageWidth,
+        int imageHeight)
+    {
+        if (imageWidth <= 0 || imageHeight <= 0 ||
+            layout.Slots.Count != slots.Count ||
+            !MatchesStandardLayout(slots))
+        {
+            return false;
+        }
+
+        var detected = slots
+            .OrderBy(slot => slot.Bounds.Top)
+            .ThenBy(slot => slot.Bounds.Left)
+            .ToArray();
+        var calibrated = layout.Slots
+            .OrderBy(slot => slot.Y)
+            .ThenBy(slot => slot.X)
+            .ToArray();
+
+        return calibrated.Zip(detected).All(pair => MatchesCalibratedSlot(
+            pair.First,
+            pair.Second,
+            imageWidth,
+            imageHeight));
     }
 
     internal static bool IsAutomaticName(string? name) =>
@@ -166,9 +208,36 @@ internal static class CurrencyTabProfile
         return false;
     }
 
-    private static bool MatchesStandardLayout(IReadOnlyList<List<DetectedCurrencySlot>> rows) =>
+    private static bool MatchesStandardRows(IReadOnlyList<List<DetectedCurrencySlot>> rows) =>
         rows.Count == NamesByRow.Length &&
         rows.Select(row => row.Count).SequenceEqual(NamesByRow.Select(row => row.Length));
+
+    private static bool MatchesCalibratedSlot(
+        CurrencySlotDefinition calibrated,
+        DetectedCurrencySlot detected,
+        int imageWidth,
+        int imageHeight)
+    {
+        var detectedX = (double)detected.Bounds.Left / imageWidth;
+        var detectedY = (double)detected.Bounds.Top / imageHeight;
+        var detectedWidth = (double)detected.Bounds.Width / imageWidth;
+        var detectedHeight = (double)detected.Bounds.Height / imageHeight;
+        var centerDeltaX = Math.Abs(
+            calibrated.X + calibrated.Width / 2 -
+            (detectedX + detectedWidth / 2));
+        var centerDeltaY = Math.Abs(
+            calibrated.Y + calibrated.Height / 2 -
+            (detectedY + detectedHeight / 2));
+        var maximumCenterDeltaX = Math.Max(0.012, calibrated.Width * 0.45);
+        var maximumCenterDeltaY = Math.Max(0.012, calibrated.Height * 0.45);
+        var maximumWidthDelta = Math.Max(0.01, calibrated.Width * 0.4);
+        var maximumHeightDelta = Math.Max(0.01, calibrated.Height * 0.4);
+
+        return centerDeltaX <= maximumCenterDeltaX &&
+               centerDeltaY <= maximumCenterDeltaY &&
+               Math.Abs(calibrated.Width - detectedWidth) <= maximumWidthDelta &&
+               Math.Abs(calibrated.Height - detectedHeight) <= maximumHeightDelta;
+    }
 
     private static List<List<DetectedCurrencySlot>> GroupIntoRows(IReadOnlyList<DetectedCurrencySlot> slots)
     {

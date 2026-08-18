@@ -1,4 +1,5 @@
 using Poe2DesktopClock.Application.Interfaces;
+using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Application.Services;
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Models;
@@ -20,38 +21,54 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         null,
         null);
 
-    private readonly ITrackerRefreshUseCase _refresh;
+    private readonly ICurrencyRefreshUseCase _currencyRefresh;
+    private readonly IPublicTabsRefreshUseCase _publicTabsRefresh;
     private readonly ITrackerMonitoringUseCase _monitoring;
     private readonly IGameSessionUseCase _session;
     private readonly IDeviceSynchronizationUseCase _device;
     private readonly DeviceSnapshotRelay _deviceRelay;
+    private readonly IClockSnapshotComposer _snapshotComposer;
+    private readonly ITrackerSnapshotPublisher _snapshotPublisher;
+    private readonly ILastClockSnapshotStore _lastSnapshots;
     private readonly object _stateSync = new();
     private ClockSnapshot? _clockSnapshot;
     private ClockMonitorStatus _monitorStatus = ClockMonitorStatus.Stopped;
     private GameStatus _gameStatus = new(false, "Path of Exile 2 не запущен.");
     private GameSessionSnapshot _sessionSnapshot = GameNotRunning;
     private DeviceSynchronizationState _deviceState;
+    private CurrencyValuation? _currencyValuation;
+    private PublicTabsValuation? _publicTabsValuation;
+    private DateTimeOffset? _pricesUpdatedAt;
     private CancellationTokenSource? _sessionPollingCancellation;
     private Task? _sessionPollingTask;
     private bool _initialized;
     private bool _disposed;
 
     public RuntimeTrackerStatusProvider(
-        ITrackerRefreshUseCase refresh,
+        ICurrencyRefreshUseCase currencyRefresh,
+        IPublicTabsRefreshUseCase publicTabsRefresh,
         ITrackerMonitoringUseCase monitoring,
         IGameSessionUseCase session,
         IDeviceSynchronizationUseCase device,
         ILastClockSnapshotStore lastSnapshots,
-        DeviceSnapshotRelay deviceRelay)
+        DeviceSnapshotRelay deviceRelay,
+        IClockSnapshotComposer snapshotComposer,
+        ITrackerSnapshotPublisher snapshotPublisher)
     {
-        _refresh = refresh;
+        _currencyRefresh = currencyRefresh;
+        _publicTabsRefresh = publicTabsRefresh;
         _monitoring = monitoring;
         _session = session;
         _device = device;
         _deviceRelay = deviceRelay;
+        _snapshotComposer = snapshotComposer;
+        _snapshotPublisher = snapshotPublisher;
+        _lastSnapshots = lastSnapshots;
         _clockSnapshot = lastSnapshots.GetLastSnapshot();
+        _pricesUpdatedAt = _clockSnapshot?.PricesUpdatedAt;
         _deviceState = device.CurrentState;
-        _refresh.ClockSnapshotChanged += OnClockSnapshotChanged;
+        _currencyRefresh.Refreshed += OnCurrencyRefreshed;
+        _publicTabsRefresh.Refreshed += OnPublicTabsRefreshed;
         _monitoring.MonitorStatusChanged += OnMonitorStatusChanged;
         _device.SynchronizationStateChanged += OnDeviceSynchronizationStateChanged;
     }
@@ -115,7 +132,8 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
             _sessionPollingTask = null;
         }
 
-        _refresh.ClockSnapshotChanged -= OnClockSnapshotChanged;
+        _currencyRefresh.Refreshed -= OnCurrencyRefreshed;
+        _publicTabsRefresh.Refreshed -= OnPublicTabsRefreshed;
         _monitoring.MonitorStatusChanged -= OnMonitorStatusChanged;
         _device.SynchronizationStateChanged -= OnDeviceSynchronizationStateChanged;
         cancellation?.Cancel();
@@ -136,13 +154,50 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         }
     }
 
-    private void OnClockSnapshotChanged(object? sender, ClockSnapshot snapshot)
+    private void OnCurrencyRefreshed(object? sender, CurrencyRefreshResult result) =>
+        ApplyValuation(
+            result.Valuation,
+            publicTabs: null,
+            pricesUpdatedAt: result.PricesUpdatedAt);
+
+    private void OnPublicTabsRefreshed(object? sender, PublicTabsRefreshResult result) =>
+        ApplyValuation(
+            currency: null,
+            result.Valuation,
+            pricesUpdatedAt: result.PricesUpdatedAt);
+
+    private void ApplyValuation(
+        CurrencyValuation? currency,
+        PublicTabsValuation? publicTabs,
+        DateTimeOffset? pricesUpdatedAt)
     {
-        var session = _session.UpdateClockSnapshot(snapshot);
         lock (_stateSync)
         {
+            if (currency is not null)
+            {
+                _currencyValuation = currency;
+            }
+
+            if (publicTabs is not null)
+            {
+                _publicTabsValuation = publicTabs;
+            }
+
+            if (pricesUpdatedAt is not null &&
+                (_pricesUpdatedAt is null || pricesUpdatedAt > _pricesUpdatedAt))
+            {
+                _pricesUpdatedAt = pricesUpdatedAt;
+            }
+
+            var snapshot = _snapshotComposer.Compose(
+                _currencyValuation,
+                _publicTabsValuation,
+                _pricesUpdatedAt,
+                _clockSnapshot);
+            _lastSnapshots.Save(snapshot);
             _clockSnapshot = snapshot;
-            _sessionSnapshot = session;
+            _sessionSnapshot = _session.UpdateClockSnapshot(snapshot);
+            _snapshotPublisher.Publish(snapshot);
         }
 
         PublishCurrent();

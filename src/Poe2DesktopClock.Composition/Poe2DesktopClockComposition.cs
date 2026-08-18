@@ -49,10 +49,10 @@ public static class Poe2DesktopClockComposition
         services.AddSingleton<IPublicTabsSetupTradeGateway, TradeApiPublicTabsSetupGateway>();
         services.AddSingleton<IPublicTabsSetupUseCase, PublicTabsSetupUseCase>();
         services.AddSingleton(new PublicTabsSnapshotStore(Path.Combine(desktopDataDirectory, "public-tabs-snapshot.json")));
-        services.AddSingleton<ILastClockSnapshotStore>(
-            new LastClockSnapshotStore(Path.Combine(desktopDataDirectory, "last-clock-snapshot.json")));
-        services.AddSingleton<IInitialSetupStateStore>(
-            new InitialSetupStateStore(Path.Combine(desktopDataDirectory, "onboarding.json")));
+        services.AddSingleton(new LastClockSnapshotStore(Path.Combine(desktopDataDirectory, "last-clock-snapshot.json")));
+        services.AddSingleton<ILastClockSnapshotStore>(provider => provider.GetRequiredService<LastClockSnapshotStore>());
+        services.AddSingleton(new InitialSetupStateStore(Path.Combine(desktopDataDirectory, "onboarding.json")));
+        services.AddSingleton<IInitialSetupStateStore>(provider => provider.GetRequiredService<InitialSetupStateStore>());
         services.AddSingleton<IClockSnapshotComposer, ClockSnapshotComposer>();
         services.AddSingleton<ITrackerSnapshotPublisher, TrackerSnapshotPublisher>();
         services.AddSingleton<IDeviceSynchronizationUseCase, StubDeviceSynchronizationUseCase>();
@@ -64,8 +64,11 @@ public static class Poe2DesktopClockComposition
             provider.GetRequiredService<RegionStore>(),
             provider.GetRequiredService<CurrencyLayoutStore>(),
             provider.GetRequiredService<PublicStashSettingsStore>()));
-        services.AddSingleton<ITrackerRefreshUseCase, RefreshTrackerUseCase>();
+        services.AddSingleton<ICurrencyRefreshUseCase, CurrencyRefreshUseCase>();
+        services.AddSingleton<IPublicTabsRefreshUseCase, PublicTabsRefreshUseCase>();
         services.AddSingleton<ITrackerMonitoringUseCase, CurrencyMonitoringUseCase>();
+        services.AddSingleton<IApplicationDataResetter, WindowsApplicationDataResetter>();
+        services.AddSingleton<IFullApplicationResetUseCase, FullApplicationResetUseCase>();
 
         services.AddSingleton<ITrackerSettingsUseCase>(provider => provider.GetRequiredService<DesktopClockRuntime>());
         services.AddSingleton<ICurrencySetupUseCase>(provider => provider.GetRequiredService<DesktopClockRuntime>());

@@ -50,6 +50,19 @@ public sealed class PublicTabsSnapshotStore
         }
     }
 
+    public void Clear()
+    {
+        lock (_sync)
+        {
+            _snapshot = null;
+            _loaded = false;
+            if (File.Exists(ConfigurationPath))
+            {
+                File.Delete(ConfigurationPath);
+            }
+        }
+    }
+
     private static bool IsValid(StoredPublicTabsSnapshot snapshot) =>
         snapshot.AccountName is not null &&
         snapshot.League is not null &&

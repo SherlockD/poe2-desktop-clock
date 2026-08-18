@@ -13,6 +13,9 @@ internal sealed class CaptureOperationQueue : IDisposable
         await _gate.WaitAsync(cancellationToken);
         try
         {
+            // Windows Graphics Capture and its Direct3D context stay on the
+            // caller's capture context. The PNG encoder is dispatched by the
+            // capture service after the pixels have been copied from the frame.
             return await operation(cancellationToken);
         }
         finally

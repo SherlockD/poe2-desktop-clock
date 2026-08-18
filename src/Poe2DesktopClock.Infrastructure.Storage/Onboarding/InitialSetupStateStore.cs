@@ -48,6 +48,20 @@ public sealed class InitialSetupStateStore : IInitialSetupStateStore
         }
     }
 
+    /// <summary>Removes saved onboarding progress so the next launch starts at step one.</summary>
+    public void Clear()
+    {
+        lock (_sync)
+        {
+            _state = null;
+            _loaded = false;
+            if (File.Exists(ConfigurationPath))
+            {
+                File.Delete(ConfigurationPath);
+            }
+        }
+    }
+
     private void Load()
     {
         if (_loaded)

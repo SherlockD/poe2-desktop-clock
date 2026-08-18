@@ -9,74 +9,63 @@ namespace Poe2DesktopClock.Infrastructure.Windows.Tests;
 public sealed class RefreshTrackerUseCaseTests
 {
     [Fact]
-    public async Task Currency_refresh_uses_the_supplied_monitor_frame_only()
+    public async Task Currency_refresh_uses_only_the_supplied_monitor_frame_and_publishes_its_result()
     {
         var currency = new TestCurrencyValuationReader();
-        var publicTabs = new TestPublicTabsValuationReader();
-        await using var useCase = CreateUseCase(currency, publicTabs);
+        using var useCase = CreateCurrencyUseCase(currency);
         var frame = new CurrencyTabFrame(new byte[] { 1, 2, 3 }, DateTimeOffset.UtcNow);
+        CurrencyRefreshResult? published = null;
+        useCase.Refreshed += (_, result) => published = result;
 
-        await useCase.RefreshCurrencyAsync(frame);
+        var result = await useCase.RefreshAsync(frame);
 
         Assert.Same(frame, currency.LastFrame);
         Assert.Equal(1, currency.ReadCalls);
-        Assert.Equal(0, publicTabs.ReadCalls);
+        Assert.Same(result, published);
     }
 
     [Fact]
-    public async Task Public_tabs_refresh_does_not_read_currency()
+    public async Task Public_tabs_refresh_publishes_an_independent_result()
     {
-        var currency = new TestCurrencyValuationReader();
         var publicTabs = new TestPublicTabsValuationReader();
-        await using var useCase = CreateUseCase(currency, publicTabs);
+        using var useCase = CreatePublicTabsUseCase(publicTabs);
+        PublicTabsRefreshResult? published = null;
+        useCase.Refreshed += (_, result) => published = result;
 
-        await useCase.RefreshPublicTabsAsync();
+        var result = await useCase.RefreshAsync();
 
-        Assert.Equal(0, currency.ReadCalls);
         Assert.Equal(1, publicTabs.ReadCalls);
+        Assert.Same(result, published);
     }
 
     [Fact]
-    public async Task Currency_refresh_keeps_the_last_persisted_public_value_and_saves_the_merged_snapshot()
+    public async Task Currency_refresh_is_not_blocked_by_a_long_public_tabs_refresh()
     {
-        var previousUpdatedAt = new DateTimeOffset(2026, 8, 18, 10, 0, 0, TimeSpan.Zero);
-        var persisted = new ClockSnapshot(
-            TotalDivines: 100m,
-            CurrencyTabDivines: 60m,
-            PublicTabsDivines: 40m,
-            CurrencyUpdatedAt: previousUpdatedAt,
-            PublicTabsUpdatedAt: previousUpdatedAt,
-            PricesUpdatedAt: previousUpdatedAt,
-            IsComplete: true,
-            RussianSummary: "Итого 100 Divine.");
-        var store = new TestLastClockSnapshotStore(persisted);
-        var updatedAt = previousUpdatedAt.AddMinutes(5);
-        var currency = new TestCurrencyValuationReader(new CurrencyValuation(75m, 0, 0, updatedAt));
-        var publicTabs = new TestPublicTabsValuationReader();
-        await using var useCase = CreateUseCase(currency, publicTabs, store);
+        var updatedAt = new DateTimeOffset(2026, 8, 18, 15, 0, 0, TimeSpan.Zero);
+        var currencyReader = new TestCurrencyValuationReader(new CurrencyValuation(75m, 0, 0, updatedAt));
+        var publicTabsReader = new BlockingPublicTabsValuationReader();
+        using var currency = CreateCurrencyUseCase(currencyReader);
+        using var publicTabs = CreatePublicTabsUseCase(publicTabsReader);
 
-        var snapshot = await useCase.RefreshCurrencyAsync(new CurrencyTabFrame(new byte[] { 1 }, updatedAt));
+        var publicRefresh = publicTabs.RefreshAsync();
+        await publicTabsReader.Started.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
-        Assert.Equal(115m, snapshot.TotalDivines);
-        Assert.Equal(75m, snapshot.CurrencyTabDivines);
-        Assert.Equal(40m, snapshot.PublicTabsDivines);
-        Assert.Equal(previousUpdatedAt, snapshot.PublicTabsUpdatedAt);
-        Assert.Equal(snapshot, store.LastSnapshot);
-        Assert.Equal(1, store.SaveCalls);
+        var currencyResult = await currency
+            .RefreshAsync(new CurrencyTabFrame(new byte[] { 1 }, updatedAt))
+            .WaitAsync(TimeSpan.FromSeconds(1));
+
+        Assert.Equal(75m, currencyResult?.Valuation.Divines);
+        Assert.False(publicRefresh.IsCompleted);
+
+        publicTabsReader.Complete(new PublicTabsValuation(25m, 0, true, updatedAt, string.Empty));
+        await publicRefresh.WaitAsync(TimeSpan.FromSeconds(1));
     }
 
-    private static RefreshTrackerUseCase CreateUseCase(
-        ICurrencyValuationReader currency,
-        IPublicTabsValuationReader publicTabs,
-        ILastClockSnapshotStore? lastSnapshots = null) =>
-        new(
-            new TestSettingsUseCase(),
-            new TestPriceSnapshotProvider(),
-            currency,
-            publicTabs,
-            new ClockSnapshotComposer(),
-            new TrackerSnapshotPublisher(),
-            lastSnapshots);
+    private static CurrencyRefreshUseCase CreateCurrencyUseCase(ICurrencyValuationReader currency) =>
+        new(new TestSettingsUseCase(), new TestPriceSnapshotProvider(), currency);
+
+    private static PublicTabsRefreshUseCase CreatePublicTabsUseCase(IPublicTabsValuationReader publicTabs) =>
+        new(new TestSettingsUseCase(), new TestPriceSnapshotProvider(), publicTabs);
 
     private sealed class TestSettingsUseCase : ITrackerSettingsUseCase
     {
@@ -133,18 +122,25 @@ public sealed class RefreshTrackerUseCaseTests
         }
     }
 
-    private sealed class TestLastClockSnapshotStore(ClockSnapshot? snapshot) : ILastClockSnapshotStore
+    private sealed class BlockingPublicTabsValuationReader : IPublicTabsValuationReader
     {
-        public ClockSnapshot? LastSnapshot { get; private set; } = snapshot;
+        private readonly TaskCompletionSource<PublicTabsValuation> _completion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public int SaveCalls { get; private set; }
+        public TaskCompletionSource<bool> Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public ClockSnapshot? GetLastSnapshot() => LastSnapshot;
-
-        public void Save(ClockSnapshot snapshot)
+        public Task<PublicTabsValuation> ReadAsync(
+            TrackerSettings settings,
+            PriceSnapshot? prices,
+            IProgress<TrackerProgress>? progress = null,
+            CancellationToken cancellationToken = default)
         {
-            LastSnapshot = snapshot;
-            SaveCalls++;
+            Started.TrySetResult(true);
+            cancellationToken.Register(() => _completion.TrySetCanceled(cancellationToken));
+            return _completion.Task;
         }
+
+        public void Complete(PublicTabsValuation valuation) => _completion.TrySetResult(valuation);
     }
 }

@@ -17,6 +17,7 @@ public sealed class CurrencyMonitoringUseCaseTests
         await using var useCase = new CurrencyMonitoringUseCase(
             new TestSettingsUseCase(),
             refresh,
+            new TestPublicTabsRefreshUseCase(),
             monitor,
             new TestGameStatusReader());
         useCase.MonitorStatusChanged += (_, status) => statuses.Add(status);
@@ -42,6 +43,7 @@ public sealed class CurrencyMonitoringUseCaseTests
         await useCase.StartCurrencyMonitoringAsync();
         var restartedFrame = CreateFrame(4);
         monitor.RaiseCurrencyChanged(restartedFrame);
+        await refresh.SecondCurrencyRefreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
         Assert.Equal(2, refresh.CurrencyRefreshCalls);
         Assert.Same(restartedFrame, refresh.CurrencyFrames[1]);
         await useCase.StopCurrencyMonitoringAsync();
@@ -57,6 +59,7 @@ public sealed class CurrencyMonitoringUseCaseTests
         await using var useCase = new CurrencyMonitoringUseCase(
             new TestSettingsUseCase(),
             refresh,
+            new TestPublicTabsRefreshUseCase(),
             monitor,
             new TestGameStatusReader());
 
@@ -85,6 +88,7 @@ public sealed class CurrencyMonitoringUseCaseTests
         var useCase = new CurrencyMonitoringUseCase(
             new TestSettingsUseCase(),
             new ControlledRefreshUseCase(),
+            new TestPublicTabsRefreshUseCase(),
             new TestCurrencyChangeMonitor(),
             new TestGameStatusReader());
 
@@ -105,21 +109,19 @@ public sealed class CurrencyMonitoringUseCaseTests
         }
     }
 
-    private sealed class ControlledRefreshUseCase : ITrackerRefreshUseCase
+    private sealed class ControlledRefreshUseCase : ICurrencyRefreshUseCase
     {
-        private static readonly ClockSnapshot EmptySnapshot = new(
-            0m,
-            0m,
-            0m,
-            null,
-            null,
-            null,
-            false,
-            string.Empty);
-        private readonly TaskCompletionSource<ClockSnapshot> _currencyRefreshCompletion =
+        private static readonly CurrencyRefreshResult EmptyResult = new(
+            new CurrencyValuation(0m, 0, 0, DateTimeOffset.UtcNow),
+            PricesUpdatedAt: null);
+        private readonly TaskCompletionSource<CurrencyRefreshResult?> _currencyRefreshCompletion =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public event EventHandler<ClockSnapshot>? ClockSnapshotChanged;
+        public event EventHandler<CurrencyRefreshResult>? Refreshed
+        {
+            add { }
+            remove { }
+        }
 
         public TaskCompletionSource<bool> CurrencyRefreshStarted { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -134,7 +136,7 @@ public sealed class CurrencyMonitoringUseCaseTests
 
         public List<CurrencyTabFrame> CurrencyFrames { get; } = [];
 
-        public Task<ClockSnapshot> RefreshCurrencyAsync(
+        public Task<CurrencyRefreshResult?> RefreshAsync(
             CurrencyTabFrame frame,
             CancellationToken cancellationToken = default)
         {
@@ -150,16 +152,26 @@ public sealed class CurrencyMonitoringUseCaseTests
             return _currencyRefreshCompletion.Task;
         }
 
-        public Task<ClockSnapshot> RefreshPublicTabsAsync(
-            IProgress<TrackerProgress>? progress = null,
-            CancellationToken cancellationToken = default)
-            => Task.FromResult(EmptySnapshot);
-
         public void CompleteCurrencyRefresh()
         {
-            _currencyRefreshCompletion.TrySetResult(EmptySnapshot);
-            ClockSnapshotChanged?.Invoke(this, EmptySnapshot);
+            _currencyRefreshCompletion.TrySetResult(EmptyResult);
         }
+    }
+
+    private sealed class TestPublicTabsRefreshUseCase : IPublicTabsRefreshUseCase
+    {
+        public event EventHandler<PublicTabsRefreshResult>? Refreshed
+        {
+            add { }
+            remove { }
+        }
+
+        public Task<PublicTabsRefreshResult> RefreshAsync(
+            IProgress<TrackerProgress>? progress = null,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PublicTabsRefreshResult(
+                new PublicTabsValuation(0m, 0, true, DateTimeOffset.UtcNow, string.Empty),
+                PricesUpdatedAt: null));
     }
 
     private sealed class TestCurrencyChangeMonitor : ICurrencyChangeMonitor

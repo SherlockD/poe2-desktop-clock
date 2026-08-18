@@ -49,6 +49,30 @@ public sealed class InitialSetupStateStoreTests
     }
 
     [Fact]
+    public void Clear_removes_the_saved_setup_progress()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "onboarding.json");
+            var store = new InitialSetupStateStore(path);
+            store.Save(new InitialSetupState(
+                InitialSetupState.CurrentSchemaVersion,
+                InitialSetupState.CurrentSetupVersion,
+                InitialSetupStep.DeviceConnection));
+
+            store.Clear();
+
+            Assert.False(File.Exists(path));
+            Assert.Equal(InitialSetupState.NotStarted, store.Get());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Corrupted_state_is_backed_up_and_recovered_as_not_started()
     {
         var directory = CreateTemporaryDirectory();

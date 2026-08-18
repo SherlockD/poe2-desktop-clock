@@ -17,5 +17,8 @@ public sealed class InitialSetupCompositionTests
         Assert.NotNull(provider.GetRequiredService<IPublicTabsSetupUseCase>());
         Assert.NotNull(provider.GetRequiredService<ITrackerSettingsUseCase>());
         Assert.NotNull(provider.GetRequiredService<IPublicTabMarkerProvider>());
+        Assert.NotNull(provider.GetRequiredService<IFullApplicationResetUseCase>());
+        Assert.NotNull(provider.GetRequiredService<ICurrencyRefreshUseCase>());
+        Assert.NotNull(provider.GetRequiredService<IPublicTabsRefreshUseCase>());
     }
 }

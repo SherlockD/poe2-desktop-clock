@@ -48,6 +48,19 @@ public sealed class LastClockSnapshotStore : ILastClockSnapshotStore
         }
     }
 
+    public void Clear()
+    {
+        lock (_sync)
+        {
+            _snapshot = null;
+            _loaded = false;
+            if (File.Exists(ConfigurationPath))
+            {
+                File.Delete(ConfigurationPath);
+            }
+        }
+    }
+
     private void Load()
     {
         if (_loaded)

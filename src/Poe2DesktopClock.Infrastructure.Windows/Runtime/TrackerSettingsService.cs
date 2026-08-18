@@ -49,4 +49,10 @@ internal sealed class TrackerSettingsService
             [],
             new List<PublicStashTabMarker>(markers)));
     }
+
+    internal void Clear()
+    {
+        _desktopSettingsStore.Clear();
+        _publicStashSettingsStore.Clear();
+    }
 }

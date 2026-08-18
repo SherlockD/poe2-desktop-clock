@@ -44,4 +44,16 @@ public sealed class DesktopSettingsStore
             ResilientJsonFile.WriteAtomically(ConfigurationPath, _settings, JsonOptions);
         }
     }
+
+    public void Clear()
+    {
+        lock (_sync)
+        {
+            _settings = null;
+            if (File.Exists(ConfigurationPath))
+            {
+                File.Delete(ConfigurationPath);
+            }
+        }
+    }
 }

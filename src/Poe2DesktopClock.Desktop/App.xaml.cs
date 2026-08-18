@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Poe2DesktopClock.Composition;
@@ -29,6 +30,7 @@ public partial class App : System.Windows.Application
         _statusProvider = _services.GetRequiredService<ITrackerStatusProvider>();
         var viewModel = _services.GetRequiredService<MainViewModel>();
         viewModel.InitialSetupCompleted += OnInitialSetupCompleted;
+        viewModel.FullResetRequested += OnFullResetRequested;
         var mainWindow = new MainWindow(viewModel);
         MainWindow = mainWindow;
         mainWindow.Loaded += OnMainWindowLoaded;
@@ -55,6 +57,41 @@ public partial class App : System.Windows.Application
         }
 
         await InitializeRuntimeAsync(viewModel, mainWindow, applyStartMinimized: false);
+    }
+
+    private async void OnFullResetRequested(object? sender, EventArgs eventArgs)
+    {
+        if (sender is not MainViewModel viewModel || MainWindow is not MainWindow mainWindow || _isShuttingDown)
+        {
+            return;
+        }
+
+        var confirmation = MessageBox.Show(
+            "Будут удалены настройки, калибровка Currency-вкладки, публичные вкладки и сохранённые оценки. Приложение перезапустится и откроет онбординг с первого шага.",
+            "Полный сброс",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            await viewModel.ResetApplicationAsync();
+            await DisposeServicesAsync();
+            RestartCurrentProcess();
+            _isShuttingDown = true;
+            mainWindow.Close();
+        }
+        catch (Exception exception)
+        {
+            MessageBox.Show(
+                $"Не удалось полностью сбросить приложение: {exception.Message}",
+                "Полный сброс",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private Task InitializeRuntimeAsync(
@@ -107,11 +144,7 @@ public partial class App : System.Windows.Application
                 viewModel.InitialSetup.CancelPendingOperations();
             }
 
-            if (_services is IAsyncDisposable services)
-            {
-                await services.DisposeAsync();
-                _services = null;
-            }
+            await DisposeServicesAsync();
         }
         finally
         {
@@ -126,6 +159,34 @@ public partial class App : System.Windows.Application
                     new Action(mainWindow.Close),
                     System.Windows.Threading.DispatcherPriority.Normal);
             }
+        }
+    }
+
+    private async Task DisposeServicesAsync()
+    {
+        if (_services is IAsyncDisposable services)
+        {
+            await services.DisposeAsync();
+            _services = null;
+        }
+    }
+
+    private static void RestartCurrentProcess()
+    {
+        var processPath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Не удалось определить путь к исполняемому файлу.");
+        var startInfo = new ProcessStartInfo(processPath)
+        {
+            UseShellExecute = true,
+        };
+        foreach (var argument in Environment.GetCommandLineArgs().Skip(1))
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        if (Process.Start(startInfo) is null)
+        {
+            throw new InvalidOperationException("Не удалось перезапустить приложение.");
         }
     }
 }

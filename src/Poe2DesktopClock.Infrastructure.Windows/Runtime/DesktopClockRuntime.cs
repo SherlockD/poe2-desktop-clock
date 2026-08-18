@@ -116,6 +116,13 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
     public Task CalibrateCurrencySlotsAsync(CancellationToken cancellationToken = default) =>
         _currencySetup.CalibrateAsync(cancellationToken);
 
+    /// <summary>Clears the desktop and legacy stores used for tracker setup.</summary>
+    public void ClearPersistedConfiguration()
+    {
+        _currencySetup.Clear();
+        _settings.Clear();
+    }
+
     public ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref _disposeStarted, 1) == 0 && _ownsCapture)

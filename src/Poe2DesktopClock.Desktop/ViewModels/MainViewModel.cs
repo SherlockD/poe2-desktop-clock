@@ -1,10 +1,13 @@
 using System.Windows.Input;
+using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Desktop.Infrastructure;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
 public sealed class MainViewModel : ViewModelBase
 {
+    private readonly IFullApplicationResetUseCase _fullReset;
+    private readonly ITrackerMonitoringUseCase _monitoring;
     private object _currentPage;
     private bool _isDashboardSelected = true;
     private bool _isSettingsSelected;
@@ -14,16 +17,21 @@ public sealed class MainViewModel : ViewModelBase
     public MainViewModel(
         DashboardViewModel dashboard,
         SettingsViewModel settings,
-        InitialSetupViewModel initialSetup)
+        InitialSetupViewModel initialSetup,
+        IFullApplicationResetUseCase fullReset,
+        ITrackerMonitoringUseCase monitoring)
     {
         Dashboard = dashboard;
         Settings = settings;
         InitialSetup = initialSetup;
+        _fullReset = fullReset;
+        _monitoring = monitoring;
         Dashboard.PropertyChanged += OnDashboardPropertyChanged;
         InitialSetup.SetupCompleted += OnInitialSetupCompleted;
         _currentPage = dashboard;
         ShowDashboardCommand = new RelayCommand(ShowDashboard);
         ShowSettingsCommand = new RelayCommand(ShowSettings);
+        FullResetCommand = new RelayCommand(() => FullResetRequested?.Invoke(this, EventArgs.Empty));
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -33,6 +41,8 @@ public sealed class MainViewModel : ViewModelBase
     public InitialSetupViewModel InitialSetup { get; }
 
     public event EventHandler? InitialSetupCompleted;
+
+    public event EventHandler? FullResetRequested;
 
     public object CurrentPage
     {
@@ -69,6 +79,15 @@ public sealed class MainViewModel : ViewModelBase
     public ICommand ShowDashboardCommand { get; }
 
     public ICommand ShowSettingsCommand { get; }
+
+    public ICommand FullResetCommand { get; }
+
+    /// <summary>Stops background work before the persisted stores are cleared.</summary>
+    public async Task ResetApplicationAsync()
+    {
+        await _monitoring.StopCurrencyMonitoringAsync();
+        await _fullReset.ResetAsync();
+    }
 
     /// <summary>
     /// Decides whether this launch must show the one-time setup. Returning

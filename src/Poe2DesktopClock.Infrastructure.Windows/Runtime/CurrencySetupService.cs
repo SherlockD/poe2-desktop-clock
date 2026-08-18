@@ -58,12 +58,12 @@ internal sealed class CurrencySetupService
             ?? throw new InvalidOperationException("Path of Exile 2 не найден. Запустите игру и повторите выбор области.");
 
         Win32Native.RestoreAndActivateWindow(gameWindow.Handle);
-        if (!await WaitForStableClientBoundsAsync(gameWindow.Handle, TimeSpan.FromSeconds(2), cancellationToken))
+        if (!await WaitForStableClientBoundsAsync(gameWindow.Handle, TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false))
         {
             throw new InvalidOperationException("Окно игры не готово к выбору области. Сделайте его видимым и повторите попытку.");
         }
 
-        var region = await RegionSelectionOverlay.SelectAsync(gameWindow.Handle, CurrencyRegionName);
+        var region = await RegionSelectionOverlay.SelectAsync(gameWindow.Handle, CurrencyRegionName).ConfigureAwait(false);
         if (region is null)
         {
             throw new OperationCanceledException("Выбор области Currency-вкладки отменён.");
@@ -88,8 +88,10 @@ internal sealed class CurrencySetupService
             prerequisites.Region,
             _previewPath,
             TimeSpan.FromSeconds(5),
-            cancellationToken);
-        var detectedSlots = CurrencyTabProfile.Apply(CurrencyGridDetector.Detect(_previewPath));
+            cancellationToken).ConfigureAwait(false);
+        var detectedSlots = await Task.Run(
+            () => CurrencyTabProfile.Apply(CurrencyGridDetector.Detect(_previewPath)),
+            cancellationToken).ConfigureAwait(false);
         if (detectedSlots.Count == 0)
         {
             throw new InvalidOperationException("Не удалось найти ячейки. Откройте Currency-вкладку и повторите калибровку.");
@@ -99,13 +101,23 @@ internal sealed class CurrencySetupService
             _previewPath,
             prerequisites.Region.Name,
             detectedSlots,
-            _currencyLayoutStore.Get(prerequisites.Region.Name));
+            _currencyLayoutStore.Get(prerequisites.Region.Name)).ConfigureAwait(false);
         if (layout is null)
         {
             throw new OperationCanceledException("Калибровка Currency-вкладки отменена.");
         }
 
         _currencyLayoutStore.Upsert(layout);
+    }
+
+    internal void Clear()
+    {
+        _regionStore.Clear();
+        _currencyLayoutStore.Clear();
+        if (File.Exists(_previewPath))
+        {
+            File.Delete(_previewPath);
+        }
     }
 
     internal CurrencyPrerequisites? GetPrerequisites(bool requireLayout = true)
@@ -135,7 +147,7 @@ internal sealed class CurrencySetupService
             if (!Win32Native.IsIconic(windowHandle) &&
                 Win32Native.TryGetClientBoundsOnScreen(windowHandle, out var left, out var top, out var width, out var height))
             {
-                await Task.Delay(150, cancellationToken);
+                await Task.Delay(150, cancellationToken).ConfigureAwait(false);
                 if (!Win32Native.IsIconic(windowHandle) &&
                     Win32Native.TryGetClientBoundsOnScreen(windowHandle, out var confirmedLeft, out var confirmedTop, out var confirmedWidth, out var confirmedHeight) &&
                     left == confirmedLeft && top == confirmedTop && width == confirmedWidth && height == confirmedHeight)
@@ -145,7 +157,7 @@ internal sealed class CurrencySetupService
             }
             else
             {
-                await Task.Delay(100, cancellationToken);
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
         }
 

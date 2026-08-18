@@ -8,7 +8,8 @@ namespace Poe2DesktopClock.Application.Services;
 public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyncDisposable
 {
     private readonly ITrackerSettingsUseCase _settings;
-    private readonly ITrackerRefreshUseCase _refresh;
+    private readonly ICurrencyRefreshUseCase _currencyRefresh;
+    private readonly IPublicTabsRefreshUseCase _publicTabsRefresh;
     private readonly ICurrencyChangeMonitor _monitor;
     private readonly IGameStatusReader _gameStatus;
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
@@ -22,12 +23,14 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
 
     public CurrencyMonitoringUseCase(
         ITrackerSettingsUseCase settings,
-        ITrackerRefreshUseCase refresh,
+        ICurrencyRefreshUseCase currencyRefresh,
+        IPublicTabsRefreshUseCase publicTabsRefresh,
         ICurrencyChangeMonitor monitor,
         IGameStatusReader gameStatus)
     {
         _settings = settings;
-        _refresh = refresh;
+        _currencyRefresh = currencyRefresh;
+        _publicTabsRefresh = publicTabsRefresh;
         _monitor = monitor;
         _gameStatus = gameStatus;
         _monitor.CurrencyChanged += OnCurrencyChanged;
@@ -41,7 +44,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     public async Task StartCurrencyMonitoringAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        await _lifecycleGate.WaitAsync(cancellationToken);
+        await _lifecycleGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             ThrowIfDisposed();
@@ -52,14 +55,19 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                     return;
                 }
 
-                _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var monitoringCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                _cancellation = monitoringCancellation;
                 var settings = _settings.GetSettings();
                 _runTask = settings.IsCurrencyMonitoringEnabled
-                    ? _monitor.RunAsync(TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond), _cancellation.Token)
+                    ? _monitor.RunAsync(
+                        TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond),
+                        monitoringCancellation.Token)
                     : Task.CompletedTask;
-                _automaticRefreshTask = RefreshPublicTabsPeriodicallyAsync(
-                    TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes),
-                    _cancellation.Token);
+                _automaticRefreshTask = Task.Run(
+                    () => RefreshPublicTabsPeriodicallyAsync(
+                        TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes),
+                        monitoringCancellation.Token),
+                    CancellationToken.None);
             }
         }
         finally
@@ -96,7 +104,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
 
     private async Task StopCurrencyMonitoringCoreAsync()
     {
-        await _lifecycleGate.WaitAsync();
+        await _lifecycleGate.WaitAsync().ConfigureAwait(false);
         try
         {
             CancellationTokenSource? cancellation;
@@ -127,7 +135,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                 await Task.WhenAll(
                     runTask ?? Task.CompletedTask,
                     automaticRefreshTask ?? Task.CompletedTask,
-                    currencyRefreshTask ?? Task.CompletedTask);
+                    currencyRefreshTask ?? Task.CompletedTask).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
             {
@@ -161,7 +169,10 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
             _pendingCurrencyFrame = eventArgs.Frame;
             if (_currencyRefreshTask is not { IsCompleted: false })
             {
-                _currencyRefreshTask = RefreshCurrencyFramesAsync(_cancellation.Token);
+                var monitoringCancellationToken = _cancellation.Token;
+                _currencyRefreshTask = Task.Run(
+                    () => RefreshCurrencyFramesAsync(monitoringCancellationToken),
+                    CancellationToken.None);
             }
         }
     }
@@ -191,7 +202,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
 
             try
             {
-                await _refresh.RefreshCurrencyAsync(frame, cancellationToken);
+                await _currencyRefresh.RefreshAsync(frame, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -219,7 +230,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                 var startedAt = DateTimeOffset.UtcNow;
                 try
                 {
-                    await _refresh.RefreshPublicTabsAsync(cancellationToken: cancellationToken);
+                    await _publicTabsRefresh.RefreshAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -235,7 +246,7 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
                 var remaining = interval - (DateTimeOffset.UtcNow - startedAt);
                 if (remaining > TimeSpan.Zero)
                 {
-                    await Task.Delay(remaining, cancellationToken);
+                    await Task.Delay(remaining, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

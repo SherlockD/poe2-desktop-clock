@@ -26,7 +26,12 @@ public sealed class WindowsCurrencyValuationReader : ICurrencyValuationReader
             return null;
         }
 
-        var amounts = await CurrencyAmountScanner.ScanAsync(frame.PngBytes, layout);
+        // Image preprocessing and Windows OCR are CPU-intensive. Keep both
+        // outside the WPF dispatcher even when a caller starts a refresh from
+        // a UI command.
+        var amounts = await Task.Run(
+            () => CurrencyAmountScanner.ScanAsync(frame.PngBytes, layout),
+            cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         var totalDivines = 0m;

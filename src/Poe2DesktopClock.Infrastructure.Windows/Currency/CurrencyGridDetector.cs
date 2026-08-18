@@ -21,7 +21,17 @@ internal static class CurrencyGridDetector
 
     internal static IReadOnlyList<DetectedCurrencySlot> Detect(string imagePath)
     {
+        return DetectWithImageSize(imagePath).Slots;
+    }
+
+    internal static DetectedCurrencyGrid DetectWithImageSize(string imagePath)
+    {
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath);
+        return new DetectedCurrencyGrid(image.Width, image.Height, Detect(image));
+    }
+
+    private static IReadOnlyList<DetectedCurrencySlot> Detect(Image<Rgba32> image)
+    {
         var verticalLines = FindLines(image, vertical: true);
         var horizontalLines = FindLines(image, vertical: false);
         var candidates = FindFrameCandidates(verticalLines, horizontalLines);

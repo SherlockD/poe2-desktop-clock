@@ -6,3 +6,8 @@ internal sealed record DetectedCurrencySlot(
     Rectangle Bounds,
     double Confidence,
     string? Name = null);
+
+internal sealed record DetectedCurrencyGrid(
+    int ImageWidth,
+    int ImageHeight,
+    IReadOnlyList<DetectedCurrencySlot> Slots);
