@@ -118,7 +118,13 @@ public partial class App : System.Windows.Application
             if (sender is MainWindow mainWindow)
             {
                 mainWindow.Closing -= OnMainWindowClosing;
-                mainWindow.Close();
+                // DisposeAsync can complete synchronously. Calling Close in
+                // that case would re-enter WPF's current Closing event and
+                // throws "Cannot ... Close ... while a Window is closing".
+                // Queue the final close after the cancelled event returns.
+                _ = mainWindow.Dispatcher.BeginInvoke(
+                    new Action(mainWindow.Close),
+                    System.Windows.Threading.DispatcherPriority.Normal);
             }
         }
     }
