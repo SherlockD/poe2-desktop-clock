@@ -36,7 +36,13 @@ public sealed class RuntimeTrackerStatusProviderTests
         Assert.Equal(75m, provider.GetCurrent().ClockSnapshot?.TotalDivines);
 
         publicTabs.Raise(new PublicTabsRefreshResult(
-            new PublicTabsValuation(25m, 0, true, updatedAt, string.Empty),
+            new PublicTabsValuation(25m, 0, true, updatedAt, string.Empty)
+            {
+                Tabs =
+                [
+                    new PublicTabValuation("Разлом", "~price 1001 mirror", 25m, 5, 5, 5, 0, true),
+                ],
+            },
             updatedAt));
 
         var combined = provider.GetCurrent().ClockSnapshot;
@@ -44,6 +50,7 @@ public sealed class RuntimeTrackerStatusProviderTests
         Assert.Equal(75m, combined?.CurrencyTabDivines);
         Assert.Equal(25m, combined?.PublicTabsDivines);
         Assert.Equal(combined, store.LastSnapshot);
+        Assert.Single(provider.GetCurrent().PublicTabsValuation!.Tabs);
     }
 
     [Fact]

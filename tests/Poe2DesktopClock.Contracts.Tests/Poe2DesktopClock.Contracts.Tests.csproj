@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Poe2DesktopClock.Contracts\Poe2DesktopClock.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Poe2DesktopClock.Domain\Poe2DesktopClock.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Poe2DesktopClock.Infrastructure.PoeApi\Poe2DesktopClock.Infrastructure.PoeApi.csproj" />
     <ProjectReference Include="..\..\src\Poe2DesktopClock.Infrastructure.Storage\Poe2DesktopClock.Infrastructure.Storage.csproj" />
   </ItemGroup>
 </Project>

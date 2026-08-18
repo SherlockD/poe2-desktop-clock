@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Poe2DesktopClock.Desktop.Views"
         xmlns:viewModels="clr-namespace:Poe2DesktopClock.Desktop.ViewModels"
+        Icon="Assets/Poe2DesktopClock.png"
         Title="PoE 2 — Wraeclast Ledger"
         Width="1180"
         Height="800"
@@ -14,6 +15,9 @@
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModels:DashboardViewModel}">
             <views:DashboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:PublicTabsViewModel}">
+            <views:PublicTabsView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModels:SettingsViewModel}">
             <views:SettingsView />
@@ -151,6 +155,11 @@
                                       Style="{StaticResource NavigationButtonStyle}"
                                       IsChecked="{Binding IsDashboardSelected, Mode=OneWay}"
                                       Command="{Binding ShowDashboardCommand}" />
+                        <ToggleButton Content="◇   Публичные вкладки"
+                                      Margin="0,7,0,0"
+                                      Style="{StaticResource NavigationButtonStyle}"
+                                      IsChecked="{Binding IsPublicTabsSelected, Mode=OneWay}"
+                                      Command="{Binding ShowPublicTabsCommand}" />
                         <ToggleButton Content="◇   Источники и настройка"
                                       Margin="0,7,0,0"
                                       Style="{StaticResource NavigationButtonStyle}"

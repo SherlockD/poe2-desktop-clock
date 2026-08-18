@@ -91,20 +91,26 @@ public sealed class PublicTabsValuationReader : IPublicTabsValuationReader
             .GroupBy(item => item.Id ?? $"{item.TabName}\u001f{item.X}\u001f{item.Y}\u001f{item.ItemName}", StringComparer.Ordinal)
             .Select(group => group.First())
             .ToArray();
-        var complete = !searches.Any(search => search.IsTruncated) && markers.All(marker =>
-            selected.Any(item => string.Equals(item.TabName, marker.TabName, StringComparison.Ordinal)) &&
-            !allItems.Any(item => string.Equals(item.MarkerLabel, marker.Label, StringComparison.OrdinalIgnoreCase) &&
-                                  !string.Equals(item.TabName, marker.TabName, StringComparison.Ordinal)));
+        var tabs = markers
+            .Select(marker => CalculateTabValuation(
+                marker,
+                searches.Single(search => string.Equals(search.Label, marker.Label, StringComparison.Ordinal)),
+                selected,
+                allItems,
+                prices))
+            .ToArray();
+        var complete = tabs.All(tab => tab.IsComplete);
         var inventoryFingerprint = CreateInventoryFingerprint(currentMarkers);
         var priceFingerprint = CreatePriceFingerprint(selected, prices);
         var previousValuation = cached?.Valuation;
         var canReuseValuation = cached is not null && previousValuation is not null &&
                                 string.Equals(cached.InventoryFingerprint, inventoryFingerprint, StringComparison.Ordinal) &&
                                 string.Equals(cached.PriceFingerprint, priceFingerprint, StringComparison.Ordinal) &&
-                                previousValuation.IsComplete == complete;
+                                previousValuation.IsComplete == complete &&
+                                HasTabValuationsForMarkers(previousValuation, markers);
         var valuation = canReuseValuation
             ? previousValuation!
-            : CalculateValuation(selected, prices, complete, now);
+            : CalculateValuation(selected, prices, complete, now) with { Tabs = tabs };
 
         _snapshots.Save(new StoredPublicTabsSnapshot(
             settings.AccountName.Trim(),
@@ -165,6 +171,52 @@ public sealed class PublicTabsValuationReader : IPublicTabsValuationReader
         previous.TotalMatches == current.TotalMatches &&
         previous.ItemIds.Count == current.ItemIds.Count &&
         previous.ItemIds.ToHashSet(StringComparer.Ordinal).SetEquals(current.ItemIds);
+
+    private static bool HasTabValuationsForMarkers(
+        PublicTabsValuation valuation,
+        IReadOnlyList<PublicStashTabMarker> markers) =>
+        valuation.Tabs.Count == markers.Count &&
+        markers.All(marker => valuation.Tabs.Any(tab =>
+            string.Equals(tab.Label, marker.Label, StringComparison.Ordinal) &&
+            string.Equals(tab.TabName, marker.TabName, StringComparison.Ordinal)));
+
+    private static PublicTabValuation CalculateTabValuation(
+        PublicStashTabMarker marker,
+        PublicStashSearchResult search,
+        IReadOnlyList<PublicStashItem> selected,
+        IReadOnlyList<PublicStashItem> allItems,
+        PriceSnapshot? prices)
+    {
+        var tabItems = selected
+            .Where(item => string.Equals(item.TabName, marker.TabName, StringComparison.Ordinal))
+            .ToArray();
+        var total = 0m;
+        var unpriced = 0;
+        foreach (var group in tabItems.GroupBy(item => item.ItemName, StringComparer.Ordinal))
+        {
+            if (prices is null || !prices.DivinePrices.TryGetValue(PoeNinjaPriceClient.NormalizeItemName(group.Key), out var unitPrice))
+            {
+                unpriced++;
+                continue;
+            }
+
+            total += unitPrice * group.Sum(item => item.StackSize);
+        }
+
+        var hasOnlyExpectedTab = !allItems.Any(item =>
+            string.Equals(item.MarkerLabel, marker.Label, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(item.TabName, marker.TabName, StringComparison.Ordinal));
+        var isComplete = !search.IsTruncated && tabItems.Length > 0 && hasOnlyExpectedTab;
+        return new PublicTabValuation(
+            marker.Label,
+            marker.TabName,
+            total,
+            search.TotalMatches,
+            search.ItemIds.Count,
+            tabItems.Length,
+            unpriced,
+            isComplete);
+    }
 
     private static PublicTabsValuation CalculateValuation(
         IReadOnlyList<PublicStashItem> selected,

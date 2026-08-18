@@ -10,18 +10,21 @@ public sealed class MainViewModel : ViewModelBase
     private readonly ITrackerMonitoringUseCase _monitoring;
     private object _currentPage;
     private bool _isDashboardSelected = true;
+    private bool _isPublicTabsSelected;
     private bool _isSettingsSelected;
     private bool _isInitialSetupActive = true;
     private bool _isApplicationReady;
 
     public MainViewModel(
         DashboardViewModel dashboard,
+        PublicTabsViewModel publicTabs,
         SettingsViewModel settings,
         InitialSetupViewModel initialSetup,
         IFullApplicationResetUseCase fullReset,
         ITrackerMonitoringUseCase monitoring)
     {
         Dashboard = dashboard;
+        PublicTabs = publicTabs;
         Settings = settings;
         InitialSetup = initialSetup;
         _fullReset = fullReset;
@@ -30,11 +33,14 @@ public sealed class MainViewModel : ViewModelBase
         InitialSetup.SetupCompleted += OnInitialSetupCompleted;
         _currentPage = dashboard;
         ShowDashboardCommand = new RelayCommand(ShowDashboard);
+        ShowPublicTabsCommand = new RelayCommand(ShowPublicTabs);
         ShowSettingsCommand = new RelayCommand(ShowSettings);
         FullResetCommand = new RelayCommand(() => FullResetRequested?.Invoke(this, EventArgs.Empty));
     }
 
     public DashboardViewModel Dashboard { get; }
+
+    public PublicTabsViewModel PublicTabs { get; }
 
     public SettingsViewModel Settings { get; }
 
@@ -62,6 +68,12 @@ public sealed class MainViewModel : ViewModelBase
         private set => SetProperty(ref _isSettingsSelected, value);
     }
 
+    public bool IsPublicTabsSelected
+    {
+        get => _isPublicTabsSelected;
+        private set => SetProperty(ref _isPublicTabsSelected, value);
+    }
+
     public bool IsInitialSetupActive
     {
         get => _isInitialSetupActive;
@@ -77,6 +89,8 @@ public sealed class MainViewModel : ViewModelBase
     public string GameStatus => Dashboard.GameStatus;
 
     public ICommand ShowDashboardCommand { get; }
+
+    public ICommand ShowPublicTabsCommand { get; }
 
     public ICommand ShowSettingsCommand { get; }
 
@@ -109,15 +123,26 @@ public sealed class MainViewModel : ViewModelBase
     {
         CurrentPage = Dashboard;
         IsDashboardSelected = true;
+        IsPublicTabsSelected = false;
         IsSettingsSelected = false;
         Dashboard.Refresh();
         OnPropertyChanged(nameof(GameStatus));
+    }
+
+    private void ShowPublicTabs()
+    {
+        CurrentPage = PublicTabs;
+        IsDashboardSelected = false;
+        IsPublicTabsSelected = true;
+        IsSettingsSelected = false;
+        PublicTabs.Refresh();
     }
 
     private void ShowSettings()
     {
         CurrentPage = Settings;
         IsDashboardSelected = false;
+        IsPublicTabsSelected = false;
         IsSettingsSelected = true;
     }
 

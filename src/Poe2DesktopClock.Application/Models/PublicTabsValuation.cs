@@ -6,4 +6,8 @@ public sealed record PublicTabsValuation(
     int UnpricedItems,
     bool IsComplete,
     DateTimeOffset UpdatedAt,
-    string Summary);
+    string Summary)
+{
+    /// <summary>Details for every configured public tab from this refresh.</summary>
+    public IReadOnlyList<PublicTabValuation> Tabs { get; init; } = [];
+}

@@ -86,11 +86,64 @@ public sealed class PublicTabsValuationReaderTests
         }
     }
 
+    [Fact]
+    public async Task ReadAsync_exposes_each_tab_value_and_trade_api_truncation()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"poe2-clock-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var reader = new PublicTabsValuationReader(
+                new TradeApiClient(new TestHttpClientFactory(new MultiplePublicTabsTradeHandler())),
+                new TwoMarkerProvider(),
+                new PublicTabsSnapshotStore(Path.Combine(directory, "public-tabs-snapshot.json")));
+            var settings = TrackerSettings.Default with { AccountName = "account", League = "League" };
+            var prices = new PriceSnapshot(
+                DateTimeOffset.UtcNow,
+                new Dictionary<string, decimal>(StringComparer.Ordinal)
+                {
+                    ["ORB"] = 2m,
+                    ["RUNE"] = 5m,
+                });
+
+            var valuation = await reader.ReadAsync(settings, prices);
+
+            Assert.Equal(9m, valuation.Divines);
+            Assert.False(valuation.IsComplete);
+            var completeTab = Assert.Single(valuation.Tabs, tab => tab.Label == "Разлом");
+            Assert.Equal(4m, completeTab.Divines);
+            Assert.False(completeTab.IsTradeApiResultTruncated);
+            Assert.True(completeTab.IsComplete);
+
+            var truncatedTab = Assert.Single(valuation.Tabs, tab => tab.Label == "Бездна");
+            Assert.Equal(5m, truncatedTab.Divines);
+            Assert.Equal(3, truncatedTab.TotalMatches);
+            Assert.Equal(1, truncatedTab.ReturnedItemIds);
+            Assert.True(truncatedTab.IsTradeApiResultTruncated);
+            Assert.False(truncatedTab.IsComplete);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
     private sealed class SingleMarkerProvider : IPublicTabMarkerProvider
     {
         public IReadOnlyList<PublicTabMarker> GetMarkers() =>
         [
             new PublicTabMarker("Тест", "~price 1001 mirror", 1001m, "mirror"),
+        ];
+    }
+
+    private sealed class TwoMarkerProvider : IPublicTabMarkerProvider
+    {
+        public IReadOnlyList<PublicTabMarker> GetMarkers() =>
+        [
+            new PublicTabMarker("Разлом", "~price 1001 mirror", 1001m, "mirror"),
+            new PublicTabMarker("Бездна", "~price 1002 mirror", 1002m, "mirror"),
         ];
     }
 
@@ -126,6 +179,48 @@ public sealed class PublicTabsValuationReaderTests
                 return Task.FromResult(CreateResponse("""
                     {"result":[{"id":"item-1","listing":{"stash":{"name":"~price 1001 mirror","x":0,"y":0}},"item":{"id":"item-1","typeLine":"Orb","stackSize":3}}]}
                     """, "trade-fetch-request-limit"));
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+        }
+
+        private static HttpResponseMessage CreateResponse(string json, string policy)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            };
+            response.Headers.Add("X-Rate-Limit-Policy", policy);
+            response.Headers.Add("X-Rate-Limit-Rules", "client");
+            response.Headers.Add("X-Rate-Limit-Client", "10:60:10");
+            response.Headers.Add("X-Rate-Limit-Client-State", "1:60:0");
+            return response;
+        }
+    }
+
+    private sealed class MultiplePublicTabsTradeHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri?.AbsolutePath.Contains("/search/", StringComparison.Ordinal) == true)
+            {
+                var requestBody = request.Content!.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+                return Task.FromResult(requestBody.Contains("1001", StringComparison.Ordinal)
+                    ? CreateResponse("""{"id":"query-rift","total":1,"result":["rift-item"]}""", "trade-search-request-limit")
+                    : CreateResponse("""{"id":"query-abyss","total":3,"result":["abyss-item"]}""", "trade-search-request-limit"));
+            }
+
+            if (request.RequestUri?.AbsolutePath.Contains("/fetch/", StringComparison.Ordinal) == true)
+            {
+                var isRift = request.RequestUri.AbsolutePath.Contains("rift-item", StringComparison.Ordinal);
+                var payload = isRift
+                    ? """
+                      {"result":[{"id":"rift-item","listing":{"stash":{"name":"~price 1001 mirror","x":0,"y":0}},"item":{"id":"rift-item","typeLine":"Orb","stackSize":2}}]}
+                      """
+                    : """
+                      {"result":[{"id":"abyss-item","listing":{"stash":{"name":"~price 1002 mirror","x":0,"y":0}},"item":{"id":"abyss-item","typeLine":"Rune","stackSize":1}}]}
+                      """;
+                return Task.FromResult(CreateResponse(payload, "trade-fetch-request-limit"));
             }
 
             throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");

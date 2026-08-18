@@ -6,12 +6,17 @@ namespace Poe2DesktopClock.Infrastructure.Windows.Tray;
 
 public sealed class WindowsSystemTrayIcon : ISystemTrayIcon
 {
+    private const string IconResourceName =
+        "Poe2DesktopClock.Infrastructure.Windows.Assets.Poe2DesktopClock.Tray.ico";
+
     private readonly ContextMenuStrip _contextMenu;
+    private readonly Icon _icon;
     private readonly NotifyIcon _notifyIcon;
     private bool _disposed;
 
     public WindowsSystemTrayIcon()
     {
+        _icon = LoadIcon();
         _contextMenu = new ContextMenuStrip();
         _contextMenu.Items.Add("Открыть", null, OnRestoreClicked);
         _contextMenu.Items.Add(new ToolStripSeparator());
@@ -20,7 +25,7 @@ public sealed class WindowsSystemTrayIcon : ISystemTrayIcon
         _notifyIcon = new NotifyIcon
         {
             ContextMenuStrip = _contextMenu,
-            Icon = SystemIcons.Application,
+            Icon = _icon,
             Text = "PoE 2 Desktop Clock",
             Visible = false,
         };
@@ -56,6 +61,7 @@ public sealed class WindowsSystemTrayIcon : ISystemTrayIcon
         _notifyIcon.DoubleClick -= OnNotifyIconDoubleClick;
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
+        _icon.Dispose();
         _contextMenu.Dispose();
     }
 
@@ -67,6 +73,15 @@ public sealed class WindowsSystemTrayIcon : ISystemTrayIcon
 
     private void OnExitClicked(object? sender, EventArgs eventArgs) =>
         ExitRequested?.Invoke(this, EventArgs.Empty);
+
+    private static Icon LoadIcon()
+    {
+        var assembly = typeof(WindowsSystemTrayIcon).Assembly;
+        using var stream = assembly.GetManifestResourceStream(IconResourceName)
+            ?? throw new InvalidOperationException("Не удалось загрузить значок системного трея.");
+        using var icon = new Icon(stream);
+        return (Icon)icon.Clone();
+    }
 
     private void ThrowIfDisposed()
     {

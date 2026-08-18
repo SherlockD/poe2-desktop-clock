@@ -19,6 +19,7 @@ public sealed class PoeNinjaPriceClient
         "Abyss",
         "Essences",
         "SoulCores",
+        "Idols",
         "Runes",
         "Ritual",
         "Expedition",

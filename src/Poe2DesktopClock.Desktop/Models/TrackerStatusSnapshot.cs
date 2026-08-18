@@ -1,4 +1,5 @@
 using Poe2DesktopClock.Contracts.Models;
+using Poe2DesktopClock.Application.Models;
 
 namespace Poe2DesktopClock.Desktop.Models;
 
@@ -9,6 +10,7 @@ namespace Poe2DesktopClock.Desktop.Models;
 /// </summary>
 public sealed record TrackerStatusSnapshot(
     ClockSnapshot? ClockSnapshot,
+    PublicTabsValuation? PublicTabsValuation,
     GameStatus GameStatus,
     ClockMonitorStatus MonitorStatus,
     GameSessionSnapshot Session,

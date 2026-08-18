@@ -81,6 +81,7 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
         {
             return new TrackerStatusSnapshot(
                 _clockSnapshot,
+                _publicTabsValuation,
                 _gameStatus,
                 _monitorStatus,
                 _sessionSnapshot,

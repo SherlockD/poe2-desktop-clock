@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+    <ApplicationIcon>..\Poe2DesktopClock.Infrastructure.Windows\Assets\Poe2DesktopClock.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,5 +20,11 @@
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.PoeApi\Poe2DesktopClock.Infrastructure.PoeApi.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Composition\Poe2DesktopClock.Composition.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\Poe2DesktopClock.Infrastructure.Windows\Assets\Poe2DesktopClock.png">
+      <Link>Assets\Poe2DesktopClock.png</Link>
+    </Resource>
   </ItemGroup>
 </Project>

@@ -24,6 +24,7 @@ public partial class App : System.Windows.Application
         var services = Poe2DesktopClockComposition.CreateServiceCollection();
         services.AddSingleton<ITrackerStatusProvider, RuntimeTrackerStatusProvider>();
         services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<PublicTabsViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<InitialSetupViewModel>();
         services.AddSingleton<MainViewModel>();
