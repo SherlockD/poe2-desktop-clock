@@ -10,10 +10,12 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
     private readonly ITrackerRefreshUseCase _refresh;
     private readonly ICurrencyChangeMonitor _monitor;
     private readonly IGameStatusReader _gameStatus;
+    private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
+    private readonly object _lifecycleSync = new();
     private CancellationTokenSource? _cancellation;
     private Task? _runTask;
     private Task? _automaticRefreshTask;
-    private int _refreshInProgress;
+    private Task? _currencyRefreshTask;
 
     public CurrencyMonitoringUseCase(
         ITrackerSettingsUseCase settings,
@@ -33,55 +35,81 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
 
     public GameStatus GetGameStatus() => _gameStatus.GetGameStatus();
 
-    public Task StartCurrencyMonitoringAsync(CancellationToken cancellationToken = default)
+    public async Task StartCurrencyMonitoringAsync(CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (_cancellation is not null)
+        await _lifecycleGate.WaitAsync(cancellationToken);
+        try
         {
-            return Task.CompletedTask;
-        }
+            lock (_lifecycleSync)
+            {
+                if (_cancellation is not null)
+                {
+                    return;
+                }
 
-        _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var settings = _settings.GetSettings();
-        _runTask = settings.IsCurrencyMonitoringEnabled
-            ? _monitor.RunAsync(TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond), _cancellation.Token)
-            : Task.CompletedTask;
-        _automaticRefreshTask = RefreshPublicTabsPeriodicallyAsync(
-            TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes),
-            _cancellation.Token);
-        return Task.CompletedTask;
+                _cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var settings = _settings.GetSettings();
+                _runTask = settings.IsCurrencyMonitoringEnabled
+                    ? _monitor.RunAsync(TimeSpan.FromSeconds(1d / settings.CurrencyScreensPerSecond), _cancellation.Token)
+                    : Task.CompletedTask;
+                _automaticRefreshTask = RefreshPublicTabsPeriodicallyAsync(
+                    TimeSpan.FromMinutes(settings.PublicRefreshIntervalMinutes),
+                    _cancellation.Token);
+            }
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
     }
 
     public async Task StopCurrencyMonitoringAsync()
     {
-        var cancellation = Interlocked.Exchange(ref _cancellation, null);
-        if (cancellation is null)
-        {
-            return;
-        }
-
-        cancellation.Cancel();
+        await _lifecycleGate.WaitAsync();
         try
         {
-            if (_runTask is not null)
+            CancellationTokenSource? cancellation;
+            Task? runTask;
+            Task? automaticRefreshTask;
+            Task? currencyRefreshTask;
+            lock (_lifecycleSync)
             {
-                await _runTask;
+                cancellation = _cancellation;
+                if (cancellation is null)
+                {
+                    return;
+                }
+
+                _cancellation = null;
+                runTask = _runTask;
+                automaticRefreshTask = _automaticRefreshTask;
+                currencyRefreshTask = _currencyRefreshTask;
+                _runTask = null;
+                _automaticRefreshTask = null;
+                _currencyRefreshTask = null;
             }
-            if (_automaticRefreshTask is not null)
+
+            cancellation.Cancel();
+            try
             {
-                await _automaticRefreshTask;
+                await Task.WhenAll(
+                    runTask ?? Task.CompletedTask,
+                    automaticRefreshTask ?? Task.CompletedTask,
+                    currencyRefreshTask ?? Task.CompletedTask);
             }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected shutdown path.
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+            {
+                // Expected shutdown path.
+            }
+            finally
+            {
+                cancellation.Dispose();
+                MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Stopped);
+            }
         }
         finally
         {
-            cancellation.Dispose();
-            _runTask = null;
-            _automaticRefreshTask = null;
-            MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Stopped);
+            _lifecycleGate.Release();
         }
     }
 
@@ -90,29 +118,40 @@ public sealed class CurrencyMonitoringUseCase : ITrackerMonitoringUseCase, IAsyn
         await StopCurrencyMonitoringAsync();
         _monitor.CurrencyChanged -= OnCurrencyChanged;
         _monitor.StatusChanged -= OnStatusChanged;
+        _lifecycleGate.Dispose();
     }
 
     private void OnStatusChanged(object? sender, ClockMonitorStatus status) =>
         MonitorStatusChanged?.Invoke(this, status);
 
-    private async void OnCurrencyChanged(object? sender, EventArgs eventArgs)
+    private void OnCurrencyChanged(object? sender, EventArgs eventArgs)
     {
-        if (Interlocked.CompareExchange(ref _refreshInProgress, 1, 0) != 0)
+        lock (_lifecycleSync)
         {
-            return;
-        }
+            if (_cancellation is null ||
+                _cancellation.IsCancellationRequested ||
+                _currencyRefreshTask is { IsCompleted: false })
+            {
+                return;
+            }
 
+            _currencyRefreshTask = RefreshCurrencyAsync(_cancellation.Token);
+        }
+    }
+
+    private async Task RefreshCurrencyAsync(CancellationToken cancellationToken)
+    {
         try
         {
-            await _refresh.RefreshAsync(refreshPublicTabs: false);
+            await _refresh.RefreshAsync(refreshPublicTabs: false, cancellationToken: cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Expected shutdown path.
         }
         catch
         {
             MonitorStatusChanged?.Invoke(this, ClockMonitorStatus.Error);
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _refreshInProgress, 0);
         }
     }
 
