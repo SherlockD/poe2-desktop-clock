@@ -8,6 +8,14 @@ namespace Poe2DesktopClock.Infrastructure.Windows.Tests;
 public sealed class InitialSetupCompositionTests
 {
     [Fact]
+    public void Composition_registers_the_system_tray_icon()
+    {
+        var services = Poe2DesktopClockComposition.CreateServiceCollection();
+
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(ISystemTrayIcon));
+    }
+
+    [Fact]
     public async Task Composition_resolves_the_initial_setup_ports_from_shared_stores()
     {
         var services = Poe2DesktopClockComposition.CreateServiceCollection();

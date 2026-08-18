@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Composition;
 using Poe2DesktopClock.Desktop.Services;
 using Poe2DesktopClock.Desktop.ViewModels;
@@ -11,6 +12,7 @@ namespace Poe2DesktopClock.Desktop;
 public partial class App : System.Windows.Application
 {
     private ITrackerStatusProvider? _statusProvider;
+    private ISystemTrayIcon? _trayIcon;
     private IServiceProvider? _services;
     private Task? _runtimeInitializationTask;
     private bool _isShuttingDown;
@@ -28,6 +30,9 @@ public partial class App : System.Windows.Application
 
         _services = services.BuildServiceProvider();
         _statusProvider = _services.GetRequiredService<ITrackerStatusProvider>();
+        _trayIcon = _services.GetRequiredService<ISystemTrayIcon>();
+        _trayIcon.RestoreRequested += OnTrayRestoreRequested;
+        _trayIcon.ExitRequested += OnTrayExitRequested;
         var viewModel = _services.GetRequiredService<MainViewModel>();
         viewModel.InitialSetupCompleted += OnInitialSetupCompleted;
         viewModel.FullResetRequested += OnFullResetRequested;
@@ -116,54 +121,85 @@ public partial class App : System.Windows.Application
         }
     }
 
-    private async void OnMainWindowClosing(object? sender, CancelEventArgs eventArgs)
+    private void OnMainWindowClosing(object? sender, CancelEventArgs eventArgs)
     {
         if (_isShuttingDown)
         {
             return;
         }
 
-        if (sender is MainWindow setupWindow &&
-            setupWindow.DataContext is MainViewModel { IsInitialSetupActive: true } &&
+        eventArgs.Cancel = true;
+        if (sender is MainWindow mainWindow)
+        {
+            mainWindow.Hide();
+            _trayIcon?.Show();
+        }
+    }
+
+    private void OnTrayRestoreRequested(object? sender, EventArgs eventArgs)
+    {
+        _ = Dispatcher.BeginInvoke(RestoreMainWindow);
+    }
+
+    private void RestoreMainWindow()
+    {
+        if (MainWindow is not MainWindow mainWindow || _isShuttingDown)
+        {
+            return;
+        }
+
+        mainWindow.Show();
+        if (mainWindow.WindowState == WindowState.Minimized)
+        {
+            mainWindow.WindowState = WindowState.Normal;
+        }
+
+        mainWindow.Activate();
+        _trayIcon?.Hide();
+    }
+
+    private void OnTrayExitRequested(object? sender, EventArgs eventArgs)
+    {
+        _ = Dispatcher.BeginInvoke(ShutdownApplicationAsync);
+    }
+
+    private async Task ShutdownApplicationAsync()
+    {
+        if (_isShuttingDown || MainWindow is not MainWindow mainWindow)
+        {
+            return;
+        }
+
+        if (mainWindow.DataContext is MainViewModel { IsInitialSetupActive: true } &&
             MessageBox.Show(
                 "Настройка ещё не завершена. Закрыть приложение? Прогресс первых шагов сохранится.",
                 "Первоначальная настройка",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
-            eventArgs.Cancel = true;
             return;
         }
 
-        eventArgs.Cancel = true;
         _isShuttingDown = true;
-        try
+        _trayIcon?.Hide();
+        if (mainWindow.DataContext is MainViewModel viewModel)
         {
-            if (sender is MainWindow { DataContext: MainViewModel viewModel })
-            {
-                viewModel.InitialSetup.CancelPendingOperations();
-            }
+            viewModel.InitialSetup.CancelPendingOperations();
+        }
 
-            await DisposeServicesAsync();
-        }
-        finally
-        {
-            if (sender is MainWindow mainWindow)
-            {
-                mainWindow.Closing -= OnMainWindowClosing;
-                // DisposeAsync can complete synchronously. Calling Close in
-                // that case would re-enter WPF's current Closing event and
-                // throws "Cannot ... Close ... while a Window is closing".
-                // Queue the final close after the cancelled event returns.
-                _ = mainWindow.Dispatcher.BeginInvoke(
-                    new Action(mainWindow.Close),
-                    System.Windows.Threading.DispatcherPriority.Normal);
-            }
-        }
+        await DisposeServicesAsync();
+        mainWindow.Close();
     }
 
     private async Task DisposeServicesAsync()
     {
+        if (_trayIcon is not null)
+        {
+            _trayIcon.RestoreRequested -= OnTrayRestoreRequested;
+            _trayIcon.ExitRequested -= OnTrayExitRequested;
+            _trayIcon = null;
+        }
+
         if (_services is IAsyncDisposable services)
         {
             await services.DisposeAsync();

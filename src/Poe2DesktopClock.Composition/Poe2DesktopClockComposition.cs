@@ -4,6 +4,7 @@ using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Services;
 using Poe2DesktopClock.Infrastructure.Windows.Runtime;
 using Poe2DesktopClock.Infrastructure.Windows.Monitoring;
+using Poe2DesktopClock.Infrastructure.Windows.Tray;
 using Poe2DesktopClock.Infrastructure.Storage.Snapshots;
 using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
 using Poe2DesktopClock.Infrastructure.Storage.Onboarding;
@@ -33,6 +34,7 @@ public static class Poe2DesktopClockComposition
 
         services.AddSingleton<PoeProcessLocator>();
         services.AddSingleton<WindowsGraphicsCaptureService>();
+        services.AddSingleton<ISystemTrayIcon, WindowsSystemTrayIcon>();
         services.AddSingleton(new RegionStore(Path.Combine(legacyDataDirectory, "regions.json")));
         services.AddSingleton(new CurrencyLayoutStore(Path.Combine(legacyDataDirectory, "currency-layouts.json")));
         services.AddHttpClient(TradeApiClient.HttpClientName, client => ConfigurePoeApiClient(client, TradeApiBaseUri));
