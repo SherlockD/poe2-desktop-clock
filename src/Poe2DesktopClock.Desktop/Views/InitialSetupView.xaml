@@ -5,8 +5,8 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource WindowBackgroundBrush}">
-        <Grid Margin="48,38,48,44" HorizontalAlignment="Center" MaxWidth="920">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+        <Grid Margin="48,34,48,44" HorizontalAlignment="Center" MaxWidth="920">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="22" />
@@ -16,11 +16,12 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Первоначальная настройка" FontSize="30" FontWeight="SemiBold" />
+                <TextBlock Text="ПОДГОТОВКА ХРАНИЛИЩА" Style="{StaticResource EyebrowTextStyle}" />
+                <TextBlock Text="Первоначальная настройка" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
                 <TextBlock Text="Подготовим источники данных для часов. После последнего шага откроется мониторинг."
-                           Margin="0,8,0,0"
+                           Margin="0,5,0,0"
                            Foreground="{StaticResource MutedTextBrush}"
-                           FontSize="15"
+                           FontSize="14"
                            TextWrapping="Wrap" />
             </StackPanel>
 
@@ -33,40 +34,40 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                <Border Grid.Column="0" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="1" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="I  ·  ИСТОЧНИК" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="Currency-вкладка" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding CurrencyStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                <Border Grid.Column="2" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="2" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="II  ·  ВКЛАДКИ" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="Публичные вкладки" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding PublicTabsStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="9" Padding="13">
+                <Border Grid.Column="4" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="3" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                        <TextBlock Text="III  ·  ЧАСЫ" Style="{StaticResource EyebrowTextStyle}" />
                         <TextBlock Text="Подключение часов" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding DeviceStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <Border Grid.Row="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="14" Padding="28">
+            <Border Grid.Row="4" Style="{StaticResource PanelCardStyle}" Padding="28">
                 <Grid>
                     <Grid Visibility="{Binding IsCurrencyStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Currency-вкладка" FontSize="22" FontWeight="SemiBold" />
+                            <TextBlock Text="Currency-вкладка" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
                             <TextBlock Text="Откройте Currency-вкладку в игре. Сначала обведите её целиком, затем проверьте найденные ячейки."
                                        Margin="0,8,0,22"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap" />
 
-                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16" Margin="0,0,0,12">
+                            <Border Style="{StaticResource InsetPanelStyle}" Padding="16" Margin="0,0,0,12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -80,7 +81,7 @@
                                 </Grid>
                             </Border>
 
-                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16">
+                            <Border Style="{StaticResource InsetPanelStyle}" Padding="16">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -103,7 +104,7 @@
 
                     <Grid Visibility="{Binding IsPublicTabsStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Лига и публичные вкладки" FontSize="22" FontWeight="SemiBold" />
+                            <TextBlock Text="Лига и публичные вкладки" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
                             <TextBlock Text="Укажите аккаунт и лигу, затем оставьте только вкладки, которые хотите учитывать. Синхронизация проверит каждую из них отдельно."
                                        Margin="0,8,0,20"
                                        Foreground="{StaticResource MutedTextBrush}"
@@ -137,7 +138,7 @@
                             <ItemsControl ItemsSource="{Binding PublicTabs}" IsEnabled="{Binding IsNotSynchronizing}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="8" Padding="12" Margin="0,3">
+                                        <Border Style="{StaticResource InsetPanelStyle}" Padding="12" Margin="0,3">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
@@ -171,14 +172,22 @@
 
                     <Grid Visibility="{Binding IsDeviceStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Подключение часов" FontSize="22" FontWeight="SemiBold" />
-                            <TextBlock Text="⌚" FontSize="52" HorizontalAlignment="Center" Margin="0,22,0,10" Foreground="{StaticResource AccentBrush}" />
+                            <TextBlock Text="Подключение часов" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
+                            <Grid Width="64" Height="64" HorizontalAlignment="Center" Margin="0,22,0,10">
+                                <Ellipse Stroke="{StaticResource AccentDarkBrush}" StrokeThickness="1" />
+                                <Border Width="34" Height="34" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+                                    <Border.RenderTransform>
+                                        <RotateTransform Angle="45" CenterX="17" CenterY="17" />
+                                    </Border.RenderTransform>
+                                </Border>
+                                <TextBlock Text="II" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrightBrush}" />
+                            </Grid>
                             <TextBlock Text="Подключение физических часов появится в одной из следующих версий. Источники данных уже настроены."
                                        TextAlignment="Center"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,22" />
-                            <Border Background="{StaticResource RaisedPanelBrush}" CornerRadius="9" Padding="16">
+                            <Border Style="{StaticResource InsetPanelStyle}" Padding="16">
                                 <TextBlock Text="{Binding DeviceSummary}" TextWrapping="Wrap" />
                             </Border>
                             <TextBlock Text="{Binding Notice}" Margin="0,18,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
