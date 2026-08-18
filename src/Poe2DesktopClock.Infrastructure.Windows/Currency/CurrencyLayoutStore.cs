@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Poe2DesktopClock.Infrastructure.Windows.Persistence;
 
 namespace Poe2DeskTracker.Currency;
 
@@ -29,8 +30,7 @@ public sealed class CurrencyLayoutStore
         {
             var layouts = Load();
             layouts[layout.RegionName] = layout;
-            Directory.CreateDirectory(Path.GetDirectoryName(ConfigurationPath)!);
-            File.WriteAllText(ConfigurationPath, JsonSerializer.Serialize(layouts, JsonOptions));
+            Save(layouts);
         }
     }
 
@@ -39,8 +39,7 @@ public sealed class CurrencyLayoutStore
         lock (_sync)
         {
             _layouts = new Dictionary<string, CurrencyLayout>(StringComparer.OrdinalIgnoreCase);
-            Directory.CreateDirectory(Path.GetDirectoryName(ConfigurationPath)!);
-            File.WriteAllText(ConfigurationPath, JsonSerializer.Serialize(_layouts, JsonOptions));
+            Save(_layouts);
         }
     }
 
@@ -56,8 +55,18 @@ public sealed class CurrencyLayoutStore
             return _layouts = new Dictionary<string, CurrencyLayout>(StringComparer.OrdinalIgnoreCase);
         }
 
-        _layouts = JsonSerializer.Deserialize<Dictionary<string, CurrencyLayout>>(File.ReadAllText(ConfigurationPath), JsonOptions)
+        _layouts = ResilientJsonFile.ReadOrBackupCorrupted<Dictionary<string, CurrencyLayout>>(
+            ConfigurationPath,
+            JsonOptions,
+            layouts => layouts.All(pair =>
+                !string.IsNullOrWhiteSpace(pair.Key) &&
+                pair.Value is not null &&
+                !string.IsNullOrWhiteSpace(pair.Value.RegionName) &&
+                pair.Value.Slots is not null))
             ?? new Dictionary<string, CurrencyLayout>(StringComparer.OrdinalIgnoreCase);
         return _layouts;
     }
+
+    private void Save(IReadOnlyDictionary<string, CurrencyLayout> layouts) =>
+        ResilientJsonFile.WriteAtomically(ConfigurationPath, layouts, JsonOptions);
 }

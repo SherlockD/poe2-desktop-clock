@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Poe2DesktopClock.Infrastructure.Windows.Persistence;
 
 namespace Poe2DeskTracker.Regions;
 
@@ -40,9 +41,7 @@ public sealed class RegionStore
                 regions.Add(region);
             }
 
-            var directory = Path.GetDirectoryName(ConfigurationPath)!;
-            Directory.CreateDirectory(directory);
-            File.WriteAllText(ConfigurationPath, JsonSerializer.Serialize(regions, JsonOptions));
+            Save(regions);
         }
     }
 
@@ -57,8 +56,7 @@ public sealed class RegionStore
 
     private void Save(IReadOnlyList<RegionDefinition> regions)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(ConfigurationPath)!);
-        File.WriteAllText(ConfigurationPath, JsonSerializer.Serialize(regions, JsonOptions));
+        ResilientJsonFile.WriteAtomically(ConfigurationPath, regions, JsonOptions);
     }
 
     private List<RegionDefinition> Load()
@@ -76,7 +74,10 @@ public sealed class RegionStore
             return _regions = [];
         }
 
-        _regions = JsonSerializer.Deserialize<List<RegionDefinition>>(File.ReadAllText(sourcePath), JsonOptions) ?? [];
+        _regions = ResilientJsonFile.ReadOrBackupCorrupted<List<RegionDefinition>>(
+            sourcePath,
+            JsonOptions,
+            regions => regions.All(region => region is not null && !string.IsNullOrWhiteSpace(region.Name))) ?? [];
         if (!string.Equals(sourcePath, ConfigurationPath, StringComparison.OrdinalIgnoreCase))
         {
             Save(_regions);

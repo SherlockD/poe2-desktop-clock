@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Poe2DesktopClock.Contracts.Models;
+using Poe2DesktopClock.Infrastructure.Storage.Persistence;
 
 namespace Poe2DesktopClock.Infrastructure.Storage.Settings;
 
@@ -29,12 +30,7 @@ public sealed class DesktopSettingsStore
                 return _settings;
             }
 
-            if (!File.Exists(ConfigurationPath))
-            {
-                return _settings = fallback.Normalize();
-            }
-
-            _settings = JsonSerializer.Deserialize<TrackerSettings>(File.ReadAllText(ConfigurationPath), JsonOptions)?.Normalize()
+            _settings = ResilientJsonFile.ReadOrBackupCorrupted<TrackerSettings>(ConfigurationPath, JsonOptions)?.Normalize()
                 ?? fallback.Normalize();
             return _settings;
         }
@@ -45,12 +41,7 @@ public sealed class DesktopSettingsStore
         lock (_sync)
         {
             _settings = settings.Normalize();
-            var directory = Path.GetDirectoryName(ConfigurationPath)
-                ?? throw new InvalidOperationException("Не удалось определить папку настроек.");
-            Directory.CreateDirectory(directory);
-            var temporaryPath = $"{ConfigurationPath}.{Guid.NewGuid():N}.tmp";
-            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(_settings, JsonOptions));
-            File.Move(temporaryPath, ConfigurationPath, overwrite: true);
+            ResilientJsonFile.WriteAtomically(ConfigurationPath, _settings, JsonOptions);
         }
     }
 }

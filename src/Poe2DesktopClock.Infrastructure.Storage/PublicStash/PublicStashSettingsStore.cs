@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Poe2DesktopClock.Infrastructure.Storage.Persistence;
 using Poe2DeskTracker.PublicStash;
 
 namespace Poe2DesktopClock.Infrastructure.Storage.PublicStash;
@@ -68,8 +69,7 @@ public sealed class PublicStashSettingsStore
                 markers.Select(marker => marker.TabName).ToList(),
                 markers);
             _loaded = true;
-            Directory.CreateDirectory(Path.GetDirectoryName(ConfigurationPath)!);
-            File.WriteAllText(ConfigurationPath, JsonSerializer.Serialize(_settings, JsonOptions));
+            ResilientJsonFile.WriteAtomically(ConfigurationPath, _settings, JsonOptions);
         }
     }
 
@@ -94,11 +94,20 @@ public sealed class PublicStashSettingsStore
         }
 
         _loaded = true;
-        if (!File.Exists(ConfigurationPath))
-        {
-            return;
-        }
-
-        _settings = JsonSerializer.Deserialize<PublicStashSettings>(File.ReadAllText(ConfigurationPath), JsonOptions);
+        _settings = ResilientJsonFile.ReadOrBackupCorrupted<PublicStashSettings>(
+            ConfigurationPath,
+            JsonOptions,
+            IsValid);
     }
+
+    private static bool IsValid(PublicStashSettings settings) =>
+        settings.AccountName is not null &&
+        settings.League is not null &&
+        settings.TabNames is not null &&
+        settings.TabNames.All(name => name is not null) &&
+        (settings.TabMarkers is null || settings.TabMarkers.All(marker =>
+            marker is not null &&
+            marker.Label is not null &&
+            marker.TabName is not null &&
+            marker.PriceCurrency is not null));
 }

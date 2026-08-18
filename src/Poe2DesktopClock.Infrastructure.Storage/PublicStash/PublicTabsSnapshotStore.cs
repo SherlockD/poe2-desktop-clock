@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Poe2DesktopClock.Application.Models;
+using Poe2DesktopClock.Infrastructure.Storage.Persistence;
 using Poe2DeskTracker.PublicStash;
 
 namespace Poe2DesktopClock.Infrastructure.Storage.PublicStash;
@@ -29,19 +30,10 @@ public sealed class PublicTabsSnapshotStore
             }
 
             _loaded = true;
-            if (!File.Exists(ConfigurationPath))
-            {
-                return null;
-            }
-
-            try
-            {
-                _snapshot = JsonSerializer.Deserialize<StoredPublicTabsSnapshot>(File.ReadAllText(ConfigurationPath), JsonOptions);
-            }
-            catch (JsonException)
-            {
-                _snapshot = null;
-            }
+            _snapshot = ResilientJsonFile.ReadOrBackupCorrupted<StoredPublicTabsSnapshot>(
+                ConfigurationPath,
+                JsonOptions,
+                IsValid);
 
             return _snapshot;
         }
@@ -52,16 +44,29 @@ public sealed class PublicTabsSnapshotStore
         ArgumentNullException.ThrowIfNull(snapshot);
         lock (_sync)
         {
-            var directory = Path.GetDirectoryName(ConfigurationPath)
-                ?? throw new InvalidOperationException("Не удалось определить папку для снимка публичных вкладок.");
-            Directory.CreateDirectory(directory);
-            var temporaryPath = $"{ConfigurationPath}.{Guid.NewGuid():N}.tmp";
-            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(snapshot, JsonOptions));
-            File.Move(temporaryPath, ConfigurationPath, overwrite: true);
+            ResilientJsonFile.WriteAtomically(ConfigurationPath, snapshot, JsonOptions);
             _snapshot = snapshot;
             _loaded = true;
         }
     }
+
+    private static bool IsValid(StoredPublicTabsSnapshot snapshot) =>
+        snapshot.AccountName is not null &&
+        snapshot.League is not null &&
+        snapshot.InventoryFingerprint is not null &&
+        snapshot.Markers is not null &&
+        snapshot.Markers.All(marker =>
+            marker is not null &&
+            marker.Label is not null &&
+            marker.TabName is not null &&
+            marker.PriceCurrency is not null &&
+            marker.ItemIds is not null &&
+            marker.Items is not null &&
+            marker.Items.All(item =>
+                item is not null &&
+                item.TabName is not null &&
+                item.ItemName is not null &&
+                item.MarkerLabel is not null));
 }
 
 public sealed record StoredPublicTabsSnapshot(
