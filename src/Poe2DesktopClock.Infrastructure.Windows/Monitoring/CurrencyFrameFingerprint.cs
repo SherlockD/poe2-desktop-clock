@@ -11,9 +11,22 @@ namespace Poe2DesktopClock.Infrastructure.Windows.Monitoring;
 /// </summary>
 internal static class CurrencyFrameFingerprint
 {
+    internal static CurrencyFrameAnalysis Analyze(string imagePath, CurrencyLayout layout)
+    {
+        using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath);
+        return CurrencyCalibratedLayoutMatcher.Matches(image, layout)
+            ? new CurrencyFrameAnalysis(IsCurrencyTabVisible: true, Create(image, layout))
+            : new CurrencyFrameAnalysis(IsCurrencyTabVisible: false, Fingerprint: null);
+    }
+
     internal static string Create(string imagePath, CurrencyLayout layout)
     {
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(imagePath);
+        return Create(image, layout);
+    }
+
+    private static string Create(Image<Rgba32> image, CurrencyLayout layout)
+    {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
 
         foreach (var slot in layout.Slots.OrderBy(slot => slot.Y).ThenBy(slot => slot.X))
@@ -38,3 +51,7 @@ internal static class CurrencyFrameFingerprint
         return Convert.ToHexString(hash.GetHashAndReset());
     }
 }
+
+internal sealed record CurrencyFrameAnalysis(
+    bool IsCurrencyTabVisible,
+    string? Fingerprint);

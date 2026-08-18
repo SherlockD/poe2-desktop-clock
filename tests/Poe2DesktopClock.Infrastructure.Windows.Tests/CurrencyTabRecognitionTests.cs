@@ -49,6 +49,29 @@ public sealed class CurrencyTabRecognitionTests
     }
 
     [Fact]
+    public void Calibrated_runtime_matcher_checks_known_slot_frames_without_grid_detection()
+    {
+        const int imageWidth = 600;
+        const int imageHeight = 600;
+        var slots = CreateRows([9, 7, 5, 3, 3, 2, 3, 1]);
+        var layout = CreateLayout(slots, imageWidth, imageHeight);
+        using var currencyFrame = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(
+            imageWidth,
+            imageHeight);
+        foreach (var slot in slots)
+        {
+            DrawGoldFrame(currencyFrame, slot.Bounds);
+        }
+
+        using var unrelatedFrame = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(
+            imageWidth,
+            imageHeight);
+
+        Assert.True(CurrencyCalibratedLayoutMatcher.Matches(currencyFrame, layout));
+        Assert.False(CurrencyCalibratedLayoutMatcher.Matches(unrelatedFrame, layout));
+    }
+
+    [Fact]
     public void First_verified_frame_is_published_immediately_and_reopening_publishes_again()
     {
         var state = new CurrencyFrameObservationState();
@@ -74,6 +97,39 @@ public sealed class CurrencyTabRecognitionTests
             TimeSpan.FromMilliseconds(elapsedMilliseconds));
 
         Assert.Equal(TimeSpan.FromMilliseconds(expectedDelayMilliseconds), delay);
+    }
+
+    [Theory]
+    [InlineData(0, 8, 0)]
+    [InlineData(1, 8, 1)]
+    [InlineData(33, 2, 1)]
+    [InlineData(33, 4, 2)]
+    [InlineData(33, 8, 4)]
+    [InlineData(33, 32, 4)]
+    public void Ocr_worker_count_is_bounded_by_visible_slots_and_available_processors(
+        int visibleSlots,
+        int processorCount,
+        int expectedWorkers)
+    {
+        var workers = CurrencyAmountScanner.CalculateOcrWorkerCount(visibleSlots, processorCount);
+
+        Assert.Equal(expectedWorkers, workers);
+    }
+
+    [Fact]
+    public void Frame_candidate_at_right_edge_is_clamped_to_valid_image_bounds()
+    {
+        using var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(842, 847);
+        var candidate = new Rectangle(806, 100, 35, 46);
+
+        var bounds = CurrencyGridDetector.FindStrongestFrameBounds(
+            image,
+            candidate,
+            width: 46,
+            height: 46);
+
+        Assert.Equal(new Rectangle(795, 100, 46, 46), bounds);
+        Assert.True(bounds.Right < image.Width);
     }
 
     private static IReadOnlyList<DetectedCurrencySlot> CreateRows(IReadOnlyList<int> rowLengths)
@@ -107,4 +163,22 @@ public sealed class CurrencyTabRecognitionTests
                 (double)slot.Bounds.Width / imageWidth,
                 (double)slot.Bounds.Height / imageHeight,
                 slot.Confidence)).ToList());
+
+    private static void DrawGoldFrame(
+        SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32> image,
+        Rectangle bounds)
+    {
+        var gold = new SixLabors.ImageSharp.PixelFormats.Rgba32(110, 75, 30);
+        for (var x = bounds.Left; x < bounds.Right; x++)
+        {
+            image[x, bounds.Top] = gold;
+            image[x, bounds.Bottom - 1] = gold;
+        }
+
+        for (var y = bounds.Top; y < bounds.Bottom; y++)
+        {
+            image[bounds.Left, y] = gold;
+            image[bounds.Right - 1, y] = gold;
+        }
+    }
 }

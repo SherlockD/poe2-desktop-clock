@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -24,8 +25,7 @@ namespace Poe2DeskTracker.Currency;
 internal static class CurrencyAmountScanner
 {
     private const int OcrScale = 4;
-    private static readonly OcrEngine Ocr = OcrEngine.TryCreateFromLanguage(new Language("en-US"))
-        ?? throw new InvalidOperationException("The Windows OCR language pack for English (United States) is not available.");
+    private const int MaximumOcrWorkerCount = 4;
 
     internal static async Task<IReadOnlyList<CurrencyAmountScanResult>> ScanAsync(string imagePath, CurrencyLayout layout)
     {
@@ -45,33 +45,58 @@ internal static class CurrencyAmountScanner
         Image<Rgba32> image,
         CurrencyLayout layout)
     {
-        var preparedSlots = new List<PreparedSlotAmount>(layout.Slots.Count);
+        var orderedSlots = layout.Slots.OrderBy(slot => slot.Y).ThenBy(slot => slot.X).ToArray();
+        var preparedSlots = new PreparedSlotAmount[orderedSlots.Length];
+        var ocrInputs = new List<PreparedSlotOcrInput>(orderedSlots.Length);
 
-        foreach (var slot in layout.Slots.OrderBy(slot => slot.Y).ThenBy(slot => slot.X))
+        for (var index = 0; index < orderedSlots.Length; index++)
         {
+            var slot = orderedSlots[index];
             var countBounds = GetCountBounds(slot, image.Width, image.Height);
             using var countImage = image.Clone(context => context.Crop(new ImageRectangle(
                 countBounds.Left,
                 countBounds.Top,
                 countBounds.Width,
                 countBounds.Height)));
-            using var strictImage = PrepareForOcr(countImage, brightnessThreshold: 190, maximumChannelSpread: 55);
+            var strictImage = PrepareForOcr(countImage, brightnessThreshold: 190, maximumChannelSpread: 55);
             var hasVisibleAmount = HasInk(strictImage);
-            var recognizedText = hasVisibleAmount
-                ? await RecognizeAmountAsync(strictImage)
-                : string.Empty;
-            preparedSlots.Add(new PreparedSlotAmount(
-                slot.Id,
-                slot.Name ?? slot.Id,
-                hasVisibleAmount,
-                hasVisibleAmount ? ParseAmount(recognizedText) : 0,
-                recognizedText,
-                countBounds,
-                hasVisibleAmount ? ExtractGlyphMasks(strictImage) : []));
+            if (hasVisibleAmount)
+            {
+                ocrInputs.Add(new PreparedSlotOcrInput(
+                    index,
+                    slot.Id,
+                    slot.Name ?? slot.Id,
+                    countBounds,
+                    strictImage));
+            }
+            else
+            {
+                strictImage.Dispose();
+                preparedSlots[index] = new PreparedSlotAmount(
+                    slot.Id,
+                    slot.Name ?? slot.Id,
+                    HasVisibleAmount: false,
+                    Amount: 0,
+                    RecognizedText: string.Empty,
+                    countBounds,
+                    Glyphs: []);
+            }
+        }
+
+        try
+        {
+            await RecognizePreparedSlotsAsync(ocrInputs, preparedSlots);
+        }
+        finally
+        {
+            foreach (var input in ocrInputs)
+            {
+                input.StrictImage.Dispose();
+            }
         }
 
         var digitTemplates = BuildDigitTemplates(preparedSlots);
-        var results = new List<CurrencyAmountScanResult>(preparedSlots.Count);
+        var results = new List<CurrencyAmountScanResult>(preparedSlots.Length);
         foreach (var slot in preparedSlots)
         {
             var amount = slot.Amount;
@@ -93,7 +118,48 @@ internal static class CurrencyAmountScanner
         return results;
     }
 
-    private static async Task<string> RecognizeAmountAsync(Image<Rgba32> strictImage)
+    private static async Task RecognizePreparedSlotsAsync(
+        IReadOnlyList<PreparedSlotOcrInput> inputs,
+        PreparedSlotAmount[] results)
+    {
+        var queue = new ConcurrentQueue<PreparedSlotOcrInput>(inputs);
+        var workerCount = CalculateOcrWorkerCount(inputs.Count, Environment.ProcessorCount);
+        var workers = Enumerable.Range(0, workerCount).Select(async _ =>
+        {
+            var ocr = CreateOcrEngine();
+            while (queue.TryDequeue(out var input))
+            {
+                var recognizedText = await RecognizeAmountAsync(input.StrictImage, ocr);
+                results[input.ResultIndex] = new PreparedSlotAmount(
+                    input.Id,
+                    input.Name,
+                    HasVisibleAmount: true,
+                    ParseAmount(recognizedText),
+                    recognizedText,
+                    input.CountBounds,
+                    ExtractGlyphMasks(input.StrictImage));
+            }
+        });
+
+        await Task.WhenAll(workers);
+    }
+
+    internal static int CalculateOcrWorkerCount(int visibleSlotCount, int processorCount)
+    {
+        if (visibleSlotCount <= 0)
+        {
+            return 0;
+        }
+
+        var processorBound = Math.Clamp(processorCount / 2, 1, MaximumOcrWorkerCount);
+        return Math.Min(visibleSlotCount, processorBound);
+    }
+
+    private static OcrEngine CreateOcrEngine() =>
+        OcrEngine.TryCreateFromLanguage(new Language("en-US"))
+        ?? throw new InvalidOperationException("The Windows OCR language pack for English (United States) is not available.");
+
+    private static async Task<string> RecognizeAmountAsync(Image<Rgba32> strictImage, OcrEngine ocr)
     {
         using var tightlyCropped = CropToInkWithPadding(strictImage, padding: 4);
         tightlyCropped.Mutate(context => context.Resize(
@@ -101,7 +167,7 @@ internal static class CurrencyAmountScanner
             tightlyCropped.Height * OcrScale,
             KnownResamplers.Bicubic));
 
-        var primaryText = await RecognizeAsync(tightlyCropped);
+        var primaryText = await RecognizeAsync(tightlyCropped, ocr);
         if (ParseAmount(primaryText).HasValue)
         {
             return primaryText;
@@ -117,7 +183,7 @@ internal static class CurrencyAmountScanner
             fullCountZone.Height * OcrScale,
             KnownResamplers.Bicubic));
 
-        var fallbackText = await RecognizeAsync(fullCountZone);
+        var fallbackText = await RecognizeAsync(fullCountZone, ocr);
         if (ParseAmount(fallbackText).HasValue)
         {
             return fallbackText;
@@ -132,7 +198,7 @@ internal static class CurrencyAmountScanner
             sharpCropped.Height * 6,
             KnownResamplers.NearestNeighbor));
 
-        var sharpText = await RecognizeAsync(sharpCropped);
+        var sharpText = await RecognizeAsync(sharpCropped, ocr);
         return ParseAmount(sharpText).HasValue ? sharpText : primaryText;
     }
 
@@ -649,7 +715,7 @@ internal static class CurrencyAmountScanner
         return result;
     }
 
-    private static async Task<string> RecognizeAsync(Image<Rgba32> image)
+    private static async Task<string> RecognizeAsync(Image<Rgba32> image, OcrEngine ocr)
     {
         await using var png = new MemoryStream();
         await image.SaveAsPngAsync(png);
@@ -668,7 +734,7 @@ internal static class CurrencyAmountScanner
         using var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
             BitmapPixelFormat.Bgra8,
             BitmapAlphaMode.Premultiplied);
-        var result = await Ocr.RecognizeAsync(softwareBitmap);
+        var result = await ocr.RecognizeAsync(softwareBitmap);
         return result.Text.Trim();
     }
 
@@ -694,6 +760,13 @@ internal static class CurrencyAmountScanner
         string RecognizedText,
         DrawingRectangle CountBounds,
         IReadOnlyList<GlyphMask> Glyphs);
+
+    private sealed record PreparedSlotOcrInput(
+        int ResultIndex,
+        string Id,
+        string Name,
+        DrawingRectangle CountBounds,
+        Image<Rgba32> StrictImage);
 
     private sealed record GlyphMask(
         int Width,

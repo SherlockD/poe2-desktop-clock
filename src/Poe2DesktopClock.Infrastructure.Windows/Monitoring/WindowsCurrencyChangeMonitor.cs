@@ -73,26 +73,20 @@ public sealed class WindowsCurrencyChangeMonitor : ICurrencyChangeMonitor
                             TimeSpan.FromSeconds(2),
                             cancellationToken);
                         var capturedAt = DateTimeOffset.UtcNow;
-                        var detectedGrid = await Task.Run(
-                            () => CurrencyGridDetector.DetectWithImageSize(_liveFramePath),
+                        var analysis = await Task.Run(
+                            () => CurrencyFrameFingerprint.Analyze(_liveFramePath, layout),
                             cancellationToken);
-                        var isCurrencyTabVisible = CurrencyTabProfile.MatchesCalibratedLayout(
-                            detectedGrid.Slots,
-                            layout,
-                            detectedGrid.ImageWidth,
-                            detectedGrid.ImageHeight);
-                        if (!isCurrencyTabVisible)
+                        if (!analysis.IsCurrencyTabVisible)
                         {
                             observation.ShouldPublish(isCurrencyTabVisible: false, fingerprint: null);
                             StatusChanged?.Invoke(this, ClockMonitorStatus.WaitingForCurrencyTab);
                         }
                         else
                         {
-                            var fingerprint = await Task.Run(
-                                () => CurrencyFrameFingerprint.Create(_liveFramePath, layout),
-                                cancellationToken);
                             StatusChanged?.Invoke(this, ClockMonitorStatus.Tracking);
-                            if (observation.ShouldPublish(isCurrencyTabVisible: true, fingerprint))
+                            if (observation.ShouldPublish(
+                                    isCurrencyTabVisible: true,
+                                    analysis.Fingerprint!))
                             {
                                 var pngBytes = await File.ReadAllBytesAsync(_liveFramePath, cancellationToken);
                                 CurrencyChanged?.Invoke(

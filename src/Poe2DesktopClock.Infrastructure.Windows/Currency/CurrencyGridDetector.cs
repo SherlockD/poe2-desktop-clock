@@ -106,10 +106,16 @@ internal static class CurrencyGridDetector
         return commonValue == 0 ? values[values.Length / 2] : commonValue;
     }
 
-    private static Rectangle FindStrongestFrameBounds(Image<Rgba32> image, Rectangle candidate, int width, int height)
+    internal static Rectangle FindStrongestFrameBounds(Image<Rgba32> image, Rectangle candidate, int width, int height)
     {
-        var minimumLeft = Math.Max(1, candidate.Left - 8);
-        var maximumLeft = Math.Min(image.Width - width - 1, candidate.Right - width + 8);
+        width = Math.Clamp(width, 1, Math.Max(1, image.Width - 2));
+        height = Math.Clamp(height, 1, Math.Max(1, image.Height - 2));
+
+        var maximumValidLeft = image.Width - width - 1;
+        var firstSearchEdge = Math.Clamp(candidate.Left - 8, 1, maximumValidLeft);
+        var secondSearchEdge = Math.Clamp(candidate.Right - width + 8, 1, maximumValidLeft);
+        var minimumLeft = Math.Min(firstSearchEdge, secondSearchEdge);
+        var maximumLeft = Math.Max(firstSearchEdge, secondSearchEdge);
         var bestLeft = Math.Clamp(candidate.Left, minimumLeft, maximumLeft);
         var bestVerticalEvidence = double.MinValue;
         for (var left = minimumLeft; left <= maximumLeft; left++)
@@ -526,7 +532,7 @@ internal static class CurrencyGridDetector
     // The outer part of the PoE frame shifts from bright gold to a very dark bronze,
     // especially behind some currency artwork. Keep the colour test broad, then rely
     // on four-sided geometry and repeated dimensions to reject ordinary UI texture.
-    private static bool IsFrameGold(Rgba32 pixel) =>
+    internal static bool IsFrameGold(Rgba32 pixel) =>
         pixel.R >= 42 &&
         pixel.G >= 27 &&
         pixel.R >= pixel.B * 1.2 &&
