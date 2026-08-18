@@ -8,5 +8,6 @@ public interface IClockSnapshotComposer
     ClockSnapshot Compose(
         CurrencyValuation? currency,
         PublicTabsValuation? publicTabs,
-        DateTimeOffset? pricesUpdatedAt);
+        DateTimeOffset? pricesUpdatedAt,
+        ClockSnapshot? previousSnapshot = null);
 }

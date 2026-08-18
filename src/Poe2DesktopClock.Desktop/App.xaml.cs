@@ -37,13 +37,16 @@ public partial class App : System.Windows.Application
     {
         var mainWindow = (MainWindow)sender;
         var viewModel = (MainViewModel)mainWindow.DataContext;
-        await viewModel.Settings.LoadAsync();
+        // Loading saved settings is synchronous up to its first await; refresh
+        // the remote league list in parallel so session monitoring starts as
+        // close to game launch as possible.
+        var settingsLoadTask = viewModel.Settings.LoadAsync();
+        await _statusProvider!.InitializeAsync();
+        await settingsLoadTask;
         if (viewModel.Settings.StartMinimized)
         {
             mainWindow.WindowState = WindowState.Minimized;
         }
-
-        await _statusProvider!.InitializeAsync();
     }
 
     private async void OnMainWindowClosing(object? sender, CancelEventArgs eventArgs)

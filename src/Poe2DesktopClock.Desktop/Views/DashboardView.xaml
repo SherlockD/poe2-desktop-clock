@@ -3,70 +3,306 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              MinWidth="0"
              MinHeight="0">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource WindowBackgroundBrush}">
-        <Grid Margin="42,36,42,38">
+    <UserControl.Resources>
+        <Style x:Key="DashboardCardStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="#33465E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+
+        <Style x:Key="MetricLabelStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="MetricValueStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style x:Key="GameStatusPillStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="#46361D" />
+            <Setter Property="BorderBrush" Value="#806320" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="10,6" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
+                    <Setter Property="Background" Value="#153D3B" />
+                    <Setter Property="BorderBrush" Value="#287D74" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="GameStatusDotStyle" TargetType="{x:Type Ellipse}">
+            <Setter Property="Fill" Value="{StaticResource WarningBrush}" />
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
+                    <Setter Property="Fill" Value="{StaticResource AccentBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SourceValueStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="23" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#E7FFF7" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Background="{StaticResource WindowBackgroundBrush}">
+        <Grid Margin="42,36,42,38" MaxWidth="1320" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="24" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="28" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="26" />
+                <RowDefinition Height="28" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0">
-                <TextBlock Text="Обзор" FontSize="30" FontWeight="SemiBold" />
-                <TextBlock Text="Стоимость отслеживаемого инвентаря" Margin="0,7,0,0" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
-            </StackPanel>
+            <DockPanel Grid.Row="0" LastChildFill="True">
+                <Border DockPanel.Dock="Right"
+                        Style="{StaticResource GameStatusPillStyle}"
+                        Margin="18,1,0,0"
+                        VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Style="{StaticResource GameStatusDotStyle}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding GameStatus}"
+                                   Margin="7,0,0,0"
+                                   FontSize="12"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="240" />
+                    </StackPanel>
+                </Border>
 
-            <Border Grid.Row="2" Background="#0B1220" BorderBrush="#42617C" BorderThickness="1" CornerRadius="22" Padding="36,30">
+                <StackPanel>
+                    <TextBlock Text="Мониторинг" FontSize="30" FontWeight="SemiBold" />
+                    <TextBlock Text="Статус игровой сессии, оценок и данных для часов"
+                               Margin="0,7,0,0"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="15" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Grid.Row="2"
+                    Background="#0B1724"
+                    BorderBrush="#3C6075"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Padding="28,25">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <DockPanel Grid.Row="0">
-                        <TextBlock Text="ВИРТУАЛЬНЫЕ ЧАСЫ" Foreground="{StaticResource AccentBrush}" FontSize="13" FontWeight="SemiBold" />
-                        <Border DockPanel.Dock="Right" Background="#164E4A" CornerRadius="10" Padding="10,4">
-                            <TextBlock Text="{Binding EstimateQuality}" Foreground="{StaticResource AccentBrush}" FontSize="12" />
-                        </Border>
-                    </DockPanel>
-                    <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly" Margin="0,18,0,14" HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding DisplayTotal}" FontFamily="Consolas" FontWeight="Bold" FontSize="78" Foreground="#E7FFF7" />
-                            <TextBlock Text=" div" FontFamily="Consolas" FontSize="30" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Bottom" Margin="14,0,0,10" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="1" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                        <TextBlock Text="ОБЩАЯ ОЦЕНКА" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Text="{Binding DisplayTotal}"
+                                   Margin="0,11,0,0"
+                                   FontFamily="Consolas"
+                                   FontSize="58"
+                                   FontWeight="Bold"
+                                   Foreground="#E7FFF7"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="430" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="На старте сессии:" Foreground="{StaticResource MutedTextBrush}" FontSize="13" />
+                            <TextBlock Text="{Binding SessionBaseline}" Margin="8,0,0,0" Foreground="{StaticResource MainTextBrush}" FontFamily="Consolas" FontSize="13" />
                         </StackPanel>
-                    </Viewbox>
-                    <DockPanel Grid.Row="2">
-                        <TextBlock Text="Обновляется при изменении Currency-вкладки" Foreground="{StaticResource MutedTextBrush}" FontSize="13" />
-                        <TextBlock DockPanel.Dock="Right" Text="{Binding CurrencyUpdatedAt}" Foreground="{StaticResource MainTextBrush}" FontFamily="Consolas" FontSize="13" />
-                    </DockPanel>
+                    </StackPanel>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="14" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" Background="#17283A" CornerRadius="10" Padding="13,11">
+                            <StackPanel>
+                                <TextBlock Text="СТАТУС СЕССИИ" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding SessionStatus}"
+                                           Margin="0,5,0,0"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="0" Grid.Column="2" Background="#17283A" CornerRadius="10" Padding="13,11">
+                            <StackPanel>
+                                <TextBlock Text="ДЛИТЕЛЬНОСТЬ" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding SessionDuration}"
+                                           Margin="0,5,0,0"
+                                           Style="{StaticResource MetricValueStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0" Background="#17283A" CornerRadius="10" Padding="13,11">
+                            <StackPanel>
+                                <TextBlock Text="ИЗМЕНЕНИЕ" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding SessionDelta}" Margin="0,4,0,0" Style="{StaticResource MetricValueStyle}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="2" Grid.Column="2" Background="#16413D" CornerRadius="10" Padding="13,11">
+                            <StackPanel>
+                                <TextBlock Text="СКОРОСТЬ" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                                <TextBlock Text="{Binding DivinesPerHour}" Margin="0,4,0,0" Style="{StaticResource MetricValueStyle}" Foreground="#E7FFF7" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <UniformGrid Grid.Row="4" Columns="3" HorizontalAlignment="Stretch">
-                <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="17" Margin="0,0,12,0">
-                    <StackPanel>
-                        <TextBlock Text="CURRENCY-ВКЛАДКА" Foreground="{StaticResource MutedTextBrush}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding CurrencyStatus}" Margin="0,8,0,7" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding CurrencyUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" />
-                    </StackPanel>
+            <Grid Grid.Row="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0">
+                    <TextBlock Text="Источники данных" FontSize="19" FontWeight="SemiBold" />
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="Суммы и время последнего обновления"
+                               VerticalAlignment="Bottom"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="12" />
+                </DockPanel>
+
+                <WrapPanel Grid.Row="2" HorizontalAlignment="Left">
+                    <Border Style="{StaticResource DashboardCardStyle}" Width="248" Margin="0,0,12,12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="CURRENCY-ВКЛАДКА" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Grid.Row="1" Text="{Binding CurrencyTotal}" Style="{StaticResource SourceValueStyle}" Margin="0,8,0,0" />
+                            <TextBlock Grid.Row="2"
+                                       Text="{Binding CurrencyStatus}"
+                                       Margin="0,10,0,10"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                <TextBlock Text="Обновлено" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
+                                <TextBlock Text="{Binding CurrencyUpdatedAt}" Margin="7,0,0,0" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" FontSize="12" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}" Width="248" Margin="0,0,12,12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="ПУБЛИЧНЫЕ ВКЛАДКИ" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Grid.Row="1" Text="{Binding PublicTabsTotal}" Style="{StaticResource SourceValueStyle}" Margin="0,8,0,0" />
+                            <TextBlock Grid.Row="2"
+                                       Text="{Binding PublicStashStatus}"
+                                       Margin="0,10,0,10"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                <TextBlock Text="Обновлено" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
+                                <TextBlock Text="{Binding PublicStashUpdatedAt}" Margin="7,0,0,0" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" FontSize="12" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}" Width="248" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="ЦЕНЫ" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Grid.Row="1" Text="poe.ninja" Style="{StaticResource SourceValueStyle}" Margin="0,8,0,0" />
+                            <TextBlock Grid.Row="2"
+                                       Text="Рыночные цены для расчёта текущей оценки"
+                                       Margin="0,10,0,10"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                <TextBlock Text="Обновлено" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
+                                <TextBlock Text="{Binding PricesUpdatedAt}" Margin="7,0,0,0" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" FontSize="12" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </WrapPanel>
+            </Grid>
+
+            <Grid Grid.Row="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Устройство" FontSize="19" FontWeight="SemiBold" />
+
+                <Border Grid.Row="2" Style="{StaticResource DashboardCardStyle}" Background="#162438">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="9" Height="9" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="ЭМУЛЯТОР ЧАСОВ" Margin="8,0,0,0" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding DeviceStatus}" Margin="0,8,0,0" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="COM-подключение будет добавлено в следующем этапе."
+                                       Margin="0,5,0,0"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock Text="ПОСЛЕДНЕЕ ЗНАЧЕНИЕ" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Text="{Binding DeviceDisplayTotal}" Margin="0,5,0,0" Style="{StaticResource MetricValueStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                            <TextBlock Text="СИНХРОНИЗИРОВАНО" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Text="{Binding DeviceLastSynchronizedAt}"
+                                       Margin="0,5,0,0"
+                                       FontFamily="Consolas"
+                                       FontSize="14"
+                                       Foreground="{StaticResource AccentBrush}" />
+                        </StackPanel>
+                    </Grid>
                 </Border>
-                <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="17" Margin="6,0">
-                    <StackPanel>
-                        <TextBlock Text="ПУБЛИЧНЫЕ ВКЛАДКИ" Foreground="{StaticResource MutedTextBrush}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding PublicStashStatus}" Margin="0,8,0,7" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding PublicStashUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" />
-                    </StackPanel>
-                </Border>
-                <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="17" Margin="12,0,0,0">
-                    <StackPanel>
-                        <TextBlock Text="ЦЕНЫ" Foreground="{StaticResource MutedTextBrush}" FontSize="11" FontWeight="SemiBold" />
-                        <TextBlock Text="poe.ninja" Margin="0,8,0,7" />
-                        <TextBlock Text="{Binding PricesUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+            </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>

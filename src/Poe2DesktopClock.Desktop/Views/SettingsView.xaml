@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Background="{StaticResource WindowBackgroundBrush}">
         <StackPanel Margin="42,36,42,38">
-            <TextBlock Text="Настройки" FontSize="30" FontWeight="SemiBold" />
-            <TextBlock Text="Все параметры трекера в одном месте." Margin="0,7,0,25" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
+            <TextBlock Text="Источники и настройки" FontSize="30" FontWeight="SemiBold" />
+            <TextBlock Text="Настройте данные, из которых companion готовит значение для часов." Margin="0,7,0,25" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
 
             <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22" Margin="0,0,0,16">
                 <StackPanel>
@@ -87,7 +87,7 @@
 
             <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="22">
                 <StackPanel>
-                    <TextBlock Text="Приложение" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="Работа приложения" FontSize="18" FontWeight="SemiBold" />
                     <CheckBox Content="Запускать свёрнутым" IsChecked="{Binding StartMinimized}" Margin="0,14,0,16" />
                     <WrapPanel>
                         <Button Content="Сохранить настройки" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}" />

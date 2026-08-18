@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Poe2DesktopClock.Desktop.Views"
         xmlns:viewModels="clr-namespace:Poe2DesktopClock.Desktop.ViewModels"
-        Title="PoE 2 Desktop Clock"
+        Title="PoE 2 Clock Companion"
         Width="1120"
         Height="760"
         MinWidth="920"
@@ -53,21 +53,41 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="250" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" Background="#17202D" Padding="18,24">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Text="PoE 2" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource AccentBrush}" />
-                    <TextBlock Text="DESKTOP CLOCK" FontWeight="SemiBold" FontSize="22" Margin="0,2,0,34" />
+                    <Border Background="#122B36" BorderBrush="#285666" BorderThickness="1" CornerRadius="11" Padding="13,12" Margin="0,0,0,30">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="33" Height="33" Background="#0F766E" CornerRadius="9" VerticalAlignment="Top">
+                                <TextBlock Text="◷" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Foreground="#E7FFF7" />
+                            </Border>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="POE 2" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource AccentBrush}" />
+                                <TextBlock Text="CLOCK COMPANION" FontWeight="SemiBold" FontSize="17" Margin="0,1,0,0" />
+                                <TextBlock Text="Помощник для физических часов" Foreground="{StaticResource MutedTextBrush}" FontSize="10" Margin="0,3,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <ToggleButton Content="◷  Обзор"
+                    <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Margin="7,0,0,7" />
+                    <ToggleButton Content="◫  Мониторинг"
                                   Style="{StaticResource NavigationButtonStyle}"
                                   IsChecked="{Binding IsDashboardSelected, Mode=OneWay}"
                                   Command="{Binding ShowDashboardCommand}" />
-                    <ToggleButton Content="⚙  Настройки"
+                    <ToggleButton Content="⚙  Источники и настройки"
                                   Margin="0,8,0,0"
                                   Style="{StaticResource NavigationButtonStyle}"
                                   IsChecked="{Binding IsSettingsSelected, Mode=OneWay}"
@@ -75,13 +95,23 @@
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom">
-                        <Border Background="#16353A" CornerRadius="8" Padding="12">
+                    <Border Background="#132B35" BorderBrush="#285666" BorderThickness="1" CornerRadius="9" Padding="12">
                         <StackPanel>
-                            <TextBlock Text="Состояние игры" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
-                            <TextBlock Text="{Binding GameStatus}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="СОСТОЯНИЕ ИГРЫ" Foreground="{StaticResource MutedTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Dashboard.GameStatus}" Margin="0,5,0,0" TextWrapping="Wrap" FontSize="13" />
+                            <TextBlock Text="{Binding Dashboard.SessionStatus}" Margin="0,4,0,0" Foreground="{StaticResource AccentBrush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
-                    <TextBlock Text="Данные хранятся локально" Margin="5,18,5,0" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
+                    <Border Background="#1B273A" CornerRadius="8" Padding="10" Margin="0,10,0,0">
+                        <StackPanel>
+                            <TextBlock Text="УСТРОЙСТВО" Foreground="{StaticResource MutedTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Dashboard.DeviceStatus}" Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Данные хранятся локально"
+                               Margin="5,18,5,0"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="12" />
                 </StackPanel>
             </DockPanel>
         </Border>

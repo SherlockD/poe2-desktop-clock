@@ -1,6 +1,7 @@
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
 using Poe2DesktopClock.Infrastructure.Storage.Settings;
+using Poe2DesktopClock.Infrastructure.Storage.Snapshots;
 using Poe2DeskTracker.PublicStash;
 using Xunit;
 
@@ -79,6 +80,103 @@ public sealed class PersistenceRecoveryTests
         }
     }
 
+    [Fact]
+    public void Last_clock_snapshot_is_persisted_atomically_and_restored()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "last-clock-snapshot.json");
+            var snapshot = CreateSnapshot();
+
+            var store = new LastClockSnapshotStore(path);
+            store.Save(snapshot);
+
+            Assert.Equal(snapshot, new LastClockSnapshotStore(path).GetLastSnapshot());
+            Assert.Empty(Directory.GetFiles(directory, "*.tmp"));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Last_clock_snapshot_allows_partial_estimates()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "last-clock-snapshot.json");
+            var snapshot = CreateSnapshot() with { IsComplete = false };
+
+            new LastClockSnapshotStore(path).Save(snapshot);
+
+            Assert.Equal(snapshot, new LastClockSnapshotStore(path).GetLastSnapshot());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Last_clock_snapshot_is_recovered_and_backed_up_when_invalid()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "last-clock-snapshot.json");
+            File.WriteAllText(path, "{ broken json");
+
+            Assert.Null(new LastClockSnapshotStore(path).GetLastSnapshot());
+            AssertCorruptedBackup(directory, "last-clock-snapshot.json");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Last_clock_snapshot_is_recovered_and_backed_up_when_required_fields_are_missing()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "last-clock-snapshot.json");
+            File.WriteAllText(path, "{}");
+
+            Assert.Null(new LastClockSnapshotStore(path).GetLastSnapshot());
+            AssertCorruptedBackup(directory, "last-clock-snapshot.json");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Last_clock_snapshot_rejects_invalid_value_without_replacing_saved_snapshot()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "last-clock-snapshot.json");
+            var snapshot = CreateSnapshot();
+            var store = new LastClockSnapshotStore(path);
+            store.Save(snapshot);
+
+            Assert.Throws<ArgumentException>(() => store.Save(snapshot with { TotalDivines = -1m }));
+
+            Assert.Equal(snapshot, new LastClockSnapshotStore(path).GetLastSnapshot());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"poe2-clock-tests-{Guid.NewGuid():N}");
@@ -91,4 +189,14 @@ public sealed class PersistenceRecoveryTests
         Assert.False(File.Exists(Path.Combine(directory, fileName)));
         Assert.Single(Directory.GetFiles(directory, $"{fileName}.corrupt-*.bak"));
     }
+
+    private static ClockSnapshot CreateSnapshot() => new(
+        TotalDivines: 125.5m,
+        CurrencyTabDivines: 100m,
+        PublicTabsDivines: 25.5m,
+        CurrencyUpdatedAt: new DateTimeOffset(2026, 8, 18, 12, 0, 0, TimeSpan.Zero),
+        PublicTabsUpdatedAt: new DateTimeOffset(2026, 8, 18, 11, 59, 0, TimeSpan.Zero),
+        PricesUpdatedAt: new DateTimeOffset(2026, 8, 18, 11, 55, 0, TimeSpan.Zero),
+        IsComplete: true,
+        RussianSummary: "Итого 125.5 Divine.");
 }

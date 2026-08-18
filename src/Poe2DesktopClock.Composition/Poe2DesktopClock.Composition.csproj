@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Poe2DesktopClock.Application\Poe2DesktopClock.Application.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.PoeApi\Poe2DesktopClock.Infrastructure.PoeApi.csproj" />
+    <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.Storage\Poe2DesktopClock.Infrastructure.Storage.csproj" />
     <ProjectReference Include="..\Poe2DesktopClock.Infrastructure.Windows\Poe2DesktopClock.Infrastructure.Windows.csproj" />
   </ItemGroup>
 </Project>

@@ -15,9 +15,11 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
     private readonly IPublicTabsValuationReader _publicTabs;
     private readonly IClockSnapshotComposer _snapshotComposer;
     private readonly ITrackerSnapshotPublisher _publisher;
+    private readonly ILastClockSnapshotStore? _lastSnapshots;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private CurrencyValuation? _latestCurrency;
     private PublicTabsValuation? _latestPublicTabs;
+    private ClockSnapshot? _lastSnapshot;
 
     public RefreshTrackerUseCase(
         ITrackerSettingsUseCase settings,
@@ -25,7 +27,8 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
         ICurrencyValuationReader currency,
         IPublicTabsValuationReader publicTabs,
         IClockSnapshotComposer snapshotComposer,
-        ITrackerSnapshotPublisher publisher)
+        ITrackerSnapshotPublisher publisher,
+        ILastClockSnapshotStore? lastSnapshots = null)
     {
         _settings = settings;
         _prices = prices;
@@ -33,6 +36,8 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
         _publicTabs = publicTabs;
         _snapshotComposer = snapshotComposer;
         _publisher = publisher;
+        _lastSnapshots = lastSnapshots;
+        _lastSnapshot = lastSnapshots?.GetLastSnapshot();
     }
 
     public event EventHandler<ClockSnapshot>? ClockSnapshotChanged
@@ -91,10 +96,23 @@ public sealed class RefreshTrackerUseCase : ITrackerRefreshUseCase, IAsyncDispos
 
     private ClockSnapshot PublishSnapshot(DateTimeOffset? pricesUpdatedAt)
     {
-        var snapshot = _snapshotComposer.Compose(_latestCurrency, _latestPublicTabs, pricesUpdatedAt);
+        var snapshot = _snapshotComposer.Compose(
+            _latestCurrency,
+            _latestPublicTabs,
+            pricesUpdatedAt,
+            _lastSnapshot);
+        if (HasAnyValuation(snapshot))
+        {
+            _lastSnapshots?.Save(snapshot);
+            _lastSnapshot = snapshot;
+        }
+
         _publisher.Publish(snapshot);
         return snapshot;
     }
+
+    private static bool HasAnyValuation(ClockSnapshot snapshot) =>
+        snapshot.CurrencyUpdatedAt is not null || snapshot.PublicTabsUpdatedAt is not null;
 
     private async Task<PriceSnapshot?> GetPricesAsync(
         TrackerSettings settings,

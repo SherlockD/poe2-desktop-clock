@@ -13,6 +13,7 @@ public sealed class MainViewModel : ViewModelBase
     {
         Dashboard = dashboard;
         Settings = settings;
+        Dashboard.PropertyChanged += OnDashboardPropertyChanged;
         _currentPage = dashboard;
         ShowDashboardCommand = new RelayCommand(ShowDashboard);
         ShowSettingsCommand = new RelayCommand(ShowSettings);
@@ -40,7 +41,7 @@ public sealed class MainViewModel : ViewModelBase
         private set => SetProperty(ref _isSettingsSelected, value);
     }
 
-    public string GameStatus => Dashboard.CurrencyStatus;
+    public string GameStatus => Dashboard.GameStatus;
 
     public ICommand ShowDashboardCommand { get; }
 
@@ -60,5 +61,14 @@ public sealed class MainViewModel : ViewModelBase
         CurrentPage = Settings;
         IsDashboardSelected = false;
         IsSettingsSelected = true;
+    }
+
+    private void OnDashboardPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)
+    {
+        if (string.IsNullOrEmpty(eventArgs.PropertyName) ||
+            string.Equals(eventArgs.PropertyName, nameof(DashboardViewModel.GameStatus), StringComparison.Ordinal))
+        {
+            OnPropertyChanged(nameof(GameStatus));
+        }
     }
 }

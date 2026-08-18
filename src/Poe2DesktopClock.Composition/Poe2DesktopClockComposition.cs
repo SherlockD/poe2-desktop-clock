@@ -4,6 +4,7 @@ using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Services;
 using Poe2DesktopClock.Infrastructure.Windows.Runtime;
 using Poe2DesktopClock.Infrastructure.Windows.Monitoring;
+using Poe2DesktopClock.Infrastructure.Storage.Snapshots;
 using Poe2DesktopClock.Infrastructure.Storage.PublicStash;
 using Poe2DeskTracker.Capture;
 using Poe2DeskTracker.Currency;
@@ -44,8 +45,13 @@ public static class Poe2DesktopClockComposition
         services.AddSingleton<IPublicTabsValuationReader, PublicTabsValuationReader>();
         services.AddSingleton<IPublicTabMarkerProvider, StoredPublicTabMarkerProvider>();
         services.AddSingleton(new PublicTabsSnapshotStore(Path.Combine(desktopDataDirectory, "public-tabs-snapshot.json")));
+        services.AddSingleton<ILastClockSnapshotStore>(
+            new LastClockSnapshotStore(Path.Combine(desktopDataDirectory, "last-clock-snapshot.json")));
         services.AddSingleton<IClockSnapshotComposer, ClockSnapshotComposer>();
         services.AddSingleton<ITrackerSnapshotPublisher, TrackerSnapshotPublisher>();
+        services.AddSingleton<IDeviceSynchronizationUseCase, StubDeviceSynchronizationUseCase>();
+        services.AddSingleton<DeviceSnapshotRelay>();
+        services.AddSingleton<IGameSessionUseCase, GameSessionUseCase>();
         services.AddSingleton<DesktopClockRuntime>();
         services.AddSingleton<RefreshTrackerUseCase>();
         services.AddSingleton<CurrencyMonitoringUseCase>();

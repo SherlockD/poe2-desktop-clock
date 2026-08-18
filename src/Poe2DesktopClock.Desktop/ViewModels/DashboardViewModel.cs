@@ -1,4 +1,5 @@
 using System.Globalization;
+using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Models;
 using Poe2DesktopClock.Desktop.Services;
 
@@ -16,36 +17,95 @@ public sealed class DashboardViewModel : ViewModelBase
         _statusProvider.StatusChanged += OnStatusChanged;
     }
 
-    public decimal TotalDivines => _status.TotalDivines;
+    public decimal? TotalDivines => _status.ClockSnapshot?.TotalDivines;
 
-    public string DisplayTotal => TotalDivines.ToString("N2", CultureInfo.InvariantCulture);
+    public string DisplayTotal => FormatDivines(TotalDivines);
 
-    public string CurrencyStatus => _status.CurrencyStatus;
+    public bool IsGameRunning => _status.Session.IsGameRunning;
 
-    public string PublicStashStatus => _status.PublicStashStatus;
+    public string GameStatus => _status.GameStatus.RussianSummary;
 
-    public bool IsEstimateComplete => _status.IsEstimateComplete;
+    public string SessionStatus => _status.Session.Status switch
+    {
+        GameSessionStatus.Tracking => "Сессия отслеживается",
+        GameSessionStatus.WaitingForBaseline => "Ожидание первого расчёта стоимости",
+        _ => "Нет активной игровой сессии",
+    };
+
+    public string SessionDuration => FormatDuration(_status.Session.Duration);
+
+    public string SessionBaseline => FormatDivines(_status.Session.BaselineSnapshot?.TotalDivines);
+
+    public string SessionDelta => FormatSignedDivines(_status.Session.SessionDeltaDivines);
+
+    public string DivinesPerHour => FormatSignedDivines(_status.Session.DivinesPerHour);
+
+    public string CurrencyTotal => FormatDivines(_status.ClockSnapshot?.CurrencyTabDivines);
+
+    public string CurrencyStatus => _status.MonitorStatus switch
+    {
+        ClockMonitorStatus.Tracking => "Currency-вкладка отслеживается",
+        ClockMonitorStatus.WaitingForCurrencyTab => "Откройте Currency-вкладку",
+        ClockMonitorStatus.WaitingForGame => "Ожидание окна игры",
+        ClockMonitorStatus.NeedsSetup => "Нужна настройка области и ячеек",
+        ClockMonitorStatus.Error => "Ошибка мониторинга",
+        _ => "Мониторинг остановлен",
+    };
+
+    public string PublicTabsTotal => FormatDivines(_status.ClockSnapshot?.PublicTabsDivines);
+
+    public string PublicStashStatus => _status.ClockSnapshot?.PublicTabsUpdatedAt is null
+        ? "Нет сохранённых данных"
+        : _status.ClockSnapshot.IsComplete
+            ? "Оценка доступна"
+            : "Частичная оценка";
+
+    public bool IsEstimateComplete => _status.ClockSnapshot?.IsComplete ?? false;
 
     public string EstimateQuality => IsEstimateComplete ? "Полная оценка" : "Частичная оценка";
 
-    public string CurrencyUpdatedAt => FormatTimestamp(_status.CurrencyUpdatedAt);
+    public string CurrencyUpdatedAt => FormatTimestamp(_status.ClockSnapshot?.CurrencyUpdatedAt);
 
-    public string PublicStashUpdatedAt => FormatTimestamp(_status.PublicStashUpdatedAt);
+    public string PublicStashUpdatedAt => FormatTimestamp(_status.ClockSnapshot?.PublicTabsUpdatedAt);
 
-    public string PricesUpdatedAt => FormatTimestamp(_status.PricesUpdatedAt);
+    public string PricesUpdatedAt => FormatTimestamp(_status.ClockSnapshot?.PricesUpdatedAt);
+
+    public string DeviceStatus => _status.Device switch
+    {
+        { IsConnected: false } => "Устройство отключено",
+        { Status: DeviceSynchronizationStatus.Synchronized } => "Эмулятор подтвердил данные",
+        { Status: DeviceSynchronizationStatus.Failed } => "Не удалось передать данные",
+        _ => "Эмулятор готов к данным",
+    };
+
+    public string DeviceLastSynchronizedAt => FormatTimestamp(_status.Device.LastSynchronizedAt);
+
+    public string DeviceDisplayTotal => FormatDivines(_status.Device.LastSnapshot?.TotalDivines);
 
     public void Refresh()
     {
         _status = _statusProvider.GetCurrent();
         OnPropertyChanged(nameof(TotalDivines));
         OnPropertyChanged(nameof(DisplayTotal));
+        OnPropertyChanged(nameof(IsGameRunning));
+        OnPropertyChanged(nameof(GameStatus));
+        OnPropertyChanged(nameof(SessionStatus));
+        OnPropertyChanged(nameof(SessionDuration));
+        OnPropertyChanged(nameof(SessionBaseline));
+        OnPropertyChanged(nameof(SessionDelta));
+        OnPropertyChanged(nameof(DivinesPerHour));
+        OnPropertyChanged(nameof(CurrencyTotal));
         OnPropertyChanged(nameof(CurrencyStatus));
+        OnPropertyChanged(nameof(PublicTabsTotal));
         OnPropertyChanged(nameof(PublicStashStatus));
         OnPropertyChanged(nameof(IsEstimateComplete));
         OnPropertyChanged(nameof(EstimateQuality));
         OnPropertyChanged(nameof(CurrencyUpdatedAt));
         OnPropertyChanged(nameof(PublicStashUpdatedAt));
         OnPropertyChanged(nameof(PricesUpdatedAt));
+        OnPropertyChanged(nameof(DeviceStatus));
+        OnPropertyChanged(nameof(DeviceLastSynchronizedAt));
+        OnPropertyChanged(nameof(DeviceDisplayTotal));
     }
 
     private void OnStatusChanged(object? sender, TrackerStatusSnapshot status)
@@ -70,4 +130,31 @@ public sealed class DashboardViewModel : ViewModelBase
         timestamp is null
             ? "ещё не обновлялось"
             : timestamp.Value.ToLocalTime().ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+
+    private static string FormatDivines(decimal? value) =>
+        value is null
+            ? "—"
+            : value.Value.ToString("N2", CultureInfo.InvariantCulture);
+
+    private static string FormatSignedDivines(decimal? value)
+    {
+        if (value is null)
+        {
+            return "—";
+        }
+
+        var prefix = value.Value > 0m ? "+" : string.Empty;
+        return $"{prefix}{value.Value.ToString("N2", CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatDuration(TimeSpan? duration)
+    {
+        if (duration is null)
+        {
+            return "—";
+        }
+
+        var value = duration.Value;
+        return $"{(int)value.TotalHours:00}:{value.Minutes:00}:{value.Seconds:00}";
+    }
 }

@@ -10,11 +10,20 @@ public sealed class ClockSnapshotComposer : IClockSnapshotComposer
     public ClockSnapshot Compose(
         CurrencyValuation? currency,
         PublicTabsValuation? publicTabs,
-        DateTimeOffset? pricesUpdatedAt)
+        DateTimeOffset? pricesUpdatedAt,
+        ClockSnapshot? previousSnapshot = null)
     {
-        var total = (currency?.Divines ?? 0m) + (publicTabs?.Divines ?? 0m);
-        var isComplete = currency is { UnpricedItems: 0, UnreadableSlots: 0 } &&
-                         publicTabs is { IsComplete: true, UnpricedItems: 0 };
+        var currencyDivines = currency?.Divines ?? previousSnapshot?.CurrencyTabDivines ?? 0m;
+        var publicTabsDivines = publicTabs?.Divines ?? previousSnapshot?.PublicTabsDivines ?? 0m;
+        var currencyUpdatedAt = currency?.UpdatedAt ?? previousSnapshot?.CurrencyUpdatedAt;
+        var publicTabsUpdatedAt = publicTabs?.UpdatedAt ?? previousSnapshot?.PublicTabsUpdatedAt;
+        var actualPricesUpdatedAt = pricesUpdatedAt ?? previousSnapshot?.PricesUpdatedAt;
+        var isCurrencyComplete = currency is { UnpricedItems: 0, UnreadableSlots: 0 } ||
+                                 (currency is null && previousSnapshot is { IsComplete: true, CurrencyUpdatedAt: not null });
+        var isPublicTabsComplete = publicTabs is { IsComplete: true, UnpricedItems: 0 } ||
+                                   (publicTabs is null && previousSnapshot is { IsComplete: true, PublicTabsUpdatedAt: not null });
+        var isComplete = isCurrencyComplete && isPublicTabsComplete;
+        var total = currencyDivines + publicTabsDivines;
         var publicSummary = publicTabs?.Summary ?? "Публичные вкладки ещё не были обновлены.";
         var summary = isComplete
             ? $"Итого {total:0.##} Divine. Currency-вкладка и публичные вкладки актуальны."
@@ -22,11 +31,11 @@ public sealed class ClockSnapshotComposer : IClockSnapshotComposer
 
         return new ClockSnapshot(
             total,
-            currency?.Divines ?? 0m,
-            publicTabs?.Divines ?? 0m,
-            currency?.UpdatedAt,
-            publicTabs?.UpdatedAt,
-            pricesUpdatedAt,
+            currencyDivines,
+            publicTabsDivines,
+            currencyUpdatedAt,
+            publicTabsUpdatedAt,
+            actualPricesUpdatedAt,
             isComplete,
             summary);
     }
