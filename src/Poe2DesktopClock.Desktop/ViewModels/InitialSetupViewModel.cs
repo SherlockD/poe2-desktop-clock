@@ -31,6 +31,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
     private readonly AsyncRelayCommand _publicTabsNextCommand;
     private readonly RelayCommand _deviceBackCommand;
     private readonly AsyncRelayCommand _finishCommand;
+    private readonly RelayCommand _configureLaterCommand;
     private InitialSetupState _state = InitialSetupState.NotStarted;
     private CurrencySetupStatus? _currencyStatus;
     private InitialSetupStep _currentStep = InitialSetupStep.CurrencyTab;
@@ -70,6 +71,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
         _publicTabsNextCommand = new AsyncRelayCommand(SavePublicTabsAndMoveToDeviceAsync, CanMoveToDevice);
         _deviceBackCommand = new RelayCommand(() => SetCurrentStep(InitialSetupStep.PublicTabs));
         _finishCommand = new AsyncRelayCommand(FinishAsync);
+        _configureLaterCommand = new RelayCommand(ConfigureLater, () => IsNotSynchronizing);
     }
 
     public event EventHandler? SetupCompleted;
@@ -195,6 +197,8 @@ public sealed class InitialSetupViewModel : ViewModelBase
     public ICommand DeviceBackCommand => _deviceBackCommand;
 
     public ICommand FinishCommand => _finishCommand;
+
+    public ICommand ConfigureLaterCommand => _configureLaterCommand;
 
     /// <summary>Called during application shutdown to stop the in-flight Trade API setup operation.</summary>
     public void CancelPendingOperations() => _synchronizationCancellation?.Cancel();
@@ -412,18 +416,25 @@ public sealed class InitialSetupViewModel : ViewModelBase
 
     private Task FinishAsync()
     {
+        CompleteSetup("InitialSetup_Completed");
+
+        return Task.CompletedTask;
+    }
+
+    private void ConfigureLater() => CompleteSetup("InitialSetup_Deferred");
+
+    private void CompleteSetup(string successMessageKey)
+    {
         try
         {
             CompleteState();
-            Notice = AppStrings.Get("InitialSetup_Completed");
+            Notice = AppStrings.Get(successMessageKey);
             SetupCompleted?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {
             Notice = AppStrings.Format("InitialSetup_CompletionFailedFormat", exception.Message);
         }
-
-        return Task.CompletedTask;
     }
 
     private void CancelSynchronization() => _synchronizationCancellation?.Cancel();
@@ -676,5 +687,6 @@ public sealed class InitialSetupViewModel : ViewModelBase
         _synchronizePublicTabsCommand.RaiseCanExecuteChanged();
         _cancelSynchronizationCommand.RaiseCanExecuteChanged();
         _publicTabsNextCommand.RaiseCanExecuteChanged();
+        _configureLaterCommand.RaiseCanExecuteChanged();
     }
 }

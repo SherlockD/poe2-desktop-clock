@@ -74,6 +74,7 @@
   <data name="InitialSetup_Eyebrow" xml:space="preserve"><value>ПОДГОТОВКА ТАЙНИКА</value></data>
   <data name="InitialSetup_Title" xml:space="preserve"><value>Первоначальная настройка</value></data>
   <data name="InitialSetup_Subtitle" xml:space="preserve"><value>Подготовим вкладку валюты и публичные вкладки тайника. После последнего шага откроется мониторинг.</value></data>
+  <data name="InitialSetup_ConfigureLater" xml:space="preserve"><value>Настроить позже в настройках</value></data>
   <data name="InitialSetup_CurrencyStepLabel" xml:space="preserve"><value>I  ·  ВАЛЮТА</value></data>
   <data name="InitialSetup_CurrencyStepTitle" xml:space="preserve"><value>Вкладка валюты</value></data>
   <data name="InitialSetup_PublicTabsStepLabel" xml:space="preserve"><value>II  ·  ВКЛАДКИ ТАЙНИКА</value></data>
@@ -180,6 +181,7 @@
   <data name="InitialSetup_SourcesSaved" xml:space="preserve"><value>Вкладка валюты и публичные вкладки тайника сохранены.</value></data>
   <data name="InitialSetup_PublicTabsSaveFailedFormat" xml:space="preserve"><value>Не удалось сохранить публичные вкладки тайника: {0}</value></data>
   <data name="InitialSetup_Completed" xml:space="preserve"><value>Настройка завершена. Открываю мониторинг…</value></data>
+  <data name="InitialSetup_Deferred" xml:space="preserve"><value>Первоначальная настройка отложена. Все параметры доступны в настройках.</value></data>
   <data name="InitialSetup_CompletionFailedFormat" xml:space="preserve"><value>Не удалось завершить настройку: {0}</value></data>
   <data name="InitialSetup_AccountRequired" xml:space="preserve"><value>Укажите имя аккаунта Path of Exile.</value></data>
   <data name="InitialSetup_LeagueRequired" xml:space="preserve"><value>Выберите лигу.</value></data>

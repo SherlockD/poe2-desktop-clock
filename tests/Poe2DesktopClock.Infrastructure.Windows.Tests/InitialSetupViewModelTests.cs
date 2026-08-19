@@ -80,6 +80,25 @@ public sealed class InitialSetupViewModelTests
         Assert.False(state.Value.IsCompleted);
     }
 
+    [Fact]
+    public async Task Configure_later_marks_setup_complete_and_notifies_the_shell()
+    {
+        var state = new TestSetupStateStore(InitialSetupState.NotStarted);
+        var viewModel = CreateViewModel(
+            state,
+            new TestLeagueCatalog(),
+            new CurrencySetupStatus(false, false, "not configured"),
+            hasSavedPublicConfiguration: false);
+        var completedEvents = 0;
+        viewModel.SetupCompleted += (_, _) => completedEvents++;
+        await viewModel.InitializeAsync();
+
+        viewModel.ConfigureLaterCommand.Execute(null);
+
+        Assert.True(state.Value.IsCompleted);
+        Assert.Equal(1, completedEvents);
+    }
+
     private static InitialSetupViewModel CreateViewModel(
         TestSetupStateStore state,
         TestLeagueCatalog leagues,
