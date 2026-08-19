@@ -14,12 +14,14 @@ public interface IGameSessionUseCase
 
     /// <summary>
     /// Регистрирует наблюдаемое состояние процесса игры.
-    /// Время старта берётся из <see cref="GameStatus.ProcessStartedAt"/>; <paramref name="processStartedAt"/>
-    /// позволяет явно передать его при необходимости. Если оно неизвестно, сессия начинается в момент
-    /// первого наблюдения доступной игры.
+    /// <see cref="GameStatus.ProcessStartedAt"/> и <paramref name="processStartedAt"/> используются
+    /// для распознавания смены процесса и времени старта статистики при наличии сохранённого baseline.
+    /// Если надёжного сохранённого снимка нет, сценарий ждёт первый полный снимок текущего запуска.
     /// </summary>
     GameSessionSnapshot UpdateGameStatus(GameStatus gameStatus, DateTimeOffset? processStartedAt = null);
 
-    /// <summary>Передаёт новый успешно рассчитанный снимок стоимости.</summary>
+    /// <summary>
+    /// Передаёт новый снимок стоимости. Неполный снимок не запускает сессию и не меняет её статистику.
+    /// </summary>
     GameSessionSnapshot UpdateClockSnapshot(ClockSnapshot snapshot);
 }

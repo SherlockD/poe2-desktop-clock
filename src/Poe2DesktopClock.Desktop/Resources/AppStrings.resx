@@ -39,13 +39,13 @@
   <!-- Dashboard -->
   <data name="Dashboard_Eyebrow" xml:space="preserve"><value>ЖУРНАЛ ИЗГНАННИКА</value></data>
   <data name="Dashboard_Title" xml:space="preserve"><value>Оценка тайника</value></data>
-  <data name="Dashboard_Subtitle" xml:space="preserve"><value>Актуальная стоимость валюты и публичных вкладок тайника в текущей игровой сессии</value></data>
-  <data name="Dashboard_TotalValue" xml:space="preserve"><value>ОБЩАЯ СТОИМОСТЬ</value></data>
+  <data name="Dashboard_Subtitle" xml:space="preserve"><value>Стоимость валюты и публичных вкладок тайника рассчитывается в Divine для текущей игровой сессии</value></data>
+  <data name="Dashboard_TotalValue" xml:space="preserve"><value>РАССЧИТАННАЯ СТОИМОСТЬ, DIVINE</value></data>
   <data name="Dashboard_SessionBaseline" xml:space="preserve"><value>На старте сессии</value></data>
   <data name="Dashboard_SessionState" xml:space="preserve"><value>СТАТУС СЕССИИ</value></data>
   <data name="Dashboard_Duration" xml:space="preserve"><value>ДЛИТЕЛЬНОСТЬ</value></data>
   <data name="Dashboard_Change" xml:space="preserve"><value>ИЗМЕНЕНИЕ</value></data>
-  <data name="Dashboard_Rate" xml:space="preserve"><value>СКОРОСТЬ</value></data>
+  <data name="Dashboard_Rate" xml:space="preserve"><value>СКОРОСТЬ, DIVINE/ЧАС</value></data>
   <data name="Dashboard_SourcesCaption" xml:space="preserve"><value>стоимость · состояние · последнее обновление</value></data>
   <data name="Dashboard_SourcesTitle" xml:space="preserve"><value>Источники стоимости</value></data>
   <data name="Dashboard_CurrencyMonogram" xml:space="preserve"><value>C</value></data>
@@ -65,10 +65,10 @@
   <!-- Public stash tabs -->
   <data name="PublicTabs_Eyebrow" xml:space="preserve"><value>ТАЙНИК</value></data>
   <data name="PublicTabs_Title" xml:space="preserve"><value>Публичные вкладки тайника</value></data>
-  <data name="PublicTabs_Subtitle" xml:space="preserve"><value>Стоимость каждой отслеживаемой вкладки тайника и полнота выдачи Trade API.</value></data>
-  <data name="PublicTabs_Total" xml:space="preserve"><value>СТОИМОСТЬ ПУБЛИЧНЫХ ВКЛАДОК</value></data>
+  <data name="PublicTabs_Subtitle" xml:space="preserve"><value>Рассчитанная стоимость каждой отслеживаемой вкладки тайника в Divine и полнота выдачи Trade API.</value></data>
+  <data name="PublicTabs_Total" xml:space="preserve"><value>РАССЧИТАННАЯ СТОИМОСТЬ ПУБЛИЧНЫХ ВКЛАДОК, DIVINE</value></data>
   <data name="PublicTabs_Section" xml:space="preserve"><value>Вкладки тайника</value></data>
-  <data name="PublicTabs_TabValue" xml:space="preserve"><value>СТОИМОСТЬ</value></data>
+  <data name="PublicTabs_TabValue" xml:space="preserve"><value>РАССЧИТАННАЯ СТОИМОСТЬ, DIVINE</value></data>
 
   <!-- Initial setup -->
   <data name="InitialSetup_Eyebrow" xml:space="preserve"><value>ПОДГОТОВКА ТАЙНИКА</value></data>

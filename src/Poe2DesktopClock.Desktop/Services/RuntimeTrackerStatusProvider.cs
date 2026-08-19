@@ -196,7 +196,11 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
                 _publicTabsValuation,
                 _pricesUpdatedAt,
                 _clockSnapshot);
-            _lastSnapshots.Save(snapshot);
+            if (IsReliableSavedSnapshot(snapshot))
+            {
+                _lastSnapshots.Save(snapshot);
+            }
+
             _clockSnapshot = snapshot;
             _sessionSnapshot = _session.UpdateClockSnapshot(snapshot);
             _snapshotPublisher.Publish(snapshot);
@@ -274,6 +278,14 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
             _sessionSnapshot = session;
         }
     }
+
+    private static bool IsReliableSavedSnapshot(ClockSnapshot snapshot) =>
+        snapshot is
+        {
+            IsComplete: true,
+            CurrencyUpdatedAt: not null,
+            PublicTabsUpdatedAt: not null,
+        };
 
     private void PublishCurrent() => StatusChanged?.Invoke(this, GetCurrent());
 }

@@ -4,9 +4,9 @@ using Poe2DesktopClock.Contracts.Models;
 namespace Poe2DesktopClock.Application.Services;
 
 /// <summary>
-/// Рассчитывает динамику стоимости с момента запуска процесса Path of Exile 2.
-/// Хранилище используется только как источник baseline при старте новой сессии;
-/// сохранение снимков остаётся ответственностью сценария обновления оценки.
+/// Рассчитывает динамику стоимости в рамках текущего запуска Path of Exile 2.
+/// Последняя полная сохранённая оценка используется как baseline; если надёжной
+/// оценки нет, сценарий ждёт первый полный снимок текущего запуска.
 /// </summary>
 public sealed class GameSessionUseCase : IGameSessionUseCase
 {
@@ -77,17 +77,19 @@ public sealed class GameSessionUseCase : IGameSessionUseCase
         GameSessionSnapshot sessionSnapshot;
         lock (_sync)
         {
-            if (_isGameRunning)
+            var now = _timeProvider.GetUtcNow();
+            if (_isGameRunning && IsReliableBaseline(snapshot))
             {
                 if (_baselineSnapshot is null)
                 {
                     _baselineSnapshot = snapshot;
+                    _sessionStartedAt = now;
                 }
 
                 _currentSnapshot = snapshot;
             }
 
-            sessionSnapshot = CreateSnapshot(_timeProvider.GetUtcNow());
+            sessionSnapshot = CreateSnapshot(now);
         }
 
         SessionChanged?.Invoke(this, sessionSnapshot);
@@ -103,9 +105,18 @@ public sealed class GameSessionUseCase : IGameSessionUseCase
         _isGameRunning = true;
         _processId = processId;
         _reportedProcessStartedAt = processStartedAt;
-        _sessionStartedAt = processStartedAt ?? now;
-        _baselineSnapshot = _lastSnapshotStore.GetLastSnapshot();
-        _currentSnapshot = _baselineSnapshot;
+        var savedSnapshot = _lastSnapshotStore.GetLastSnapshot();
+        if (IsReliableBaseline(savedSnapshot))
+        {
+            _sessionStartedAt = processStartedAt ?? now;
+            _baselineSnapshot = savedSnapshot;
+            _currentSnapshot = savedSnapshot;
+            return;
+        }
+
+        _sessionStartedAt = null;
+        _baselineSnapshot = null;
+        _currentSnapshot = null;
     }
 
     private void UpdateKnownProcessIdentity(int? processId, DateTimeOffset? processStartedAt)
@@ -114,7 +125,6 @@ public sealed class GameSessionUseCase : IGameSessionUseCase
         if (_reportedProcessStartedAt is null && processStartedAt is not null)
         {
             _reportedProcessStartedAt = processStartedAt;
-            _sessionStartedAt = processStartedAt;
         }
     }
 
@@ -127,6 +137,14 @@ public sealed class GameSessionUseCase : IGameSessionUseCase
         _baselineSnapshot = null;
         _currentSnapshot = null;
     }
+
+    private static bool IsReliableBaseline(ClockSnapshot? snapshot) =>
+        snapshot is
+        {
+            IsComplete: true,
+            CurrencyUpdatedAt: not null,
+            PublicTabsUpdatedAt: not null,
+        };
 
     private GameSessionSnapshot CreateSnapshot(DateTimeOffset now)
     {
@@ -142,20 +160,20 @@ public sealed class GameSessionUseCase : IGameSessionUseCase
                 null);
         }
 
-        var startedAt = _sessionStartedAt ?? now;
-        var duration = now <= startedAt ? TimeSpan.Zero : now - startedAt;
         if (_baselineSnapshot is null || _currentSnapshot is null)
         {
             return new GameSessionSnapshot(
                 GameSessionStatus.WaitingForBaseline,
-                startedAt,
-                duration,
+                null,
+                null,
                 null,
                 null,
                 null,
                 null);
         }
 
+        var startedAt = _sessionStartedAt ?? now;
+        var duration = now <= startedAt ? TimeSpan.Zero : now - startedAt;
         var delta = _currentSnapshot.TotalDivines - _baselineSnapshot.TotalDivines;
         var perHour = duration.Ticks == 0
             ? 0m

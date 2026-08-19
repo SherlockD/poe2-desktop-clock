@@ -82,6 +82,45 @@ public sealed class RuntimeTrackerStatusProviderTests
         Assert.Equal(1, notifications);
     }
 
+    [Fact]
+    public async Task Incomplete_refresh_does_not_replace_the_last_reliable_saved_snapshot()
+    {
+        var currency = new TestCurrencyRefreshUseCase();
+        var publicTabs = new TestPublicTabsRefreshUseCase();
+        var store = new TestLastClockSnapshotStore();
+        var savedAt = new DateTimeOffset(2026, 8, 18, 14, 0, 0, TimeSpan.Zero);
+        var saved = new ClockSnapshot(
+            100m,
+            75m,
+            25m,
+            savedAt,
+            savedAt,
+            savedAt,
+            true,
+            "Полная оценка.");
+        store.Save(saved);
+        var publisher = new TrackerSnapshotPublisher();
+        var device = new StubDeviceSynchronizationUseCase();
+        await using var relay = new DeviceSnapshotRelay(publisher, device);
+        await using var provider = new RuntimeTrackerStatusProvider(
+            currency,
+            publicTabs,
+            new TestMonitoringUseCase(),
+            new GameSessionUseCase(store),
+            device,
+            store,
+            relay,
+            new ClockSnapshotComposer(),
+            publisher);
+
+        currency.Raise(new CurrencyRefreshResult(
+            new CurrencyValuation(10m, UnpricedItems: 1, UnreadableSlots: 0, savedAt.AddMinutes(1)),
+            savedAt.AddMinutes(1)));
+
+        Assert.False(provider.GetCurrent().ClockSnapshot?.IsComplete);
+        Assert.Same(saved, store.LastSnapshot);
+    }
+
     private sealed class TestCurrencyRefreshUseCase : ICurrencyRefreshUseCase
     {
         public event EventHandler<CurrencyRefreshResult>? Refreshed;
