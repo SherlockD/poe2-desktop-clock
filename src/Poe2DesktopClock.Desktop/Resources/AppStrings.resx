@@ -14,14 +14,14 @@
   </resheader>
 
   <!-- Application shell and shared labels -->
-  <data name="App_WindowTitle" xml:space="preserve"><value>PoE 2 — Wraeclast Ledger</value></data>
+  <data name="App_WindowTitle" xml:space="preserve"><value>PoE 2 Desktop Clock</value></data>
   <data name="Brand_Emblem" xml:space="preserve"><value>II</value></data>
-  <data name="Brand_Wraeclast" xml:space="preserve"><value>WRAECLAST</value></data>
-  <data name="Brand_Ledger" xml:space="preserve"><value>LEDGER</value></data>
-  <data name="Brand_Subtitle" xml:space="preserve"><value>POE 2 DESKTOP CLOCK</value></data>
+  <data name="Brand_Wraeclast" xml:space="preserve"><value>POE 2</value></data>
+  <data name="Brand_Ledger" xml:space="preserve"><value>DESKTOP</value></data>
+  <data name="Brand_Subtitle" xml:space="preserve"><value>CLOCK</value></data>
   <data name="Main_StashSection" xml:space="preserve"><value>ТАЙНИК</value></data>
   <data name="Main_NavStashValue" xml:space="preserve"><value>◇   Оценка тайника</value></data>
-  <data name="Main_NavPublicStashTabs" xml:space="preserve"><value>◇   Публичные вкладки тайника</value></data>
+  <data name="Main_NavPublicStashTabs" xml:space="preserve"><value>◇   Публичные вкладки</value></data>
   <data name="Main_NavSettings" xml:space="preserve"><value>◇   Настройки приложения</value></data>
   <data name="Main_GameState" xml:space="preserve"><value>СОСТОЯНИЕ ИГРЫ</value></data>
   <data name="Main_Device" xml:space="preserve"><value>ЧАСЫ</value></data>
