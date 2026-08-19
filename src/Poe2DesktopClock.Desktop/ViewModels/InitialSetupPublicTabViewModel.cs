@@ -1,3 +1,5 @@
+using Poe2DesktopClock.Desktop.Localization;
+
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
 /// <summary>
@@ -8,8 +10,8 @@ namespace Poe2DesktopClock.Desktop.ViewModels;
 public sealed class InitialSetupPublicTabViewModel : ViewModelBase
 {
     private bool _isIncluded = true;
-    private string _status = "Ожидает синхронизации";
-    private string _detail = "";
+    private string _status = AppStrings.Get("InitialSetup_WaitingForSynchronization");
+    private string _detail = string.Empty;
     private bool _isSynchronized;
 
     public InitialSetupPublicTabViewModel(
@@ -46,11 +48,17 @@ public sealed class InitialSetupPublicTabViewModel : ViewModelBase
 
             if (!value)
             {
-                SetSynchronizationResult("Исключена", "Вкладка не будет синхронизироваться.", false);
+                SetSynchronizationResult(
+                    AppStrings.Get("InitialSetup_Excluded"),
+                    AppStrings.Get("InitialSetup_ExcludedDetail"),
+                    false);
             }
             else
             {
-                SetSynchronizationResult("Ожидает синхронизации", "", false);
+                SetSynchronizationResult(
+                    AppStrings.Get("InitialSetup_WaitingForSynchronization"),
+                    string.Empty,
+                    false);
             }
         }
     }

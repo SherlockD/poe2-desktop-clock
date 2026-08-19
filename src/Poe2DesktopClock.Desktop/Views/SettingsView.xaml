@@ -1,6 +1,7 @@
 <UserControl x:Class="Poe2DesktopClock.Desktop.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:localization="clr-namespace:Poe2DesktopClock.Desktop.Localization">
     <UserControl.Resources>
         <Style x:Key="SettingsCardStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource PanelCardStyle}">
             <Setter Property="Margin" Value="0,0,0,14" />
@@ -10,9 +11,9 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
         <StackPanel Margin="38,31,38,38" MaxWidth="1180">
-            <TextBlock Text="АРХИВ И НАСТРОЙКА" Style="{StaticResource EyebrowTextStyle}" />
-            <TextBlock Text="Источники данных" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
-            <TextBlock Text="Управляйте тем, что попадает в оценку вашего хранилища."
+            <TextBlock Text="{localization:Text Settings_Eyebrow}" Style="{StaticResource EyebrowTextStyle}" />
+            <TextBlock Text="{localization:Text Settings_Title}" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
+            <TextBlock Text="{localization:Text Settings_Subtitle}"
                        Margin="0,5,0,20"
                        Foreground="{StaticResource MutedTextBrush}"
                        FontSize="14" />
@@ -27,8 +28,8 @@
                     <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
                     <StackPanel Grid.Column="2">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="01" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="Аккаунт и лига" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_AccountSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
+                            <TextBlock Text="{localization:Text Settings_AccountAndLeague}" Style="{StaticResource SectionTitleStyle}" />
                         </DockPanel>
                         <Border Style="{StaticResource OrnamentRuleStyle}" Margin="0,9,0,17" />
                         <Grid>
@@ -38,15 +39,15 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Имя аккаунта" Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{localization:Text InitialSetup_AccountName}" Style="{StaticResource FieldLabelStyle}" />
                                 <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}"
-                                         ToolTip="Например: SherlockDmt#3728" />
+                                         ToolTip="{localization:Text InitialSetup_AccountExample}" />
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Текущая лига" Style="{StaticResource FieldLabelStyle}" />
+                                <TextBlock Text="{localization:Text Settings_CurrentLeague}" Style="{StaticResource FieldLabelStyle}" />
                                 <DockPanel LastChildFill="True">
                                     <Button DockPanel.Dock="Right"
-                                            Content="Обновить"
+                                            Content="{localization:Text InitialSetup_Refresh}"
                                             Command="{Binding RefreshLeaguesCommand}"
                                             Margin="10,0,0,0" />
                                     <ComboBox ItemsSource="{Binding Leagues}"
@@ -69,10 +70,10 @@
                     <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
                     <StackPanel Grid.Column="2">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="02" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="Currency-вкладка" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_CurrencySectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
+                            <TextBlock Text="{localization:Text Settings_CurrencyTabTitle}" Style="{StaticResource SectionTitleStyle}" />
                         </DockPanel>
-                        <TextBlock Text="Считывается только выбранная область окна игры — и только пока вкладка открыта."
+                        <TextBlock Text="{localization:Text Settings_CurrencyTabDescription}"
                                    Margin="0,5,0,13"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    TextWrapping="Wrap" />
@@ -82,11 +83,11 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <CheckBox Content="Отслеживать изменения Currency-вкладки"
+                                <CheckBox Content="{localization:Text Settings_TrackCurrencyTab}"
                                           IsChecked="{Binding IsCurrencyTrackingEnabled}"
                                           VerticalAlignment="Center" />
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
-                                    <TextBlock Text="ЧАСТОТА"
+                                    <TextBlock Text="{localization:Text Settings_CaptureFrequency}"
                                                Style="{StaticResource EyebrowTextStyle}"
                                                Foreground="{StaticResource MutedTextBrush}"
                                                VerticalAlignment="Center"
@@ -94,7 +95,7 @@
                                     <ComboBox Width="78"
                                               ItemsSource="{Binding CaptureFrequencies}"
                                               SelectedItem="{Binding SelectedCaptureFps}" />
-                                    <TextBlock Text="кадра/с"
+                                    <TextBlock Text="{localization:Text Settings_FramesPerSecond}"
                                                VerticalAlignment="Center"
                                                Foreground="{StaticResource MutedTextBrush}"
                                                Margin="8,0,0,0" />
@@ -102,8 +103,8 @@
                             </Grid>
                         </Border>
                         <WrapPanel>
-                            <Button Content="Выбрать область вкладки" Command="{Binding SelectCurrencyAreaCommand}" Margin="0,0,10,0" />
-                            <Button Content="Проверить ячейки" Command="{Binding CalibrateCurrencyCommand}" />
+                            <Button Content="{localization:Text Settings_SelectCurrencyRegion}" Command="{Binding SelectCurrencyAreaCommand}" Margin="0,0,10,0" />
+                            <Button Content="{localization:Text Settings_CalibrateCurrencySlots}" Command="{Binding CalibrateCurrencyCommand}" />
                         </WrapPanel>
                     </StackPanel>
                 </Grid>
@@ -119,10 +120,10 @@
                     <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
                     <StackPanel Grid.Column="2">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="03" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="Публичные вкладки" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_PublicTabsSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
+                            <TextBlock Text="{localization:Text Settings_PublicTabsTitle}" Style="{StaticResource SectionTitleStyle}" />
                         </DockPanel>
-                        <TextBlock Text="Сделайте вкладки публичными и дайте им точные имена. Цена здесь служит уникальной меткой, а не оценкой предметов."
+                        <TextBlock Text="{localization:Text Settings_PublicTabsDescription}"
                                    Margin="0,5,0,14"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    TextWrapping="Wrap" />
@@ -138,7 +139,7 @@
                                             <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontWeight="SemiBold" />
                                             <DockPanel Grid.Column="1">
                                                 <TextBlock DockPanel.Dock="Left"
-                                                           Text="◇"
+                                                           Text="{localization:Text Common_Diamond}"
                                                            Margin="0,0,9,0"
                                                            VerticalAlignment="Center"
                                                            Foreground="{StaticResource AccentBrush}" />
@@ -153,7 +154,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <Border BorderBrush="#493A27" BorderThickness="0,1,0,0" Margin="0,9,0,0" Padding="0,12,0,0">
-                            <TextBlock Text="Проверка изменений — каждые 2 минуты. Полная сверка — каждые 15 минут. Цены — каждые 30 минут."
+                            <TextBlock Text="{localization:Text Settings_RefreshSchedule}"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        FontSize="12"
                                        TextWrapping="Wrap" />
@@ -176,8 +177,8 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="04" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="Работа приложения" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_ApplicationSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
+                            <TextBlock Text="{localization:Text Settings_Application}" Style="{StaticResource SectionTitleStyle}" />
                         </DockPanel>
                         <Grid Grid.Row="1" Margin="0,15,0,0">
                             <Grid.ColumnDefinitions>
@@ -185,14 +186,14 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <CheckBox Content="Запускать свёрнутым" IsChecked="{Binding StartMinimized}" />
+                                <CheckBox Content="{localization:Text Settings_StartMinimized}" IsChecked="{Binding StartMinimized}" />
                                 <TextBlock Text="{Binding Notice}"
                                            Margin="0,7,20,0"
                                            Foreground="{StaticResource WarningBrush}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                             <Button Grid.Column="1"
-                                    Content="Сохранить настройки"
+                                    Content="{localization:Text Settings_Save}"
                                     Command="{Binding SaveCommand}"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     VerticalAlignment="Top" />
@@ -215,20 +216,20 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="05" FontFamily="Palatino Linotype" FontSize="18" Foreground="{StaticResource WarningBrush}" />
-                            <TextBlock Text="Полный сброс" Style="{StaticResource SectionTitleStyle}" />
+                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_ResetSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="{StaticResource WarningBrush}" />
+                            <TextBlock Text="{localization:Text Settings_FullReset}" Style="{StaticResource SectionTitleStyle}" />
                         </DockPanel>
                         <Grid Grid.Row="1" Margin="0,15,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Удаляет все настройки, калибровку Currency-вкладки, публичные вкладки и сохранённые оценки. После перезапуска откроется онбординг с первого шага."
+                            <TextBlock Text="{localization:Text Settings_FullResetDescription}"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,20,0" />
                             <Button Grid.Column="1"
-                                    Content="Полный сброс"
+                                    Content="{localization:Text Settings_FullReset}"
                                     Command="{Binding DataContext.FullResetCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                     VerticalAlignment="Top" />
                         </Grid>

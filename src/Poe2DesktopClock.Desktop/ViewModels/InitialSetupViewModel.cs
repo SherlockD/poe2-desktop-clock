@@ -5,6 +5,7 @@ using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Infrastructure;
+using Poe2DesktopClock.Desktop.Localization;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
@@ -37,9 +38,9 @@ public sealed class InitialSetupViewModel : ViewModelBase
     private CancellationTokenSource? _synchronizationCancellation;
     private string _accountName = string.Empty;
     private string _selectedLeague = string.Empty;
-    private string _currencyAreaStatus = "Область ещё не выбрана.";
-    private string _currencySlotsStatus = "Ячейки ещё не настроены.";
-    private string _notice = "Настройте Currency-вкладку, затем продолжите.";
+    private string _currencyAreaStatus = AppStrings.Get("InitialSetup_AreaNotSelected");
+    private string _currencySlotsStatus = AppStrings.Get("InitialSetup_SlotsNotConfigured");
+    private string _notice = AppStrings.Get("InitialSetup_ConfigureCurrencyFirst");
     private bool _isSynchronizing;
     private bool _hasSavedPublicConfiguration;
     private bool _initialized;
@@ -143,30 +144,37 @@ public sealed class InitialSetupViewModel : ViewModelBase
     public bool IsNotSynchronizing => !IsSynchronizing;
 
     public string CurrencyStepState => IsCurrencyReady
-        ? "Готово"
+        ? AppStrings.Get("Common_Done")
         : IsCurrencyStep
-            ? "В процессе"
-            : "Не начат";
+            ? AppStrings.Get("Common_InProgress")
+            : AppStrings.Get("Common_NotStarted");
 
     public string PublicTabsStepState => CanMoveToDevice() ||
                                          (IsDeviceStep && _hasSavedPublicConfiguration)
-        ? "Готово"
+        ? AppStrings.Get("Common_Done")
         : IsPublicTabsStep
-            ? "В процессе"
-            : "Не начат";
+            ? AppStrings.Get("Common_InProgress")
+            : AppStrings.Get("Common_NotStarted");
 
     public string DeviceStepState => _state.IsCompleted
-        ? "Готово"
+        ? AppStrings.Get("Common_Done")
         : IsDeviceStep
-            ? "В процессе"
-            : "Не начат";
+            ? AppStrings.Get("Common_InProgress")
+            : AppStrings.Get("Common_NotStarted");
 
     public string PublicTabsSummary => _synchronization is null
-        ? $"Выбрано вкладок: {PublicTabs.Count(tab => tab.IsIncluded)} из {PublicTabs.Count}."
-        : $"Синхронизировано {_synchronization.SynchronizedCount} из {_synchronization.SelectedCount} выбранных вкладок.";
+        ? AppStrings.Format(
+            "InitialSetup_SelectedTabsFormat",
+            PublicTabs.Count(tab => tab.IsIncluded),
+            PublicTabs.Count)
+        : AppStrings.Format(
+            "InitialSetup_SynchronizedTabsFormat",
+            _synchronization.SynchronizedCount,
+            _synchronization.SelectedCount);
 
-    public string DeviceSummary =>
-        $"Currency-вкладка готова; синхронизировано публичных вкладок: {_synchronization?.SynchronizedCount ?? PublicTabs.Count(tab => tab.IsIncluded)}.";
+    public string DeviceSummary => AppStrings.Format(
+        "InitialSetup_DeviceSummaryFormat",
+        _synchronization?.SynchronizedCount ?? PublicTabs.Count(tab => tab.IsIncluded));
 
     public ICommand SelectCurrencyAreaCommand => _selectCurrencyAreaCommand;
 
@@ -243,15 +251,15 @@ public sealed class InitialSetupViewModel : ViewModelBase
         {
             await _currencySetup.SelectCurrencyRegionAsync();
             RefreshCurrencyStatus();
-            Notice = "Область сохранена. Теперь настройте ячейки и подтвердите их Enter.";
+            Notice = AppStrings.Get("InitialSetup_AreaSaved");
         }
         catch (OperationCanceledException)
         {
-            Notice = "Выбор области отменён.";
+            Notice = AppStrings.Get("InitialSetup_AreaSelectionCancelled");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось выбрать область: {exception.Message}";
+            Notice = AppStrings.Format("InitialSetup_AreaSelectionFailedFormat", exception.Message);
         }
     }
 
@@ -262,16 +270,16 @@ public sealed class InitialSetupViewModel : ViewModelBase
             await _currencySetup.CalibrateCurrencySlotsAsync();
             RefreshCurrencyStatus();
             Notice = IsCurrencyReady
-                ? "Ячейки сохранены. Можно перейти к публичным вкладкам."
-                : "Ячейки не были сохранены. Повторите настройку.";
+                ? AppStrings.Get("InitialSetup_SlotsSaved")
+                : AppStrings.Get("InitialSetup_SlotsNotSaved");
         }
         catch (OperationCanceledException)
         {
-            Notice = "Настройка ячеек отменена.";
+            Notice = AppStrings.Get("InitialSetup_SlotsSetupCancelled");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось настроить ячейки: {exception.Message}";
+            Notice = AppStrings.Format("InitialSetup_SlotsSetupFailedFormat", exception.Message);
         }
     }
 
@@ -279,7 +287,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
     {
         if (!IsCurrencyReady)
         {
-            Notice = "Сначала выберите область и сохраните настройку ячеек.";
+            Notice = AppStrings.Get("InitialSetup_CurrencySetupRequired");
             return;
         }
 
@@ -312,12 +320,12 @@ public sealed class InitialSetupViewModel : ViewModelBase
             }
 
             Notice = leagues.Count == 0
-                ? "Список лиг пока пуст. Повторите загрузку."
-                : "Список актуальных лиг обновлён.";
+                ? AppStrings.Get("InitialSetup_LeaguesEmpty")
+                : AppStrings.Get("InitialSetup_LeaguesUpdated");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось обновить лиги: {exception.Message}";
+            Notice = AppStrings.Format("InitialSetup_LeaguesUpdateFailedFormat", exception.Message);
         }
     }
 
@@ -332,29 +340,32 @@ public sealed class InitialSetupViewModel : ViewModelBase
         using var cancellation = new CancellationTokenSource();
         _synchronizationCancellation = cancellation;
         IsSynchronizing = true;
-        Notice = "Синхронизация публичных вкладок началась…";
+        Notice = AppStrings.Get("InitialSetup_SynchronizationStarted");
         try
         {
             var synchronization = await _publicTabsSetup.SynchronizeAsync(request, cancellation.Token);
             _synchronization = synchronization;
             ApplySynchronization(synchronization);
             Notice = synchronization.AreAllSelectedTabsSynchronized
-                ? "Все выбранные вкладки синхронизированы."
-                : "Не все вкладки удалось синхронизировать. Исправьте их или исключите из списка.";
+                ? AppStrings.Get("InitialSetup_AllTabsSynchronized")
+                : AppStrings.Get("InitialSetup_SomeTabsFailed");
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            Notice = "Синхронизация отменена.";
+            Notice = AppStrings.Get("InitialSetup_SynchronizationCancelled");
         }
         catch (Exception exception)
         {
             foreach (var tab in PublicTabs.Where(tab => tab.IsIncluded))
             {
-                tab.SetSynchronizationResult("Ошибка", $"Не удалось синхронизировать вкладку: {exception.Message}", false);
+                tab.SetSynchronizationResult(
+                    AppStrings.Get("Common_Error"),
+                    AppStrings.Format("InitialSetup_TabSynchronizationFailedFormat", exception.Message),
+                    false);
             }
 
             _synchronization = null;
-            Notice = "Синхронизация завершилась ошибкой. Повторите попытку.";
+            Notice = AppStrings.Get("InitialSetup_SynchronizationFailed");
         }
         finally
         {
@@ -373,7 +384,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
     {
         if (!CanMoveToDevice())
         {
-            Notice = "Синхронизируйте все выбранные вкладки или исключите неудачные строки.";
+            Notice = AppStrings.Get("InitialSetup_SynchronizeOrExclude");
             return;
         }
 
@@ -391,11 +402,11 @@ public sealed class InitialSetupViewModel : ViewModelBase
             await _publicTabsSetup.SaveAsync(_synchronization!);
             _hasSavedPublicConfiguration = true;
             SetCurrentStep(InitialSetupStep.DeviceConnection);
-            Notice = "Источники данных сохранены.";
+            Notice = AppStrings.Get("InitialSetup_SourcesSaved");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось сохранить публичные вкладки: {exception.Message}";
+            Notice = AppStrings.Format("InitialSetup_PublicTabsSaveFailedFormat", exception.Message);
         }
     }
 
@@ -404,12 +415,12 @@ public sealed class InitialSetupViewModel : ViewModelBase
         try
         {
             CompleteState();
-            Notice = "Настройка завершена. Открываю мониторинг…";
+            Notice = AppStrings.Get("InitialSetup_Completed");
             SetupCompleted?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось завершить настройку: {exception.Message}";
+            Notice = AppStrings.Format("InitialSetup_CompletionFailedFormat", exception.Message);
         }
 
         return Task.CompletedTask;
@@ -440,19 +451,19 @@ public sealed class InitialSetupViewModel : ViewModelBase
         request = new PublicTabsSetupRequest(AccountName, SelectedLeague, tabs);
         if (string.IsNullOrWhiteSpace(AccountName))
         {
-            validationMessage = "Укажите имя аккаунта.";
+            validationMessage = AppStrings.Get("InitialSetup_AccountRequired");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(SelectedLeague))
         {
-            validationMessage = "Выберите лигу.";
+            validationMessage = AppStrings.Get("InitialSetup_LeagueRequired");
             return false;
         }
 
         if (!tabs.Any(tab => tab.IsSelected))
         {
-            validationMessage = "Оставьте хотя бы одну публичную вкладку для синхронизации.";
+            validationMessage = AppStrings.Get("InitialSetup_PublicTabRequired");
             return false;
         }
 
@@ -497,7 +508,10 @@ public sealed class InitialSetupViewModel : ViewModelBase
         _synchronization = null;
         foreach (var tab in PublicTabs.Where(tab => tab.IsIncluded))
         {
-            tab.SetSynchronizationResult("Ожидает синхронизации", string.Empty, false);
+            tab.SetSynchronizationResult(
+                AppStrings.Get("InitialSetup_WaitingForSynchronization"),
+                string.Empty,
+                false);
         }
 
         OnPropertyChanged(nameof(PublicTabsSummary));
@@ -523,7 +537,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
                         {
                             Tab = result.Tab with { IsSelected = false },
                             Status = PublicTabSynchronizationStatus.Excluded,
-                            RussianSummary = "Вкладка исключена из синхронизации.",
+                            RussianSummary = AppStrings.Get("InitialSetup_ExcludedFromSynchronization"),
                         };
                     }
 
@@ -531,7 +545,7 @@ public sealed class InitialSetupViewModel : ViewModelBase
                     {
                         Tab = result.Tab with { IsSelected = true },
                         Status = PublicTabSynchronizationStatus.Error,
-                        RussianSummary = "Вкладка снова включена. Синхронизируйте её перед продолжением.",
+                        RussianSummary = AppStrings.Get("InitialSetup_Reincluded"),
                     };
                 })
                 .ToArray();
@@ -552,18 +566,21 @@ public sealed class InitialSetupViewModel : ViewModelBase
         {
             if (!resultsByLabel.TryGetValue(tab.Label, out var result))
             {
-                tab.SetSynchronizationResult("Ошибка", "Нет результата синхронизации для вкладки.", false);
+                tab.SetSynchronizationResult(
+                    AppStrings.Get("Common_Error"),
+                    AppStrings.Get("InitialSetup_NoSynchronizationResult"),
+                    false);
                 continue;
             }
 
             var (status, isSynchronized) = result.Status switch
             {
-                PublicTabSynchronizationStatus.Synchronized => ("Синхронизирована", true),
-                PublicTabSynchronizationStatus.NotFound => ("Не найдена", false),
-                PublicTabSynchronizationStatus.WrongTabName => ("Неверная вкладка", false),
-                PublicTabSynchronizationStatus.Ambiguous => ("Неоднозначно", false),
-                PublicTabSynchronizationStatus.Excluded => ("Исключена", false),
-                _ => ("Ошибка", false),
+                PublicTabSynchronizationStatus.Synchronized => (AppStrings.Get("InitialSetup_Synchronized"), true),
+                PublicTabSynchronizationStatus.NotFound => (AppStrings.Get("InitialSetup_NotFound"), false),
+                PublicTabSynchronizationStatus.WrongTabName => (AppStrings.Get("InitialSetup_WrongTab"), false),
+                PublicTabSynchronizationStatus.Ambiguous => (AppStrings.Get("InitialSetup_Ambiguous"), false),
+                PublicTabSynchronizationStatus.Excluded => (AppStrings.Get("InitialSetup_Excluded"), false),
+                _ => (AppStrings.Get("Common_Error"), false),
             };
             tab.SetSynchronizationResult(status, result.RussianSummary, isSynchronized);
         }
@@ -577,11 +594,11 @@ public sealed class InitialSetupViewModel : ViewModelBase
     {
         _currencyStatus = _currencySetup.GetCurrencySetupStatus();
         CurrencyAreaStatus = _currencyStatus.HasRegion
-            ? "Область выбрана."
-            : "Область ещё не выбрана.";
+            ? AppStrings.Get("InitialSetup_AreaSelected")
+            : AppStrings.Get("InitialSetup_AreaNotSelected");
         CurrencySlotsStatus = _currencyStatus.HasCalibratedSlots
-            ? "Ячейки сохранены."
-            : "Откройте Currency-вкладку и настройте ячейки. Подтвердите результат Enter.";
+            ? AppStrings.Get("InitialSetup_SlotsConfigured")
+            : AppStrings.Get("InitialSetup_OpenCurrencyAndConfigure");
         OnPropertyChanged(nameof(CurrencyStepState));
         UpdateCommandAvailability();
     }

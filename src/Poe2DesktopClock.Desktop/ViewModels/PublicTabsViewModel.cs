@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Poe2DesktopClock.Desktop.Localization;
 using Poe2DesktopClock.Desktop.Models;
 using Poe2DesktopClock.Desktop.Services;
 
@@ -26,26 +27,26 @@ public sealed class PublicTabsViewModel : ViewModelBase
     public ObservableCollection<PublicTabValuationViewModel> Tabs { get; }
 
     public string TotalDivines => _status.PublicTabsValuation is null
-        ? "—"
+        ? AppStrings.Get("Common_NotAvailable")
         : _status.PublicTabsValuation.Divines.ToString("N2", CultureInfo.InvariantCulture);
 
     public string UpdatedAt => _status.PublicTabsValuation is null
-        ? "ещё не обновлялось"
+        ? AppStrings.Get("Common_NotUpdatedYet")
         : _status.PublicTabsValuation.UpdatedAt.ToLocalTime().ToString("HH:mm:ss", CultureInfo.CurrentCulture);
 
     public string Summary => _status.PublicTabsValuation?.Summary ??
-        "После первого обновления здесь появится оценка каждой публичной вкладки.";
+        AppStrings.Get("PublicTabs_FirstRefreshHint");
 
     public bool HasTradeApiLimitWarnings => Tabs.Any(tab => tab.HasTradeApiLimitWarning);
 
     public bool HasTabs => Tabs.Count > 0;
 
     public string LimitWarningSummary => HasTradeApiLimitWarnings
-        ? "Trade API вернул не все найденные предметы хотя бы для одной вкладки. Её стоимость — частичная оценка."
+        ? AppStrings.Get("PublicTabs_LimitWarning")
         : string.Empty;
 
     public string EmptyMessage => Tabs.Count == 0
-        ? "Данные по вкладкам ещё не получены. Первое обновление запускается при старте приложения."
+        ? AppStrings.Get("PublicTabs_Empty")
         : string.Empty;
 
     public void Refresh()

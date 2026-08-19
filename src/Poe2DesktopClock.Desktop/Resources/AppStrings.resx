@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Application shell and shared labels -->
+  <data name="App_WindowTitle" xml:space="preserve"><value>PoE 2 — Wraeclast Ledger</value></data>
+  <data name="Brand_Emblem" xml:space="preserve"><value>II</value></data>
+  <data name="Brand_Wraeclast" xml:space="preserve"><value>WRAECLAST</value></data>
+  <data name="Brand_Ledger" xml:space="preserve"><value>LEDGER</value></data>
+  <data name="Brand_Subtitle" xml:space="preserve"><value>POE 2 DESKTOP CLOCK</value></data>
+  <data name="Main_StashSection" xml:space="preserve"><value>ТАЙНИК</value></data>
+  <data name="Main_NavStashValue" xml:space="preserve"><value>◇   Оценка тайника</value></data>
+  <data name="Main_NavPublicStashTabs" xml:space="preserve"><value>◇   Публичные вкладки тайника</value></data>
+  <data name="Main_NavSettings" xml:space="preserve"><value>◇   Настройка тайника</value></data>
+  <data name="Main_GameState" xml:space="preserve"><value>СОСТОЯНИЕ ИГРЫ</value></data>
+  <data name="Main_Device" xml:space="preserve"><value>ЧАСЫ</value></data>
+  <data name="Main_Privacy" xml:space="preserve"><value>Локальные данные  ·  без чтения памяти</value></data>
+  <data name="Common_Updated" xml:space="preserve"><value>ОБНОВЛЕНО</value></data>
+  <data name="Common_NotAvailable" xml:space="preserve"><value>—</value></data>
+  <data name="Common_NotUpdatedYet" xml:space="preserve"><value>ещё не обновлялось</value></data>
+  <data name="Common_Done" xml:space="preserve"><value>Готово</value></data>
+  <data name="Common_InProgress" xml:space="preserve"><value>В процессе</value></data>
+  <data name="Common_NotStarted" xml:space="preserve"><value>Не начат</value></data>
+  <data name="Common_Error" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="Common_Diamond" xml:space="preserve"><value>◇</value></data>
+  <data name="Common_WarningMark" xml:space="preserve"><value>!</value></data>
+
+  <!-- Dashboard -->
+  <data name="Dashboard_Eyebrow" xml:space="preserve"><value>ЖУРНАЛ ИЗГНАННИКА</value></data>
+  <data name="Dashboard_Title" xml:space="preserve"><value>Оценка тайника</value></data>
+  <data name="Dashboard_Subtitle" xml:space="preserve"><value>Актуальная стоимость валюты и публичных вкладок тайника в текущей игровой сессии</value></data>
+  <data name="Dashboard_TotalValue" xml:space="preserve"><value>ОБЩАЯ СТОИМОСТЬ</value></data>
+  <data name="Dashboard_SessionBaseline" xml:space="preserve"><value>На старте сессии</value></data>
+  <data name="Dashboard_SessionState" xml:space="preserve"><value>СТАТУС СЕССИИ</value></data>
+  <data name="Dashboard_Duration" xml:space="preserve"><value>ДЛИТЕЛЬНОСТЬ</value></data>
+  <data name="Dashboard_Change" xml:space="preserve"><value>ИЗМЕНЕНИЕ</value></data>
+  <data name="Dashboard_Rate" xml:space="preserve"><value>СКОРОСТЬ</value></data>
+  <data name="Dashboard_SourcesCaption" xml:space="preserve"><value>стоимость · состояние · последнее обновление</value></data>
+  <data name="Dashboard_SourcesTitle" xml:space="preserve"><value>Источники стоимости</value></data>
+  <data name="Dashboard_CurrencyMonogram" xml:space="preserve"><value>C</value></data>
+  <data name="Dashboard_CurrencyTab" xml:space="preserve"><value>ВКЛАДКА ВАЛЮТЫ</value></data>
+  <data name="Dashboard_PublicTabsMonogram" xml:space="preserve"><value>P</value></data>
+  <data name="Dashboard_PublicStashTabs" xml:space="preserve"><value>ПУБЛИЧНЫЕ ВКЛАДКИ ТАЙНИКА</value></data>
+  <data name="Dashboard_PricesMonogram" xml:space="preserve"><value>N</value></data>
+  <data name="Dashboard_MarketPrices" xml:space="preserve"><value>РЫНОЧНЫЕ ЦЕНЫ</value></data>
+  <data name="Dashboard_PriceSource" xml:space="preserve"><value>poe.ninja</value></data>
+  <data name="Dashboard_MarketPricesDescription" xml:space="preserve"><value>Стоимость валюты в божественных сферах по данным poe.ninja</value></data>
+  <data name="Dashboard_DeviceSection" xml:space="preserve"><value>Устройство</value></data>
+  <data name="Dashboard_ClockEmulator" xml:space="preserve"><value>ЭМУЛЯТОР ЧАСОВ</value></data>
+  <data name="Dashboard_DeviceRoadmap" xml:space="preserve"><value>COM-подключение запланировано для следующего этапа.</value></data>
+  <data name="Dashboard_LastValue" xml:space="preserve"><value>ПОСЛЕДНЕЕ ЗНАЧЕНИЕ</value></data>
+  <data name="Dashboard_SynchronizedAt" xml:space="preserve"><value>СИНХРОНИЗИРОВАНО</value></data>
+
+  <!-- Public stash tabs -->
+  <data name="PublicTabs_Eyebrow" xml:space="preserve"><value>ТАЙНИК</value></data>
+  <data name="PublicTabs_Title" xml:space="preserve"><value>Публичные вкладки тайника</value></data>
+  <data name="PublicTabs_Subtitle" xml:space="preserve"><value>Стоимость каждой отслеживаемой вкладки тайника и полнота выдачи Trade API.</value></data>
+  <data name="PublicTabs_Total" xml:space="preserve"><value>СТОИМОСТЬ ПУБЛИЧНЫХ ВКЛАДОК</value></data>
+  <data name="PublicTabs_Section" xml:space="preserve"><value>Вкладки тайника</value></data>
+  <data name="PublicTabs_TabValue" xml:space="preserve"><value>СТОИМОСТЬ</value></data>
+
+  <!-- Initial setup -->
+  <data name="InitialSetup_Eyebrow" xml:space="preserve"><value>ПОДГОТОВКА ТАЙНИКА</value></data>
+  <data name="InitialSetup_Title" xml:space="preserve"><value>Первоначальная настройка</value></data>
+  <data name="InitialSetup_Subtitle" xml:space="preserve"><value>Подготовим вкладку валюты и публичные вкладки тайника. После последнего шага откроется мониторинг.</value></data>
+  <data name="InitialSetup_CurrencyStepLabel" xml:space="preserve"><value>I  ·  ВАЛЮТА</value></data>
+  <data name="InitialSetup_CurrencyStepTitle" xml:space="preserve"><value>Вкладка валюты</value></data>
+  <data name="InitialSetup_PublicTabsStepLabel" xml:space="preserve"><value>II  ·  ВКЛАДКИ ТАЙНИКА</value></data>
+  <data name="InitialSetup_PublicTabsStepTitle" xml:space="preserve"><value>Публичные вкладки тайника</value></data>
+  <data name="InitialSetup_DeviceStepLabel" xml:space="preserve"><value>III  ·  ЧАСЫ</value></data>
+  <data name="InitialSetup_DeviceStepTitle" xml:space="preserve"><value>Подключение часов</value></data>
+  <data name="InitialSetup_CurrencyDescription" xml:space="preserve"><value>Откройте вкладку валюты в игре. Сначала обведите её целиком, затем проверьте найденные ячейки.</value></data>
+  <data name="InitialSetup_SelectRegionStep" xml:space="preserve"><value>1. Выберите область вкладки валюты</value></data>
+  <data name="InitialSetup_SelectRegionButton" xml:space="preserve"><value>Выбрать область</value></data>
+  <data name="InitialSetup_ConfigureSlotsStep" xml:space="preserve"><value>2. Настройте ячейки валюты</value></data>
+  <data name="InitialSetup_ConfigureSlotsButton" xml:space="preserve"><value>Настроить ячейки</value></data>
+  <data name="InitialSetup_Next" xml:space="preserve"><value>Далее</value></data>
+  <data name="InitialSetup_PublicTabsTitle" xml:space="preserve"><value>Лига и публичные вкладки тайника</value></data>
+  <data name="InitialSetup_PublicTabsDescription" xml:space="preserve"><value>Укажите аккаунт и лигу, затем оставьте только вкладки тайника, стоимость которых нужно учитывать. Синхронизация проверит каждую вкладку отдельно.</value></data>
+  <data name="InitialSetup_AccountName" xml:space="preserve"><value>Имя аккаунта Path of Exile</value></data>
+  <data name="InitialSetup_AccountExample" xml:space="preserve"><value>Например: SherlockDmt#3728</value></data>
+  <data name="InitialSetup_League" xml:space="preserve"><value>Лига</value></data>
+  <data name="InitialSetup_Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="InitialSetup_MarkerDescription" xml:space="preserve"><value>Каждая выбранная вкладка тайника должна быть публичной, иметь указанное имя и содержать хотя бы один предмет с маркерной ценой.</value></data>
+  <data name="InitialSetup_Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="InitialSetup_Synchronize" xml:space="preserve"><value>Синхронизировать</value></data>
+  <data name="InitialSetup_Cancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="InitialSetup_DeviceDescription" xml:space="preserve"><value>Подключение физических часов появится в одной из следующих версий. Вкладка валюты и публичные вкладки тайника уже настроены.</value></data>
+  <data name="InitialSetup_Finish" xml:space="preserve"><value>Завершить настройку</value></data>
+
+  <!-- Settings -->
+  <data name="Settings_Eyebrow" xml:space="preserve"><value>ТАЙНИК И НАСТРОЙКА</value></data>
+  <data name="Settings_AccountSectionIndex" xml:space="preserve"><value>01</value></data>
+  <data name="Settings_CurrencySectionIndex" xml:space="preserve"><value>02</value></data>
+  <data name="Settings_PublicTabsSectionIndex" xml:space="preserve"><value>03</value></data>
+  <data name="Settings_ApplicationSectionIndex" xml:space="preserve"><value>04</value></data>
+  <data name="Settings_ResetSectionIndex" xml:space="preserve"><value>05</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Настройка источников</value></data>
+  <data name="Settings_Subtitle" xml:space="preserve"><value>Управляйте вкладкой валюты и публичными вкладками, которые входят в стоимость тайника.</value></data>
+  <data name="Settings_AccountAndLeague" xml:space="preserve"><value>Аккаунт и лига</value></data>
+  <data name="Settings_CurrentLeague" xml:space="preserve"><value>Текущая лига</value></data>
+  <data name="Settings_CurrencyTabTitle" xml:space="preserve"><value>Вкладка валюты</value></data>
+  <data name="Settings_CurrencyTabDescription" xml:space="preserve"><value>Считывается только выбранная область окна игры — и только пока вкладка валюты открыта.</value></data>
+  <data name="Settings_TrackCurrencyTab" xml:space="preserve"><value>Отслеживать изменения вкладки валюты</value></data>
+  <data name="Settings_CaptureFrequency" xml:space="preserve"><value>ЧАСТОТА</value></data>
+  <data name="Settings_FramesPerSecond" xml:space="preserve"><value>кадра/с</value></data>
+  <data name="Settings_SelectCurrencyRegion" xml:space="preserve"><value>Выбрать область вкладки</value></data>
+  <data name="Settings_CalibrateCurrencySlots" xml:space="preserve"><value>Проверить ячейки валюты</value></data>
+  <data name="Settings_PublicTabsTitle" xml:space="preserve"><value>Публичные вкладки тайника</value></data>
+  <data name="Settings_PublicTabsDescription" xml:space="preserve"><value>Сделайте вкладки тайника публичными и дайте им точные имена. Цена служит уникальной меткой Trade API, а не стоимостью предметов.</value></data>
+  <data name="Settings_RefreshSchedule" xml:space="preserve"><value>Проверка изменений — каждые 2 минуты. Полная сверка — каждые 15 минут. Цены — каждые 30 минут.</value></data>
+  <data name="Settings_Application" xml:space="preserve"><value>Работа приложения</value></data>
+  <data name="Settings_StartMinimized" xml:space="preserve"><value>Запускать свёрнутым</value></data>
+  <data name="Settings_Save" xml:space="preserve"><value>Сохранить настройки</value></data>
+  <data name="Settings_FullReset" xml:space="preserve"><value>Полный сброс</value></data>
+  <data name="Settings_FullResetDescription" xml:space="preserve"><value>Удаляет все настройки, калибровку вкладки валюты, публичные вкладки тайника и сохранённые значения. После перезапуска откроется первоначальная настройка.</value></data>
+
+  <!-- Dialogs and runtime statuses -->
+  <data name="App_FullResetConfirmation" xml:space="preserve"><value>Будут удалены настройки, калибровка вкладки валюты, публичные вкладки тайника и сохранённые значения. Приложение перезапустится и откроет первоначальную настройку.</value></data>
+  <data name="App_FullResetFailedFormat" xml:space="preserve"><value>Не удалось полностью сбросить приложение: {0}</value></data>
+  <data name="App_InitialSetupExitConfirmation" xml:space="preserve"><value>Настройка ещё не завершена. Закрыть приложение? Прогресс первых шагов сохранится.</value></data>
+  <data name="App_ExecutablePathUnavailable" xml:space="preserve"><value>Не удалось определить путь к исполняемому файлу.</value></data>
+  <data name="App_RestartFailed" xml:space="preserve"><value>Не удалось перезапустить приложение.</value></data>
+  <data name="Game_NotRunning" xml:space="preserve"><value>Path of Exile 2 не запущен.</value></data>
+  <data name="Dashboard_SessionTracking" xml:space="preserve"><value>Сессия отслеживается</value></data>
+  <data name="Dashboard_SessionWaitingForValue" xml:space="preserve"><value>Ожидание первого расчёта стоимости тайника</value></data>
+  <data name="Dashboard_SessionInactive" xml:space="preserve"><value>Нет активной игровой сессии</value></data>
+  <data name="Dashboard_CurrencyTracking" xml:space="preserve"><value>Вкладка валюты отслеживается</value></data>
+  <data name="Dashboard_OpenCurrencyTab" xml:space="preserve"><value>Откройте вкладку валюты</value></data>
+  <data name="Dashboard_WaitingForGame" xml:space="preserve"><value>Ожидание окна игры</value></data>
+  <data name="Dashboard_CurrencySetupRequired" xml:space="preserve"><value>Настройте область и ячейки вкладки валюты</value></data>
+  <data name="Dashboard_MonitoringError" xml:space="preserve"><value>Ошибка отслеживания</value></data>
+  <data name="Dashboard_MonitoringStopped" xml:space="preserve"><value>Отслеживание остановлено</value></data>
+  <data name="Dashboard_NoPublicStashData" xml:space="preserve"><value>Нет сохранённых данных</value></data>
+  <data name="Dashboard_StashValueAvailable" xml:space="preserve"><value>Стоимость рассчитана</value></data>
+  <data name="Dashboard_StashValuePartial" xml:space="preserve"><value>Стоимость рассчитана частично</value></data>
+  <data name="Dashboard_ValueComplete" xml:space="preserve"><value>Полная стоимость</value></data>
+  <data name="Dashboard_ValuePartial" xml:space="preserve"><value>Частичная стоимость</value></data>
+  <data name="Dashboard_DeviceDisconnected" xml:space="preserve"><value>Устройство отключено</value></data>
+  <data name="Dashboard_DeviceSynchronized" xml:space="preserve"><value>Эмулятор подтвердил данные</value></data>
+  <data name="Dashboard_DeviceFailed" xml:space="preserve"><value>Не удалось передать данные</value></data>
+  <data name="Dashboard_DeviceReady" xml:space="preserve"><value>Эмулятор готов к данным</value></data>
+
+  <!-- Initial setup state and messages -->
+  <data name="InitialSetup_AreaNotSelected" xml:space="preserve"><value>Область вкладки валюты ещё не выбрана.</value></data>
+  <data name="InitialSetup_SlotsNotConfigured" xml:space="preserve"><value>Ячейки валюты ещё не настроены.</value></data>
+  <data name="InitialSetup_ConfigureCurrencyFirst" xml:space="preserve"><value>Настройте вкладку валюты, затем продолжите.</value></data>
+  <data name="InitialSetup_SelectedTabsFormat" xml:space="preserve"><value>Выбрано вкладок тайника: {0} из {1}.</value></data>
+  <data name="InitialSetup_SynchronizedTabsFormat" xml:space="preserve"><value>Синхронизировано {0} из {1} выбранных вкладок тайника.</value></data>
+  <data name="InitialSetup_DeviceSummaryFormat" xml:space="preserve"><value>Вкладка валюты готова; синхронизировано публичных вкладок тайника: {0}.</value></data>
+  <data name="InitialSetup_AreaSaved" xml:space="preserve"><value>Область вкладки валюты сохранена. Теперь настройте ячейки и подтвердите их клавишей Enter.</value></data>
+  <data name="InitialSetup_AreaSelectionCancelled" xml:space="preserve"><value>Выбор области отменён.</value></data>
+  <data name="InitialSetup_AreaSelectionFailedFormat" xml:space="preserve"><value>Не удалось выбрать область: {0}</value></data>
+  <data name="InitialSetup_SlotsSaved" xml:space="preserve"><value>Ячейки валюты сохранены. Можно перейти к публичным вкладкам тайника.</value></data>
+  <data name="InitialSetup_SlotsNotSaved" xml:space="preserve"><value>Ячейки валюты не были сохранены. Повторите настройку.</value></data>
+  <data name="InitialSetup_SlotsSetupCancelled" xml:space="preserve"><value>Настройка ячеек отменена.</value></data>
+  <data name="InitialSetup_SlotsSetupFailedFormat" xml:space="preserve"><value>Не удалось настроить ячейки: {0}</value></data>
+  <data name="InitialSetup_CurrencySetupRequired" xml:space="preserve"><value>Сначала выберите область вкладки валюты и сохраните настройку ячеек.</value></data>
+  <data name="InitialSetup_LeaguesEmpty" xml:space="preserve"><value>Список лиг пока пуст. Повторите загрузку.</value></data>
+  <data name="InitialSetup_LeaguesUpdated" xml:space="preserve"><value>Список актуальных лиг обновлён.</value></data>
+  <data name="InitialSetup_LeaguesUpdateFailedFormat" xml:space="preserve"><value>Не удалось обновить лиги: {0}</value></data>
+  <data name="InitialSetup_SynchronizationStarted" xml:space="preserve"><value>Синхронизация публичных вкладок тайника началась…</value></data>
+  <data name="InitialSetup_AllTabsSynchronized" xml:space="preserve"><value>Все выбранные вкладки тайника синхронизированы.</value></data>
+  <data name="InitialSetup_SomeTabsFailed" xml:space="preserve"><value>Не все вкладки тайника удалось синхронизировать. Исправьте их или исключите из списка.</value></data>
+  <data name="InitialSetup_SynchronizationCancelled" xml:space="preserve"><value>Синхронизация отменена.</value></data>
+  <data name="InitialSetup_TabSynchronizationFailedFormat" xml:space="preserve"><value>Не удалось синхронизировать вкладку тайника: {0}</value></data>
+  <data name="InitialSetup_SynchronizationFailed" xml:space="preserve"><value>Синхронизация завершилась ошибкой. Повторите попытку.</value></data>
+  <data name="InitialSetup_SynchronizeOrExclude" xml:space="preserve"><value>Синхронизируйте все выбранные вкладки тайника или исключите неудачные строки.</value></data>
+  <data name="InitialSetup_SourcesSaved" xml:space="preserve"><value>Вкладка валюты и публичные вкладки тайника сохранены.</value></data>
+  <data name="InitialSetup_PublicTabsSaveFailedFormat" xml:space="preserve"><value>Не удалось сохранить публичные вкладки тайника: {0}</value></data>
+  <data name="InitialSetup_Completed" xml:space="preserve"><value>Настройка завершена. Открываю мониторинг…</value></data>
+  <data name="InitialSetup_CompletionFailedFormat" xml:space="preserve"><value>Не удалось завершить настройку: {0}</value></data>
+  <data name="InitialSetup_AccountRequired" xml:space="preserve"><value>Укажите имя аккаунта Path of Exile.</value></data>
+  <data name="InitialSetup_LeagueRequired" xml:space="preserve"><value>Выберите лигу.</value></data>
+  <data name="InitialSetup_PublicTabRequired" xml:space="preserve"><value>Оставьте хотя бы одну публичную вкладку тайника для синхронизации.</value></data>
+  <data name="InitialSetup_WaitingForSynchronization" xml:space="preserve"><value>Ожидает синхронизации</value></data>
+  <data name="InitialSetup_Excluded" xml:space="preserve"><value>Исключена</value></data>
+  <data name="InitialSetup_ExcludedDetail" xml:space="preserve"><value>Вкладка тайника не будет синхронизироваться.</value></data>
+  <data name="InitialSetup_ExcludedFromSynchronization" xml:space="preserve"><value>Вкладка тайника исключена из синхронизации.</value></data>
+  <data name="InitialSetup_Reincluded" xml:space="preserve"><value>Вкладка тайника снова включена. Синхронизируйте её перед продолжением.</value></data>
+  <data name="InitialSetup_NoSynchronizationResult" xml:space="preserve"><value>Нет результата синхронизации для вкладки тайника.</value></data>
+  <data name="InitialSetup_Synchronized" xml:space="preserve"><value>Синхронизирована</value></data>
+  <data name="InitialSetup_NotFound" xml:space="preserve"><value>Не найдена</value></data>
+  <data name="InitialSetup_WrongTab" xml:space="preserve"><value>Неверная вкладка</value></data>
+  <data name="InitialSetup_Ambiguous" xml:space="preserve"><value>Неоднозначно</value></data>
+  <data name="InitialSetup_AreaSelected" xml:space="preserve"><value>Область вкладки валюты выбрана.</value></data>
+  <data name="InitialSetup_SlotsConfigured" xml:space="preserve"><value>Ячейки валюты сохранены.</value></data>
+  <data name="InitialSetup_OpenCurrencyAndConfigure" xml:space="preserve"><value>Откройте вкладку валюты и настройте ячейки. Подтвердите результат клавишей Enter.</value></data>
+
+  <!-- Public-tab valuation -->
+  <data name="PublicTabs_FirstRefreshHint" xml:space="preserve"><value>После первого обновления здесь появится стоимость каждой публичной вкладки тайника.</value></data>
+  <data name="PublicTabs_LimitWarning" xml:space="preserve"><value>Trade API вернул не все найденные предметы хотя бы для одной вкладки тайника. Её стоимость рассчитана частично.</value></data>
+  <data name="PublicTabs_Empty" xml:space="preserve"><value>Данные по вкладкам тайника ещё не получены. Первое обновление запускается при старте приложения.</value></data>
+  <data name="PublicTab_ItemStacksFormat" xml:space="preserve"><value>Учтено стаков: {0}</value></data>
+  <data name="PublicTab_AllItemsPriced" xml:space="preserve"><value>Все типы предметов получили цену</value></data>
+  <data name="PublicTab_UnpricedTypesFormat" xml:space="preserve"><value>Типов без цены: {0}</value></data>
+  <data name="PublicTab_TruncatedFormat" xml:space="preserve"><value>Trade API нашёл {0} предметов, но вернул {1}. Лимит выдачи достигнут: стоимость этой вкладки тайника рассчитана не полностью.</value></data>
+  <data name="PublicTab_Incomplete" xml:space="preserve"><value>Вкладка тайника прочитана не полностью: проверьте её имя и цену-маркер.</value></data>
+  <data name="PublicTab_Complete" xml:space="preserve"><value>Trade API вернул все найденные предметы.</value></data>
+
+  <!-- Settings messages -->
+  <data name="Settings_InitialNotice" xml:space="preserve"><value>Настройте источники стоимости тайника и подтвердите изменения.</value></data>
+  <data name="Settings_Saved" xml:space="preserve"><value>Настройки сохранены. Вкладка валюты использует выбранную частоту кадров.</value></data>
+  <data name="Settings_LeaguesUpdated" xml:space="preserve"><value>Список актуальных лиг обновлён.</value></data>
+  <data name="Settings_LeaguesUpdateFailedFormat" xml:space="preserve"><value>Не удалось обновить лиги: {0}</value></data>
+  <data name="Settings_AreaSelected" xml:space="preserve"><value>Область вкладки валюты выбрана. Теперь нажмите «Проверить ячейки валюты».</value></data>
+  <data name="Settings_AreaSelectionCancelled" xml:space="preserve"><value>Выбор области отменён.</value></data>
+  <data name="Settings_AreaSelectionFailedFormat" xml:space="preserve"><value>Не удалось выбрать область: {0}</value></data>
+  <data name="Settings_SlotsSaved" xml:space="preserve"><value>Ячейки вкладки валюты сохранены. Отслеживание можно включить.</value></data>
+  <data name="Settings_CalibrationCancelled" xml:space="preserve"><value>Калибровка отменена.</value></data>
+  <data name="Settings_CalibrationFailedFormat" xml:space="preserve"><value>Не удалось проверить ячейки валюты: {0}</value></data>
+</root>

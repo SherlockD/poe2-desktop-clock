@@ -4,6 +4,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Composition;
+using Poe2DesktopClock.Desktop.Localization;
 using Poe2DesktopClock.Desktop.Services;
 using Poe2DesktopClock.Desktop.ViewModels;
 
@@ -73,8 +74,8 @@ public partial class App : System.Windows.Application
         }
 
         var confirmation = MessageBox.Show(
-            "Будут удалены настройки, калибровка Currency-вкладки, публичные вкладки и сохранённые оценки. Приложение перезапустится и откроет онбординг с первого шага.",
-            "Полный сброс",
+            AppStrings.Get("App_FullResetConfirmation"),
+            AppStrings.Get("Settings_FullReset"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
         if (confirmation != MessageBoxResult.Yes)
@@ -93,8 +94,8 @@ public partial class App : System.Windows.Application
         catch (Exception exception)
         {
             MessageBox.Show(
-                $"Не удалось полностью сбросить приложение: {exception.Message}",
-                "Полный сброс",
+                AppStrings.Format("App_FullResetFailedFormat", exception.Message),
+                AppStrings.Get("Settings_FullReset"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -173,8 +174,8 @@ public partial class App : System.Windows.Application
 
         if (mainWindow.DataContext is MainViewModel { IsInitialSetupActive: true } &&
             MessageBox.Show(
-                "Настройка ещё не завершена. Закрыть приложение? Прогресс первых шагов сохранится.",
-                "Первоначальная настройка",
+                AppStrings.Get("App_InitialSetupExitConfirmation"),
+                AppStrings.Get("InitialSetup_Title"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
@@ -211,7 +212,7 @@ public partial class App : System.Windows.Application
     private static void RestartCurrentProcess()
     {
         var processPath = Environment.ProcessPath
-            ?? throw new InvalidOperationException("Не удалось определить путь к исполняемому файлу.");
+            ?? throw new InvalidOperationException(AppStrings.Get("App_ExecutablePathUnavailable"));
         var startInfo = new ProcessStartInfo(processPath)
         {
             UseShellExecute = true,
@@ -223,7 +224,7 @@ public partial class App : System.Windows.Application
 
         if (Process.Start(startInfo) is null)
         {
-            throw new InvalidOperationException("Не удалось перезапустить приложение.");
+            throw new InvalidOperationException(AppStrings.Get("App_RestartFailed"));
         }
     }
 }

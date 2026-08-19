@@ -1,5 +1,6 @@
 using System.Globalization;
 using Poe2DesktopClock.Contracts.Models;
+using Poe2DesktopClock.Desktop.Localization;
 using Poe2DesktopClock.Desktop.Models;
 using Poe2DesktopClock.Desktop.Services;
 
@@ -30,9 +31,9 @@ public sealed class DashboardViewModel : ViewModelBase
 
     public string SessionStatus => _status.Session.Status switch
     {
-        GameSessionStatus.Tracking => "Сессия отслеживается",
-        GameSessionStatus.WaitingForBaseline => "Ожидание первого расчёта стоимости",
-        _ => "Нет активной игровой сессии",
+        GameSessionStatus.Tracking => AppStrings.Get("Dashboard_SessionTracking"),
+        GameSessionStatus.WaitingForBaseline => AppStrings.Get("Dashboard_SessionWaitingForValue"),
+        _ => AppStrings.Get("Dashboard_SessionInactive"),
     };
 
     public string SessionDuration => FormatDuration(_status.Session.Duration);
@@ -47,25 +48,27 @@ public sealed class DashboardViewModel : ViewModelBase
 
     public string CurrencyStatus => _status.MonitorStatus switch
     {
-        ClockMonitorStatus.Tracking => "Currency-вкладка отслеживается",
-        ClockMonitorStatus.WaitingForCurrencyTab => "Откройте Currency-вкладку",
-        ClockMonitorStatus.WaitingForGame => "Ожидание окна игры",
-        ClockMonitorStatus.NeedsSetup => "Нужна настройка области и ячеек",
-        ClockMonitorStatus.Error => "Ошибка мониторинга",
-        _ => "Мониторинг остановлен",
+        ClockMonitorStatus.Tracking => AppStrings.Get("Dashboard_CurrencyTracking"),
+        ClockMonitorStatus.WaitingForCurrencyTab => AppStrings.Get("Dashboard_OpenCurrencyTab"),
+        ClockMonitorStatus.WaitingForGame => AppStrings.Get("Dashboard_WaitingForGame"),
+        ClockMonitorStatus.NeedsSetup => AppStrings.Get("Dashboard_CurrencySetupRequired"),
+        ClockMonitorStatus.Error => AppStrings.Get("Dashboard_MonitoringError"),
+        _ => AppStrings.Get("Dashboard_MonitoringStopped"),
     };
 
     public string PublicTabsTotal => FormatDivines(_status.ClockSnapshot?.PublicTabsDivines);
 
     public string PublicStashStatus => _status.ClockSnapshot?.PublicTabsUpdatedAt is null
-        ? "Нет сохранённых данных"
+        ? AppStrings.Get("Dashboard_NoPublicStashData")
         : _status.ClockSnapshot.IsComplete
-            ? "Оценка доступна"
-            : "Частичная оценка";
+            ? AppStrings.Get("Dashboard_StashValueAvailable")
+            : AppStrings.Get("Dashboard_StashValuePartial");
 
     public bool IsEstimateComplete => _status.ClockSnapshot?.IsComplete ?? false;
 
-    public string EstimateQuality => IsEstimateComplete ? "Полная оценка" : "Частичная оценка";
+    public string EstimateQuality => IsEstimateComplete
+        ? AppStrings.Get("Dashboard_ValueComplete")
+        : AppStrings.Get("Dashboard_ValuePartial");
 
     public string CurrencyUpdatedAt => FormatTimestamp(_status.ClockSnapshot?.CurrencyUpdatedAt);
 
@@ -75,10 +78,10 @@ public sealed class DashboardViewModel : ViewModelBase
 
     public string DeviceStatus => _status.Device switch
     {
-        { IsConnected: false } => "Устройство отключено",
-        { Status: DeviceSynchronizationStatus.Synchronized } => "Эмулятор подтвердил данные",
-        { Status: DeviceSynchronizationStatus.Failed } => "Не удалось передать данные",
-        _ => "Эмулятор готов к данным",
+        { IsConnected: false } => AppStrings.Get("Dashboard_DeviceDisconnected"),
+        { Status: DeviceSynchronizationStatus.Synchronized } => AppStrings.Get("Dashboard_DeviceSynchronized"),
+        { Status: DeviceSynchronizationStatus.Failed } => AppStrings.Get("Dashboard_DeviceFailed"),
+        _ => AppStrings.Get("Dashboard_DeviceReady"),
     };
 
     public string DeviceLastSynchronizedAt => FormatTimestamp(_status.Device.LastSynchronizedAt);
@@ -160,19 +163,19 @@ public sealed class DashboardViewModel : ViewModelBase
 
     private static string FormatTimestamp(DateTimeOffset? timestamp) =>
         timestamp is null
-            ? "ещё не обновлялось"
+            ? AppStrings.Get("Common_NotUpdatedYet")
             : timestamp.Value.ToLocalTime().ToString("HH:mm:ss", CultureInfo.CurrentCulture);
 
     private static string FormatDivines(decimal? value) =>
         value is null
-            ? "—"
+            ? AppStrings.Get("Common_NotAvailable")
             : value.Value.ToString("N2", CultureInfo.InvariantCulture);
 
     private static string FormatSignedDivines(decimal? value)
     {
         if (value is null)
         {
-            return "—";
+            return AppStrings.Get("Common_NotAvailable");
         }
 
         var prefix = value.Value > 0m ? "+" : string.Empty;
@@ -183,7 +186,7 @@ public sealed class DashboardViewModel : ViewModelBase
     {
         if (duration is null)
         {
-            return "—";
+            return AppStrings.Get("Common_NotAvailable");
         }
 
         var value = duration.Value;

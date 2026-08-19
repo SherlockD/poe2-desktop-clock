@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Desktop.Infrastructure;
+using Poe2DesktopClock.Desktop.Localization;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
@@ -22,7 +23,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private bool _isCurrencyTrackingEnabled = true;
     private int _selectedCaptureFps = 2;
     private bool _startMinimized;
-    private string _notice = "Настройте источник данных и подтвердите изменения.";
+    private string _notice = AppStrings.Get("Settings_InitialNotice");
 
     public SettingsViewModel(
         ITrackerSettingsUseCase settings,
@@ -117,7 +118,7 @@ public sealed class SettingsViewModel : ViewModelBase
         await _monitoring.StopCurrencyMonitoringAsync();
         await _monitoring.StartCurrencyMonitoringAsync();
 
-        Notice = "Настройки сохранены. Currency-вкладка использует выбранную частоту кадров.";
+        Notice = AppStrings.Get("Settings_Saved");
     }
 
     private async Task RefreshLeaguesAsync()
@@ -141,11 +142,11 @@ public sealed class SettingsViewModel : ViewModelBase
                                 ?? string.Empty;
             }
 
-            Notice = "Список актуальных лиг обновлён.";
+            Notice = AppStrings.Get("Settings_LeaguesUpdated");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось обновить лиги: {exception.Message}";
+            Notice = AppStrings.Format("Settings_LeaguesUpdateFailedFormat", exception.Message);
         }
     }
 
@@ -154,15 +155,15 @@ public sealed class SettingsViewModel : ViewModelBase
         try
         {
             await _currencySetup.SelectCurrencyRegionAsync();
-            Notice = "Область выбрана. Теперь нажмите «Проверить ячейки».";
+            Notice = AppStrings.Get("Settings_AreaSelected");
         }
         catch (OperationCanceledException)
         {
-            Notice = "Выбор области отменён.";
+            Notice = AppStrings.Get("Settings_AreaSelectionCancelled");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось выбрать область: {exception.Message}";
+            Notice = AppStrings.Format("Settings_AreaSelectionFailedFormat", exception.Message);
         }
     }
 
@@ -171,15 +172,15 @@ public sealed class SettingsViewModel : ViewModelBase
         try
         {
             await _currencySetup.CalibrateCurrencySlotsAsync();
-            Notice = "Ячейки Currency-вкладки сохранены. Отслеживание можно включить.";
+            Notice = AppStrings.Get("Settings_SlotsSaved");
         }
         catch (OperationCanceledException)
         {
-            Notice = "Калибровка отменена.";
+            Notice = AppStrings.Get("Settings_CalibrationCancelled");
         }
         catch (Exception exception)
         {
-            Notice = $"Не удалось проверить ячейки: {exception.Message}";
+            Notice = AppStrings.Format("Settings_CalibrationFailedFormat", exception.Message);
         }
     }
 

@@ -1,6 +1,7 @@
 <UserControl x:Class="Poe2DesktopClock.Desktop.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:localization="clr-namespace:Poe2DesktopClock.Desktop.Localization"
              MinWidth="0"
              MinHeight="0">
     <UserControl.Resources>
@@ -92,9 +93,9 @@
                 </Border>
 
                 <StackPanel>
-                    <TextBlock Text="ЖУРНАЛ ИЗГНАННИКА" Style="{StaticResource EyebrowTextStyle}" />
-                    <TextBlock Text="Обзор богатства" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Живая оценка хранилища и ход текущей игровой сессии"
+                    <TextBlock Text="{localization:Text Dashboard_Eyebrow}" Style="{StaticResource EyebrowTextStyle}" />
+                    <TextBlock Text="{localization:Text Dashboard_Title}" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
+                    <TextBlock Text="{localization:Text Dashboard_Subtitle}"
                                Margin="0,5,0,0"
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="14" />
@@ -126,7 +127,7 @@
                                         <RotateTransform Angle="45" CenterX="4" CenterY="4" />
                                     </Border.RenderTransform>
                                 </Border>
-                                <TextBlock Text="ОБЩАЯ ОЦЕНКА" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                                <TextBlock Text="{localization:Text Dashboard_TotalValue}" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
                             </StackPanel>
                             <TextBlock Text="{Binding DisplayTotal}"
                                        Margin="0,8,0,0"
@@ -138,7 +139,7 @@
                                        MaxWidth="430" />
                             <Border Style="{StaticResource OrnamentRuleStyle}" Margin="0,7,40,9" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="На старте сессии" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
+                                <TextBlock Text="{localization:Text Dashboard_SessionBaseline}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" />
                                 <TextBlock Text="{Binding SessionBaseline}"
                                            Margin="9,0,0,0"
                                            Foreground="{StaticResource MainTextBrush}"
@@ -162,7 +163,7 @@
 
                                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource InsetPanelStyle}" Padding="12,10">
                                     <StackPanel>
-                                        <TextBlock Text="СТАТУС СЕССИИ" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{localization:Text Dashboard_SessionState}" Style="{StaticResource MetricLabelStyle}" />
                                         <TextBlock Text="{Binding SessionStatus}"
                                                    Margin="0,5,0,0"
                                                    FontSize="14"
@@ -172,14 +173,14 @@
                                 </Border>
                                 <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource InsetPanelStyle}" Padding="12,10">
                                     <StackPanel>
-                                        <TextBlock Text="ДЛИТЕЛЬНОСТЬ" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{localization:Text Dashboard_Duration}" Style="{StaticResource MetricLabelStyle}" />
                                         <TextBlock Text="{Binding SessionDuration}" Margin="0,4,0,0" Style="{StaticResource MetricValueStyle}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource InsetPanelStyle}" Padding="12,10">
                                     <StackPanel>
-                                        <TextBlock Text="ИЗМЕНЕНИЕ" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{localization:Text Dashboard_Change}" Style="{StaticResource MetricLabelStyle}" />
                                         <TextBlock Text="{Binding SessionDelta}" Margin="0,4,0,0" Style="{StaticResource MetricValueStyle}" />
                                     </StackPanel>
                                 </Border>
@@ -189,7 +190,7 @@
                                         BorderThickness="1"
                                         Padding="12,10">
                                     <StackPanel>
-                                        <TextBlock Text="СКОРОСТЬ" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                                        <TextBlock Text="{localization:Text Dashboard_Rate}" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
                                         <TextBlock Text="{Binding DivinesPerHour}"
                                                    Margin="0,4,0,0"
                                                    Style="{StaticResource MetricValueStyle}"
@@ -211,11 +212,11 @@
 
                 <DockPanel Grid.Row="0">
                     <TextBlock DockPanel.Dock="Right"
-                               Text="сумма · состояние · последнее обновление"
+                               Text="{localization:Text Dashboard_SourcesCaption}"
                                VerticalAlignment="Bottom"
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="11" />
-                    <TextBlock Text="Источники оценки" Style="{StaticResource SectionTitleStyle}" />
+                    <TextBlock Text="{localization:Text Dashboard_SourcesTitle}" Style="{StaticResource SectionTitleStyle}" />
                 </DockPanel>
 
                 <Grid Grid.Row="2">
@@ -237,9 +238,9 @@
                             </Grid.RowDefinitions>
                             <DockPanel>
                                 <Border DockPanel.Dock="Right" Style="{StaticResource SourceMonogramStyle}">
-                                    <TextBlock Text="C" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                                    <TextBlock Text="{localization:Text Dashboard_CurrencyMonogram}" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
                                 </Border>
-                                <TextBlock Text="CURRENCY-ВКЛАДКА" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
+                                <TextBlock Text="{localization:Text Dashboard_CurrencyTab}" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
                             </DockPanel>
                             <TextBlock Grid.Row="1" Text="{Binding CurrencyTotal}" Style="{StaticResource SourceValueStyle}" Margin="0,12,0,0" />
                             <TextBlock Grid.Row="2"
@@ -251,7 +252,7 @@
                             <Border Grid.Row="3" BorderBrush="#463825" BorderThickness="0,1,0,0" Padding="0,10,0,0">
                                 <DockPanel>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding CurrencyUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Bahnschrift SemiCondensed" FontSize="12" />
-                                    <TextBlock Text="ОБНОВЛЕНО" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
+                                    <TextBlock Text="{localization:Text Common_Updated}" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
                                 </DockPanel>
                             </Border>
                         </Grid>
@@ -267,9 +268,9 @@
                             </Grid.RowDefinitions>
                             <DockPanel>
                                 <Border DockPanel.Dock="Right" Style="{StaticResource SourceMonogramStyle}">
-                                    <TextBlock Text="P" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                                    <TextBlock Text="{localization:Text Dashboard_PublicTabsMonogram}" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
                                 </Border>
-                                <TextBlock Text="ПУБЛИЧНЫЕ ВКЛАДКИ" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
+                                <TextBlock Text="{localization:Text Dashboard_PublicStashTabs}" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
                             </DockPanel>
                             <TextBlock Grid.Row="1" Text="{Binding PublicTabsTotal}" Style="{StaticResource SourceValueStyle}" Margin="0,12,0,0" />
                             <TextBlock Grid.Row="2"
@@ -281,7 +282,7 @@
                             <Border Grid.Row="3" BorderBrush="#463825" BorderThickness="0,1,0,0" Padding="0,10,0,0">
                                 <DockPanel>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding PublicStashUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Bahnschrift SemiCondensed" FontSize="12" />
-                                    <TextBlock Text="ОБНОВЛЕНО" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
+                                    <TextBlock Text="{localization:Text Common_Updated}" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
                                 </DockPanel>
                             </Border>
                         </Grid>
@@ -297,13 +298,13 @@
                             </Grid.RowDefinitions>
                             <DockPanel>
                                 <Border DockPanel.Dock="Right" Style="{StaticResource SourceMonogramStyle}">
-                                    <TextBlock Text="N" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
+                                    <TextBlock Text="{localization:Text Dashboard_PricesMonogram}" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" />
                                 </Border>
-                                <TextBlock Text="РЫНОЧНЫЕ ЦЕНЫ" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
+                                <TextBlock Text="{localization:Text Dashboard_MarketPrices}" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" />
                             </DockPanel>
-                            <TextBlock Grid.Row="1" Text="poe.ninja" Style="{StaticResource SourceValueStyle}" Margin="0,12,0,0" />
+                            <TextBlock Grid.Row="1" Text="{localization:Text Dashboard_PriceSource}" Style="{StaticResource SourceValueStyle}" Margin="0,12,0,0" />
                             <TextBlock Grid.Row="2"
-                                       Text="Рыночный ориентир для текущей оценки валюты"
+                                       Text="{localization:Text Dashboard_MarketPricesDescription}"
                                        Margin="0,9,0,14"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        FontSize="12"
@@ -311,7 +312,7 @@
                             <Border Grid.Row="3" BorderBrush="#463825" BorderThickness="0,1,0,0" Padding="0,10,0,0">
                                 <DockPanel>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding PricesUpdatedAt}" Foreground="{StaticResource AccentBrush}" FontFamily="Bahnschrift SemiCondensed" FontSize="12" />
-                                    <TextBlock Text="ОБНОВЛЕНО" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
+                                    <TextBlock Text="{localization:Text Common_Updated}" Style="{StaticResource MetricLabelStyle}" FontSize="9" />
                                 </DockPanel>
                             </Border>
                         </Grid>
@@ -326,7 +327,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Устройство" Style="{StaticResource SectionTitleStyle}" />
+                <TextBlock Grid.Row="0" Text="{localization:Text Dashboard_DeviceSection}" Style="{StaticResource SectionTitleStyle}" />
 
                 <Border Grid.Row="2" Style="{StaticResource DashboardCardStyle}" Padding="18,16">
                     <Grid>
@@ -342,10 +343,10 @@
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="ЭМУЛЯТОР ЧАСОВ" Margin="8,0,0,0" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
+                                <TextBlock Text="{localization:Text Dashboard_ClockEmulator}" Margin="8,0,0,0" Style="{StaticResource MetricLabelStyle}" Foreground="{StaticResource AccentBrush}" />
                             </StackPanel>
                             <TextBlock Text="{Binding DeviceStatus}" Margin="0,7,0,0" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
-                            <TextBlock Text="COM-подключение запланировано для следующего этапа."
+                            <TextBlock Text="{localization:Text Dashboard_DeviceRoadmap}"
                                        Margin="0,4,0,0"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        FontSize="11" />
@@ -354,12 +355,12 @@
                         <Border Grid.Column="1" Background="#554B3C28" />
 
                         <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                            <TextBlock Text="ПОСЛЕДНЕЕ ЗНАЧЕНИЕ" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Text="{localization:Text Dashboard_LastValue}" Style="{StaticResource MetricLabelStyle}" />
                             <TextBlock Text="{Binding DeviceDisplayTotal}" Margin="0,4,0,0" Style="{StaticResource MetricValueStyle}" Foreground="{StaticResource AccentBrightBrush}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="5" VerticalAlignment="Center">
-                            <TextBlock Text="СИНХРОНИЗИРОВАНО" Style="{StaticResource MetricLabelStyle}" />
+                            <TextBlock Text="{localization:Text Dashboard_SynchronizedAt}" Style="{StaticResource MetricLabelStyle}" />
                             <TextBlock Text="{Binding DeviceLastSynchronizedAt}"
                                        Margin="0,5,0,0"
                                        FontFamily="Bahnschrift SemiCondensed"

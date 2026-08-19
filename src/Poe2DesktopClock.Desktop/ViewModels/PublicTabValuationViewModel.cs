@@ -1,5 +1,6 @@
 using System.Globalization;
 using Poe2DesktopClock.Application.Models;
+using Poe2DesktopClock.Desktop.Localization;
 
 namespace Poe2DesktopClock.Desktop.ViewModels;
 
@@ -17,10 +18,10 @@ public sealed class PublicTabValuationViewModel
         ReturnedItemIds = valuation.ReturnedItemIds;
         HasTradeApiLimitWarning = valuation.IsTradeApiResultTruncated;
         HasUnpricedItemWarning = valuation.UnpricedItemTypes > 0;
-        ItemSummary = $"Учтено стаков: {ItemStacks}";
+        ItemSummary = AppStrings.Format("PublicTab_ItemStacksFormat", ItemStacks);
         PriceSummary = valuation.UnpricedItemTypes == 0
-            ? "Все типы предметов получили цену"
-            : $"Типов без цены: {valuation.UnpricedItemTypes}";
+            ? AppStrings.Get("PublicTab_AllItemsPriced")
+            : AppStrings.Format("PublicTab_UnpricedTypesFormat", valuation.UnpricedItemTypes);
         StatusSummary = CreateStatusSummary(valuation);
     }
 
@@ -50,15 +51,17 @@ public sealed class PublicTabValuationViewModel
     {
         if (valuation.IsTradeApiResultTruncated)
         {
-            return $"Trade API нашёл {valuation.TotalMatches} предметов, но вернул {valuation.ReturnedItemIds}. " +
-                   "Лимит выдачи достигнут: оценка этой вкладки неполная.";
+            return AppStrings.Format(
+                "PublicTab_TruncatedFormat",
+                valuation.TotalMatches,
+                valuation.ReturnedItemIds);
         }
 
         if (!valuation.IsComplete)
         {
-            return "Вкладка прочитана не полностью: проверьте имя вкладки и цену-маркер.";
+            return AppStrings.Get("PublicTab_Incomplete");
         }
 
-        return "Trade API вернул все найденные предметы.";
+        return AppStrings.Get("PublicTab_Complete");
     }
 }

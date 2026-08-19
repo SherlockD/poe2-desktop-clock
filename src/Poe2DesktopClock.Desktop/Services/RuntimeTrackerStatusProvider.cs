@@ -2,6 +2,7 @@ using Poe2DesktopClock.Application.Interfaces;
 using Poe2DesktopClock.Application.Models;
 using Poe2DesktopClock.Application.Services;
 using Poe2DesktopClock.Contracts.Models;
+using Poe2DesktopClock.Desktop.Localization;
 using Poe2DesktopClock.Desktop.Models;
 
 namespace Poe2DesktopClock.Desktop.Services;
@@ -33,7 +34,7 @@ public sealed class RuntimeTrackerStatusProvider : ITrackerStatusProvider, IAsyn
     private readonly object _stateSync = new();
     private ClockSnapshot? _clockSnapshot;
     private ClockMonitorStatus _monitorStatus = ClockMonitorStatus.Stopped;
-    private GameStatus _gameStatus = new(false, "Path of Exile 2 не запущен.");
+    private GameStatus _gameStatus = new(false, AppStrings.Get("Game_NotRunning"));
     private GameSessionSnapshot _sessionSnapshot = GameNotRunning;
     private DeviceSynchronizationState _deviceState;
     private CurrencyValuation? _currencyValuation;

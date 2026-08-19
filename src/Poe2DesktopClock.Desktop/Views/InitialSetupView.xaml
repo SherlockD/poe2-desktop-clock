@@ -1,6 +1,7 @@
 <UserControl x:Class="Poe2DesktopClock.Desktop.Views.InitialSetupView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:localization="clr-namespace:Poe2DesktopClock.Desktop.Localization">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
@@ -16,9 +17,9 @@
             </Grid.RowDefinitions>
 
             <StackPanel>
-                <TextBlock Text="ПОДГОТОВКА ХРАНИЛИЩА" Style="{StaticResource EyebrowTextStyle}" />
-                <TextBlock Text="Первоначальная настройка" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
-                <TextBlock Text="Подготовим источники данных для часов. После последнего шага откроется мониторинг."
+                <TextBlock Text="{localization:Text InitialSetup_Eyebrow}" Style="{StaticResource EyebrowTextStyle}" />
+                <TextBlock Text="{localization:Text InitialSetup_Title}" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
+                <TextBlock Text="{localization:Text InitialSetup_Subtitle}"
                            Margin="0,5,0,0"
                            Foreground="{StaticResource MutedTextBrush}"
                            FontSize="14"
@@ -36,22 +37,22 @@
 
                 <Border Grid.Column="0" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="I  ·  ИСТОЧНИК" Style="{StaticResource EyebrowTextStyle}" />
-                        <TextBlock Text="Currency-вкладка" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{localization:Text InitialSetup_CurrencyStepLabel}" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{localization:Text InitialSetup_CurrencyStepTitle}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding CurrencyStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="2" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="II  ·  ВКЛАДКИ" Style="{StaticResource EyebrowTextStyle}" />
-                        <TextBlock Text="Публичные вкладки" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{localization:Text InitialSetup_PublicTabsStepLabel}" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{localization:Text InitialSetup_PublicTabsStepTitle}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding PublicTabsStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="4" Style="{StaticResource PanelCardStyle}" Padding="14,12">
                     <StackPanel>
-                        <TextBlock Text="III  ·  ЧАСЫ" Style="{StaticResource EyebrowTextStyle}" />
-                        <TextBlock Text="Подключение часов" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        <TextBlock Text="{localization:Text InitialSetup_DeviceStepLabel}" Style="{StaticResource EyebrowTextStyle}" />
+                        <TextBlock Text="{localization:Text InitialSetup_DeviceStepTitle}" FontWeight="SemiBold" Margin="0,4,0,0" />
                         <TextBlock Text="{Binding DeviceStepState}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,0" />
                     </StackPanel>
                 </Border>
@@ -61,8 +62,8 @@
                 <Grid>
                     <Grid Visibility="{Binding IsCurrencyStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Currency-вкладка" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
-                            <TextBlock Text="Откройте Currency-вкладку в игре. Сначала обведите её целиком, затем проверьте найденные ячейки."
+                            <TextBlock Text="{localization:Text InitialSetup_CurrencyStepTitle}" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
+                            <TextBlock Text="{localization:Text InitialSetup_CurrencyDescription}"
                                        Margin="0,8,0,22"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap" />
@@ -74,10 +75,10 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="1. Выберите область вкладки" FontWeight="SemiBold" />
+                                        <TextBlock Text="{localization:Text InitialSetup_SelectRegionStep}" FontWeight="SemiBold" />
                                         <TextBlock Text="{Binding CurrencyAreaStatus}" Margin="0,4,0,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <Button Grid.Column="1" Content="Выбрать область" Command="{Binding SelectCurrencyAreaCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                    <Button Grid.Column="1" Content="{localization:Text InitialSetup_SelectRegionButton}" Command="{Binding SelectCurrencyAreaCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
                                 </Grid>
                             </Border>
 
@@ -88,24 +89,24 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="2. Настройте ячейки" FontWeight="SemiBold" />
+                                        <TextBlock Text="{localization:Text InitialSetup_ConfigureSlotsStep}" FontWeight="SemiBold" />
                                         <TextBlock Text="{Binding CurrencySlotsStatus}" Margin="0,4,0,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <Button Grid.Column="1" Content="Настроить ячейки" Command="{Binding CalibrateCurrencyCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
+                                    <Button Grid.Column="1" Content="{localization:Text InitialSetup_ConfigureSlotsButton}" Command="{Binding CalibrateCurrencyCommand}" VerticalAlignment="Center" Margin="18,0,0,0" />
                                 </Grid>
                             </Border>
 
                             <TextBlock Text="{Binding Notice}" Margin="0,18,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
                             <WrapPanel HorizontalAlignment="Right" Margin="0,25,0,0">
-                                <Button Content="Далее" Command="{Binding CurrencyNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                                <Button Content="{localization:Text InitialSetup_Next}" Command="{Binding CurrencyNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
                             </WrapPanel>
                         </StackPanel>
                     </Grid>
 
                     <Grid Visibility="{Binding IsPublicTabsStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Лига и публичные вкладки" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
-                            <TextBlock Text="Укажите аккаунт и лигу, затем оставьте только вкладки, которые хотите учитывать. Синхронизация проверит каждую из них отдельно."
+                            <TextBlock Text="{localization:Text InitialSetup_PublicTabsTitle}" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
+                            <TextBlock Text="{localization:Text InitialSetup_PublicTabsDescription}"
                                        Margin="0,8,0,20"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap" />
@@ -117,21 +118,21 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Имя аккаунта" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                                    <TextBlock Text="{localization:Text InitialSetup_AccountName}" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
                                     <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}"
                                              IsEnabled="{Binding IsNotSynchronizing}"
-                                             ToolTip="Например: SherlockDmt#3728" />
+                                             ToolTip="{localization:Text InitialSetup_AccountExample}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Лига" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                                    <TextBlock Text="{localization:Text InitialSetup_League}" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
                                     <DockPanel LastChildFill="True">
-                                        <Button DockPanel.Dock="Right" Content="Обновить" Command="{Binding RefreshLeaguesCommand}" IsEnabled="{Binding IsNotSynchronizing}" Margin="10,0,0,0" />
+                                        <Button DockPanel.Dock="Right" Content="{localization:Text InitialSetup_Refresh}" Command="{Binding RefreshLeaguesCommand}" IsEnabled="{Binding IsNotSynchronizing}" Margin="10,0,0,0" />
                                         <ComboBox ItemsSource="{Binding Leagues}" SelectedItem="{Binding SelectedLeague}" IsEnabled="{Binding IsNotSynchronizing}" />
                                     </DockPanel>
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock Text="Каждая выбранная вкладка должна быть публичной, иметь указанное имя и содержать хотя бы один предмет с маркерной ценой."
+                            <TextBlock Text="{localization:Text InitialSetup_MarkerDescription}"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,10" />
@@ -162,17 +163,17 @@
                             <TextBlock Text="{Binding PublicTabsSummary}" Margin="0,16,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding Notice}" Margin="0,8,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
                             <WrapPanel HorizontalAlignment="Right" Margin="0,22,0,0">
-                                <Button Content="Назад" Command="{Binding PublicTabsBackCommand}" Margin="0,0,10,0" />
-                                <Button Content="Синхронизировать" Command="{Binding SynchronizePublicTabsCommand}" Margin="0,0,10,0" />
-                                <Button Content="Отменить" Command="{Binding CancelSynchronizationCommand}" IsEnabled="{Binding IsSynchronizing}" Margin="0,0,10,0" />
-                                <Button Content="Далее" Command="{Binding PublicTabsNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                                <Button Content="{localization:Text InitialSetup_Back}" Command="{Binding PublicTabsBackCommand}" Margin="0,0,10,0" />
+                                <Button Content="{localization:Text InitialSetup_Synchronize}" Command="{Binding SynchronizePublicTabsCommand}" Margin="0,0,10,0" />
+                                <Button Content="{localization:Text InitialSetup_Cancel}" Command="{Binding CancelSynchronizationCommand}" IsEnabled="{Binding IsSynchronizing}" Margin="0,0,10,0" />
+                                <Button Content="{localization:Text InitialSetup_Next}" Command="{Binding PublicTabsNextCommand}" Style="{StaticResource PrimaryButtonStyle}" />
                             </WrapPanel>
                         </StackPanel>
                     </Grid>
 
                     <Grid Visibility="{Binding IsDeviceStep, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel>
-                            <TextBlock Text="Подключение часов" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
+                            <TextBlock Text="{localization:Text InitialSetup_DeviceStepTitle}" Style="{StaticResource SectionTitleStyle}" FontSize="22" />
                             <Grid Width="64" Height="64" HorizontalAlignment="Center" Margin="0,22,0,10">
                                 <Ellipse Stroke="{StaticResource AccentDarkBrush}" StrokeThickness="1" />
                                 <Border Width="34" Height="34" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
@@ -180,9 +181,9 @@
                                         <RotateTransform Angle="45" CenterX="17" CenterY="17" />
                                     </Border.RenderTransform>
                                 </Border>
-                                <TextBlock Text="II" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrightBrush}" />
+                                <TextBlock Text="{localization:Text Brand_Emblem}" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Palatino Linotype" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrightBrush}" />
                             </Grid>
-                            <TextBlock Text="Подключение физических часов появится в одной из следующих версий. Источники данных уже настроены."
+                            <TextBlock Text="{localization:Text InitialSetup_DeviceDescription}"
                                        TextAlignment="Center"
                                        Foreground="{StaticResource MutedTextBrush}"
                                        TextWrapping="Wrap"
@@ -192,8 +193,8 @@
                             </Border>
                             <TextBlock Text="{Binding Notice}" Margin="0,18,0,0" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" />
                             <WrapPanel HorizontalAlignment="Right" Margin="0,25,0,0">
-                                <Button Content="Назад" Command="{Binding DeviceBackCommand}" Margin="0,0,10,0" />
-                                <Button Content="Завершить настройку" Command="{Binding FinishCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                                <Button Content="{localization:Text InitialSetup_Back}" Command="{Binding DeviceBackCommand}" Margin="0,0,10,0" />
+                                <Button Content="{localization:Text InitialSetup_Finish}" Command="{Binding FinishCommand}" Style="{StaticResource PrimaryButtonStyle}" />
                             </WrapPanel>
                         </StackPanel>
                     </Grid>
