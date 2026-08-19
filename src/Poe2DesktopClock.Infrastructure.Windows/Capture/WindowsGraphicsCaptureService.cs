@@ -10,6 +10,8 @@ using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.Security.Authorization.AppCapabilityAccess;
 using Poe2DeskTracker.Regions;
 using D3D11Device = Vortice.Direct3D11.ID3D11Device;
 using D3D11Texture2D = Vortice.Direct3D11.ID3D11Texture2D;
@@ -21,6 +23,10 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
     private readonly D3D11Device _device = null!;
     private readonly ID3D11DeviceContext _context = null!;
     private readonly CaptureOperationQueue _operations = new();
+    private readonly SemaphoreSlim _borderlessAccessGate = new(1, 1);
+    private int _isBorderRequired = 1;
+    private bool _borderlessAccessRequested;
+    private bool _borderlessAccessAllowed;
 
     public WindowsGraphicsCaptureService()
     {
@@ -33,6 +39,17 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
             out _context);
 
         result.CheckError();
+    }
+
+    /// <summary>
+    /// Controls the Windows capture indicator. Disabling it is best-effort:
+    /// supported Windows versions still require the packaged app capability
+    /// and one-time user consent before the system removes the border.
+    /// </summary>
+    public bool IsBorderRequired
+    {
+        get => Volatile.Read(ref _isBorderRequired) != 0;
+        set => Volatile.Write(ref _isBorderRequired, value ? 1 : 0);
     }
 
     public Task<CaptureResult> SaveSingleFrameAsync(
@@ -76,6 +93,9 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
             throw new PlatformNotSupportedException("Windows Graphics Capture is unavailable. Windows 10 version 1903 or newer is required.");
         }
 
+        var canHideBorder = !IsBorderRequired &&
+                            await EnsureBorderlessAccessAsync(cancellationToken).ConfigureAwait(false);
+
         var item = GraphicsCaptureItemFactory.CreateForWindow(windowHandle);
         var size = item.Size;
         if (size.Width <= 0 || size.Height <= 0)
@@ -93,6 +113,14 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
         // The cursor is not part of the game's UI and its bright pixels can be
         // mistaken for a stack count when it rests over a currency slot.
         session.IsCursorCaptureEnabled = false;
+        if (canHideBorder &&
+            ApiInformation.IsPropertyPresent(
+                "Windows.Graphics.Capture.GraphicsCaptureSession",
+                "IsBorderRequired"))
+        {
+            session.IsBorderRequired = false;
+        }
+
         var frameReady = new TaskCompletionSource<Direct3D11CaptureFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
         var started = Stopwatch.GetTimestamp();
 
@@ -187,9 +215,63 @@ public sealed class WindowsGraphicsCaptureService : IDisposable
             },
             cancellationToken);
 
+    private async Task<bool> EnsureBorderlessAccessAsync(CancellationToken cancellationToken)
+    {
+        if (_borderlessAccessRequested)
+        {
+            return _borderlessAccessAllowed;
+        }
+
+        if (!ApiInformation.IsTypePresent("Windows.Graphics.Capture.GraphicsCaptureAccess") ||
+            !ApiInformation.IsEnumNamedValuePresent(
+                "Windows.Graphics.Capture.GraphicsCaptureAccessKind",
+                "Borderless"))
+        {
+            _borderlessAccessRequested = true;
+            return false;
+        }
+
+        await _borderlessAccessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_borderlessAccessRequested)
+            {
+                return _borderlessAccessAllowed;
+            }
+
+            try
+            {
+                var status = await GraphicsCaptureAccess
+                    .RequestAccessAsync(GraphicsCaptureAccessKind.Borderless)
+                    .AsTask(cancellationToken)
+                    .ConfigureAwait(false);
+                _borderlessAccessAllowed = status == AppCapabilityAccessStatus.Allowed;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch
+            {
+                // An unpackaged app, an older Windows build, a missing
+                // capability, or denied consent all fall back to the visible
+                // system border without breaking capture.
+                _borderlessAccessAllowed = false;
+            }
+
+            _borderlessAccessRequested = true;
+            return _borderlessAccessAllowed;
+        }
+        finally
+        {
+            _borderlessAccessGate.Release();
+        }
+    }
+
     public void Dispose()
     {
         _operations.Dispose();
+        _borderlessAccessGate.Dispose();
         _context.Dispose();
         _device.Dispose();
     }

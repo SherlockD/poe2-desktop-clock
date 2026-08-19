@@ -1,5 +1,6 @@
 using Poe2DesktopClock.Contracts.Models;
 using Poe2DesktopClock.Domain.Tracking;
+using System.Text.Json;
 using Xunit;
 
 namespace Poe2DesktopClock.Contracts.Tests;
@@ -37,6 +38,28 @@ public sealed class TrackerSettingsTests
         var normalized = TrackerSettings.Default with { CurrencyScreensPerSecond = captureRate };
 
         Assert.Equal(captureRate, normalized.Normalize().CurrencyScreensPerSecond);
+    }
+
+    [Fact]
+    public void Legacy_json_keeps_capture_border_enabled_by_default()
+    {
+        const string json = """
+                            {
+                              "AccountName": "account",
+                              "League": "league",
+                              "CurrencyScreensPerSecond": 2,
+                              "IsCurrencyMonitoringEnabled": true,
+                              "IsAutomaticPublicRefreshEnabled": true,
+                              "PublicRefreshIntervalMinutes": 2,
+                              "PriceRefreshIntervalMinutes": 30,
+                              "StartMinimized": false
+                            }
+                            """;
+
+        var settings = JsonSerializer.Deserialize<TrackerSettings>(json);
+
+        Assert.NotNull(settings);
+        Assert.True(settings.IsCaptureBorderEnabled);
     }
 
     [Fact]

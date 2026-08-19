@@ -153,6 +153,13 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
                                             <CheckBox Content="{localization:Text Settings_StartMinimized}" IsChecked="{Binding StartMinimized}" />
+                                            <CheckBox Content="{localization:Text Settings_ShowCaptureBorder}"
+                                                      IsChecked="{Binding IsCaptureBorderEnabled}" />
+                                            <TextBlock Text="{localization:Text Settings_CaptureBorderDescription}"
+                                                       Margin="26,1,20,0"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding Notice}"
                                                        Margin="0,7,20,0"
                                                        Foreground="{StaticResource WarningBrush}"

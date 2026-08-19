@@ -34,6 +34,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private bool _isCurrencyTrackingEnabled = true;
     private int _selectedCaptureFps = 2;
     private bool _startMinimized;
+    private bool _isCaptureBorderEnabled = true;
     private bool _isSynchronizingPublicTabs;
     private string _notice = AppStrings.Get("Settings_InitialNotice");
 
@@ -113,6 +114,12 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         get => _startMinimized;
         set => SetProperty(ref _startMinimized, value);
+    }
+
+    public bool IsCaptureBorderEnabled
+    {
+        get => _isCaptureBorderEnabled;
+        set => SetProperty(ref _isCaptureBorderEnabled, value);
     }
 
     public string Notice
@@ -245,6 +252,7 @@ public sealed class SettingsViewModel : ViewModelBase
         IsCurrencyTrackingEnabled = settings.IsCurrencyMonitoringEnabled;
         SelectedCaptureFps = settings.CurrencyScreensPerSecond;
         StartMinimized = settings.StartMinimized;
+        IsCaptureBorderEnabled = settings.IsCaptureBorderEnabled;
     }
 
     private void LoadConfiguredPublicTabs()
@@ -289,7 +297,8 @@ public sealed class SettingsViewModel : ViewModelBase
         IsAutomaticPublicRefreshEnabled: true,
         PublicRefreshIntervalMinutes: 2,
         PriceRefreshIntervalMinutes: 30,
-        StartMinimized);
+        StartMinimized,
+        IsCaptureBorderEnabled);
 
     private async Task SynchronizePublicTabsAsync()
     {

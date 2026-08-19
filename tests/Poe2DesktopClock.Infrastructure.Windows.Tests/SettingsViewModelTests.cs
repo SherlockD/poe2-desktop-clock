@@ -58,6 +58,28 @@ public sealed class SettingsViewModelTests
         Assert.Equal(2, saved.SynchronizedCount);
     }
 
+    [Fact]
+    public async Task Capture_border_preference_is_loaded_and_saved()
+    {
+        var settings = new TestTrackerSettingsUseCase(
+            TrackerSettings.Default with { IsCaptureBorderEnabled = false });
+        var viewModel = new SettingsViewModel(
+            settings,
+            new TestLeagueCatalog(),
+            new TestCurrencySetupUseCase(),
+            new TestMonitoringUseCase(),
+            new TestPublicTabsSetupUseCase());
+        await viewModel.LoadAsync();
+
+        Assert.False(viewModel.IsCaptureBorderEnabled);
+
+        viewModel.IsCaptureBorderEnabled = true;
+        viewModel.SaveCommand.Execute(null);
+        var saved = await settings.Saved.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.True(saved.IsCaptureBorderEnabled);
+    }
+
     private static SettingsViewModel CreateViewModel(TestPublicTabsSetupUseCase publicTabs) => new(
         new TestTrackerSettingsUseCase(),
         new TestLeagueCatalog(),
@@ -76,15 +98,27 @@ public sealed class SettingsViewModelTests
 
     private sealed class TestTrackerSettingsUseCase : ITrackerSettingsUseCase
     {
-        private TrackerSettings _settings = TrackerSettings.Default with
+        private TrackerSettings _settings;
+
+        public TestTrackerSettingsUseCase(TrackerSettings? settings = null)
         {
-            AccountName = "account",
-            League = "league",
-        };
+            _settings = settings ?? TrackerSettings.Default with
+            {
+                AccountName = "account",
+                League = "league",
+            };
+        }
+
+        public TaskCompletionSource<TrackerSettings> Saved { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public TrackerSettings GetSettings() => _settings;
 
-        public void SaveSettings(TrackerSettings settings) => _settings = settings;
+        public void SaveSettings(TrackerSettings settings)
+        {
+            _settings = settings;
+            Saved.TrySetResult(settings);
+        }
     }
 
     private sealed class TestLeagueCatalog : ILeagueCatalog

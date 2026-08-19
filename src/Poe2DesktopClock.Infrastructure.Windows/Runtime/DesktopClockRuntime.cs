@@ -104,9 +104,19 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
             Path.Combine(desktopDirectory, "cache", "currency-preview.png"));
     }
 
-    public TrackerSettings GetSettings() => _settings.Get();
+    public TrackerSettings GetSettings()
+    {
+        var settings = _settings.Get();
+        ApplyCaptureSettings(settings);
+        return settings;
+    }
 
-    public void SaveSettings(TrackerSettings settings) => _settings.Save(settings);
+    public void SaveSettings(TrackerSettings settings)
+    {
+        var normalized = settings.Normalize();
+        _settings.Save(normalized);
+        ApplyCaptureSettings(normalized);
+    }
 
     public CurrencySetupStatus GetCurrencySetupStatus() => _currencySetup.GetStatus();
 
@@ -144,4 +154,7 @@ public sealed class DesktopClockRuntime : ITrackerSettingsUseCase, ICurrencySetu
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Poe2DeskTracker",
             "currency-layouts.json"));
+
+    private void ApplyCaptureSettings(TrackerSettings settings) =>
+        _capture.IsBorderRequired = settings.IsCaptureBorderEnabled;
 }

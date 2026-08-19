@@ -123,6 +123,8 @@
   <data name="Settings_RefreshSchedule" xml:space="preserve"><value>Проверка изменений — каждые 2 минуты. Полная сверка — каждые 15 минут. Цены — каждые 30 минут.</value></data>
   <data name="Settings_Application" xml:space="preserve"><value>Работа приложения</value></data>
   <data name="Settings_StartMinimized" xml:space="preserve"><value>Запускать свёрнутым</value></data>
+  <data name="Settings_ShowCaptureBorder" xml:space="preserve"><value>Показывать системную рамку захвата Windows</value></data>
+  <data name="Settings_CaptureBorderDescription" xml:space="preserve"><value>Если отключить, Windows один раз запросит разрешение на захват без жёлтой рамки. Возможность доступна в установленном MSIX-пакете на Windows 10 2104 и новее.</value></data>
   <data name="Settings_Save" xml:space="preserve"><value>Сохранить настройки</value></data>
   <data name="Settings_FullReset" xml:space="preserve"><value>Полный сброс</value></data>
   <data name="Settings_FullResetDescription" xml:space="preserve"><value>Удаляет все настройки, калибровку вкладки валюты, публичные вкладки тайника и сохранённые значения. После перезапуска откроется первоначальная настройка.</value></data>

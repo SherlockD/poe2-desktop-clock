@@ -12,7 +12,8 @@ public sealed record TrackerSettings(
     bool IsAutomaticPublicRefreshEnabled,
     int PublicRefreshIntervalMinutes,
     int PriceRefreshIntervalMinutes,
-    bool StartMinimized)
+    bool StartMinimized,
+    bool IsCaptureBorderEnabled = true)
 {
     public static TrackerSettings Default { get; } = new(
         string.Empty,
@@ -22,7 +23,8 @@ public sealed record TrackerSettings(
         IsAutomaticPublicRefreshEnabled: true,
         PublicRefreshIntervalMinutes: 2,
         PriceRefreshIntervalMinutes: 30,
-        StartMinimized: false);
+        StartMinimized: false,
+        IsCaptureBorderEnabled: true);
 
     public TrackerSettings Normalize() => this with
     {
