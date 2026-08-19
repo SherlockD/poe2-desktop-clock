@@ -187,6 +187,7 @@ public partial class App : System.Windows.Application
         if (mainWindow.DataContext is MainViewModel viewModel)
         {
             viewModel.InitialSetup.CancelPendingOperations();
+            viewModel.Settings.CancelPendingOperations();
         }
 
         await DisposeServicesAsync();

@@ -22,7 +22,7 @@
   <data name="Main_StashSection" xml:space="preserve"><value>ТАЙНИК</value></data>
   <data name="Main_NavStashValue" xml:space="preserve"><value>◇   Оценка тайника</value></data>
   <data name="Main_NavPublicStashTabs" xml:space="preserve"><value>◇   Публичные вкладки тайника</value></data>
-  <data name="Main_NavSettings" xml:space="preserve"><value>◇   Настройка тайника</value></data>
+  <data name="Main_NavSettings" xml:space="preserve"><value>◇   Настройки приложения</value></data>
   <data name="Main_GameState" xml:space="preserve"><value>СОСТОЯНИЕ ИГРЫ</value></data>
   <data name="Main_Device" xml:space="preserve"><value>ЧАСЫ</value></data>
   <data name="Main_Privacy" xml:space="preserve"><value>Локальные данные  ·  без чтения памяти</value></data>
@@ -101,13 +101,13 @@
   <data name="InitialSetup_Finish" xml:space="preserve"><value>Завершить настройку</value></data>
 
   <!-- Settings -->
-  <data name="Settings_Eyebrow" xml:space="preserve"><value>ТАЙНИК И НАСТРОЙКА</value></data>
+  <data name="Settings_Eyebrow" xml:space="preserve"><value>ПАРАМЕТРЫ ПРИЛОЖЕНИЯ</value></data>
   <data name="Settings_AccountSectionIndex" xml:space="preserve"><value>01</value></data>
   <data name="Settings_CurrencySectionIndex" xml:space="preserve"><value>02</value></data>
   <data name="Settings_PublicTabsSectionIndex" xml:space="preserve"><value>03</value></data>
   <data name="Settings_ApplicationSectionIndex" xml:space="preserve"><value>04</value></data>
   <data name="Settings_ResetSectionIndex" xml:space="preserve"><value>05</value></data>
-  <data name="Settings_Title" xml:space="preserve"><value>Настройка источников</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Настройки приложения</value></data>
   <data name="Settings_Subtitle" xml:space="preserve"><value>Управляйте вкладкой валюты и публичными вкладками, которые входят в стоимость тайника.</value></data>
   <data name="Settings_AccountAndLeague" xml:space="preserve"><value>Аккаунт и лига</value></data>
   <data name="Settings_CurrentLeague" xml:space="preserve"><value>Текущая лига</value></data>
@@ -222,4 +222,34 @@
   <data name="Settings_SlotsSaved" xml:space="preserve"><value>Ячейки вкладки валюты сохранены. Отслеживание можно включить.</value></data>
   <data name="Settings_CalibrationCancelled" xml:space="preserve"><value>Калибровка отменена.</value></data>
   <data name="Settings_CalibrationFailedFormat" xml:space="preserve"><value>Не удалось проверить ячейки валюты: {0}</value></data>
+  <data name="Settings_TabGeneral" xml:space="preserve"><value>Общие</value></data>
+  <data name="Settings_TabCurrency" xml:space="preserve"><value>Вкладка валюты</value></data>
+  <data name="Settings_TabPublicTabs" xml:space="preserve"><value>Публичные вкладки</value></data>
+  <data name="Settings_TabReset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="Settings_PublicTabsSelectionHint" xml:space="preserve"><value>Отключите ненужные источники или включите новые; хотя бы одна вкладка должна остаться подключённой. Новую вкладку нужно проверить через Trade API перед сохранением.</value></data>
+  <data name="Settings_PublicTabMarkerHint" xml:space="preserve"><value>точное имя и цена-маркер вкладки</value></data>
+  <data name="Settings_SelectedPublicTabsFormat" xml:space="preserve"><value>Выбрано вкладок: {0} из {1}.</value></data>
+  <data name="Settings_SynchronizePublicTabs" xml:space="preserve"><value>Проверить подключение</value></data>
+  <data name="Settings_SavePublicTabs" xml:space="preserve"><value>Сохранить выбор</value></data>
+  <data name="Settings_CancelPublicTabsSynchronization" xml:space="preserve"><value>Отменить</value></data>
+  <data name="Settings_PublicTabConnected" xml:space="preserve"><value>Подключена</value></data>
+  <data name="Settings_PublicTabConnectedDetail" xml:space="preserve"><value>Вкладка участвует в расчёте стоимости.</value></data>
+  <data name="Settings_PublicTabDisabled" xml:space="preserve"><value>Отключена</value></data>
+  <data name="Settings_PublicTabDisabledDetail" xml:space="preserve"><value>Вкладка не участвует в расчёте стоимости.</value></data>
+  <data name="Settings_PublicTabPendingDisable" xml:space="preserve"><value>Будет отключена</value></data>
+  <data name="Settings_PublicTabPendingDisableDetail" xml:space="preserve"><value>Сохраните выбор, чтобы исключить вкладку.</value></data>
+  <data name="Settings_PublicTabPendingSynchronization" xml:space="preserve"><value>Ожидает проверки</value></data>
+  <data name="Settings_PublicTabPendingSynchronizationDetail" xml:space="preserve"><value>Проверьте подключение перед сохранением.</value></data>
+  <data name="Settings_PublicTabReady" xml:space="preserve"><value>Готова к подключению</value></data>
+  <data name="Settings_PublicTabReadyDetail" xml:space="preserve"><value>Проверка пройдена. Сохраните выбор.</value></data>
+  <data name="Settings_PublicTabsInputRequired" xml:space="preserve"><value>Укажите аккаунт, выберите лигу и включите хотя бы одну публичную вкладку.</value></data>
+  <data name="Settings_PublicTabsSynchronizationStarted" xml:space="preserve"><value>Проверяю выбранные публичные вкладки через Trade API…</value></data>
+  <data name="Settings_PublicTabsSynchronizationSucceeded" xml:space="preserve"><value>Все выбранные вкладки проверены. Сохраните выбор.</value></data>
+  <data name="Settings_PublicTabsSynchronizationFailed" xml:space="preserve"><value>Некоторые вкладки не прошли проверку. Исправьте их или отключите.</value></data>
+  <data name="Settings_PublicTabsSynchronizationCancelled" xml:space="preserve"><value>Проверка публичных вкладок отменена.</value></data>
+  <data name="Settings_PublicTabsSynchronizationErrorFormat" xml:space="preserve"><value>Не удалось проверить публичные вкладки: {0}</value></data>
+  <data name="Settings_PublicTabsSynchronizeBeforeSave" xml:space="preserve"><value>Проверьте все новые или изменённые вкладки перед сохранением.</value></data>
+  <data name="Settings_PublicTabsSaved" xml:space="preserve"><value>Выбор публичных вкладок сохранён.</value></data>
+  <data name="Settings_PublicTabsSaveFailedFormat" xml:space="preserve"><value>Не удалось сохранить публичные вкладки: {0}</value></data>
+  <data name="Settings_SavedPublicTabsPending" xml:space="preserve"><value>Основные настройки сохранены. Проверьте и сохраните изменения публичных вкладок отдельно.</value></data>
 </root>

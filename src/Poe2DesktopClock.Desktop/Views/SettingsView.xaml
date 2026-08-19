@@ -3,239 +3,393 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:localization="clr-namespace:Poe2DesktopClock.Desktop.Localization">
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <Style x:Key="SettingsCardStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource PanelCardStyle}">
             <Setter Property="Margin" Value="0,0,0,14" />
             <Setter Property="Padding" Value="22,20" />
         </Style>
+
+        <Style x:Key="SettingsTabItemStyle" TargetType="{x:Type TabItem}">
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border x:Name="HeaderBorder"
+                                Margin="0,0,8,0"
+                                Padding="17,11"
+                                Background="#321F1810"
+                                BorderBrush="#5B4933"
+                                BorderThickness="1"
+                                CornerRadius="1">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="#69462820" />
+                                <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrightBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="BorderBrush" Value="{StaticResource AccentBrightBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource MainTextBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SettingsTabControlStyle" TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabControl}">
+                        <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TabPanel Grid.Row="0"
+                                      IsItemsHost="True"
+                                      KeyboardNavigation.TabIndex="1" />
+                            <Border Grid.Row="1"
+                                    Margin="0,11,0,0"
+                                    Background="#231A1510"
+                                    BorderBrush="#4D3D2B"
+                                    BorderThickness="1">
+                                <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                  ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
-        <StackPanel Margin="38,31,38,38" MaxWidth="1180">
+    <Grid Margin="38,31,38,38" MaxWidth="1180">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
             <TextBlock Text="{localization:Text Settings_Eyebrow}" Style="{StaticResource EyebrowTextStyle}" />
             <TextBlock Text="{localization:Text Settings_Title}" Margin="0,2,0,0" Style="{StaticResource PageTitleStyle}" />
             <TextBlock Text="{localization:Text Settings_Subtitle}"
-                       Margin="0,5,0,20"
+                       Margin="0,5,0,0"
                        Foreground="{StaticResource MutedTextBrush}"
                        FontSize="14" />
+        </StackPanel>
 
-            <Border Style="{StaticResource SettingsCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
-                    <StackPanel Grid.Column="2">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_AccountSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="{localization:Text Settings_AccountAndLeague}" Style="{StaticResource SectionTitleStyle}" />
-                        </DockPanel>
-                        <Border Style="{StaticResource OrnamentRuleStyle}" Margin="0,9,0,17" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{localization:Text InitialSetup_AccountName}" Style="{StaticResource FieldLabelStyle}" />
-                                <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}"
-                                         ToolTip="{localization:Text InitialSetup_AccountExample}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="{localization:Text Settings_CurrentLeague}" Style="{StaticResource FieldLabelStyle}" />
-                                <DockPanel LastChildFill="True">
-                                    <Button DockPanel.Dock="Right"
-                                            Content="{localization:Text InitialSetup_Refresh}"
-                                            Command="{Binding RefreshLeaguesCommand}"
-                                            Margin="10,0,0,0" />
-                                    <ComboBox ItemsSource="{Binding Leagues}"
-                                              SelectedItem="{Binding SelectedLeague}"
-                                              IsEditable="True" />
-                                </DockPanel>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Border Style="{StaticResource SettingsCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
-                    <StackPanel Grid.Column="2">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_CurrencySectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="{localization:Text Settings_CurrencyTabTitle}" Style="{StaticResource SectionTitleStyle}" />
-                        </DockPanel>
-                        <TextBlock Text="{localization:Text Settings_CurrencyTabDescription}"
-                                   Margin="0,5,0,13"
-                                   Foreground="{StaticResource MutedTextBrush}"
-                                   TextWrapping="Wrap" />
-                        <Border Style="{StaticResource InsetPanelStyle}" Padding="14,11" Margin="0,0,0,13">
+        <TabControl Grid.Row="2" Style="{StaticResource SettingsTabControlStyle}">
+            <TabItem Header="{localization:Text Settings_TabGeneral}" Style="{StaticResource SettingsTabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <StackPanel Margin="24">
+                        <Border Style="{StaticResource SettingsCardStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="18" />
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <CheckBox Content="{localization:Text Settings_TrackCurrencyTab}"
-                                          IsChecked="{Binding IsCurrencyTrackingEnabled}"
-                                          VerticalAlignment="Center" />
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
-                                    <TextBlock Text="{localization:Text Settings_CaptureFrequency}"
-                                               Style="{StaticResource EyebrowTextStyle}"
-                                               Foreground="{StaticResource MutedTextBrush}"
-                                               VerticalAlignment="Center"
-                                               Margin="0,0,9,0" />
-                                    <ComboBox Width="78"
-                                              ItemsSource="{Binding CaptureFrequencies}"
-                                              SelectedItem="{Binding SelectedCaptureFps}" />
-                                    <TextBlock Text="{localization:Text Settings_FramesPerSecond}"
-                                               VerticalAlignment="Center"
-                                               Foreground="{StaticResource MutedTextBrush}"
-                                               Margin="8,0,0,0" />
+                                <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{localization:Text Settings_AccountAndLeague}" Style="{StaticResource SectionTitleStyle}" />
+                                    <Border Style="{StaticResource OrnamentRuleStyle}" Margin="0,9,0,17" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{localization:Text InitialSetup_AccountName}" Style="{StaticResource FieldLabelStyle}" />
+                                            <TextBox Text="{Binding AccountName, UpdateSourceTrigger=PropertyChanged}"
+                                                     ToolTip="{localization:Text InitialSetup_AccountExample}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{localization:Text Settings_CurrentLeague}" Style="{StaticResource FieldLabelStyle}" />
+                                            <DockPanel LastChildFill="True">
+                                                <Button DockPanel.Dock="Right"
+                                                        Content="{localization:Text InitialSetup_Refresh}"
+                                                        Command="{Binding RefreshLeaguesCommand}"
+                                                        Margin="10,0,0,0" />
+                                                <ComboBox ItemsSource="{Binding Leagues}"
+                                                          SelectedItem="{Binding SelectedLeague}"
+                                                          IsEditable="True" />
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
                         </Border>
-                        <WrapPanel>
-                            <Button Content="{localization:Text Settings_SelectCurrencyRegion}" Command="{Binding SelectCurrencyAreaCommand}" Margin="0,0,10,0" />
-                            <Button Content="{localization:Text Settings_CalibrateCurrencySlots}" Command="{Binding CalibrateCurrencyCommand}" />
-                        </WrapPanel>
-                    </StackPanel>
-                </Grid>
-            </Border>
 
-            <Border Style="{StaticResource SettingsCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
-                    <StackPanel Grid.Column="2">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_PublicTabsSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="{localization:Text Settings_PublicTabsTitle}" Style="{StaticResource SectionTitleStyle}" />
-                        </DockPanel>
-                        <TextBlock Text="{localization:Text Settings_PublicTabsDescription}"
-                                   Margin="0,5,0,14"
-                                   Foreground="{StaticResource MutedTextBrush}"
-                                   TextWrapping="Wrap" />
-                        <ItemsControl ItemsSource="{Binding PublicTabs}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource InsetPanelStyle}" Padding="12,9" Margin="0,0,0,6">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="155" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontWeight="SemiBold" />
-                                            <DockPanel Grid.Column="1">
-                                                <TextBlock DockPanel.Dock="Left"
-                                                           Text="{localization:Text Common_Diamond}"
-                                                           Margin="0,0,9,0"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{StaticResource AccentBrush}" />
-                                                <TextBlock Text="{Binding RequiredName}"
-                                                           FontFamily="Bahnschrift SemiCondensed"
-                                                           Foreground="{StaticResource AccentBrightBrush}"
-                                                           VerticalAlignment="Center" />
-                                            </DockPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <Border BorderBrush="#493A27" BorderThickness="0,1,0,0" Margin="0,9,0,0" Padding="0,12,0,0">
-                            <TextBlock Text="{localization:Text Settings_RefreshSchedule}"
-                                       Foreground="{StaticResource MutedTextBrush}"
-                                       FontSize="12"
-                                       TextWrapping="Wrap" />
+                        <Border Style="{StaticResource SettingsCardStyle}" Margin="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{localization:Text Settings_Application}" Style="{StaticResource SectionTitleStyle}" />
+                                    <Grid Grid.Row="1" Margin="0,15,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <CheckBox Content="{localization:Text Settings_StartMinimized}" IsChecked="{Binding StartMinimized}" />
+                                            <TextBlock Text="{Binding Notice}"
+                                                       Margin="0,7,20,0"
+                                                       Foreground="{StaticResource WarningBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="{localization:Text Settings_Save}"
+                                                Command="{Binding SaveCommand}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                VerticalAlignment="Top" />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
                         </Border>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </ScrollViewer>
+            </TabItem>
 
-            <Border Style="{StaticResource SettingsCardStyle}" Margin="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
-                    <Grid Grid.Column="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_ApplicationSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="#6B5940" />
-                            <TextBlock Text="{localization:Text Settings_Application}" Style="{StaticResource SectionTitleStyle}" />
-                        </DockPanel>
-                        <Grid Grid.Row="1" Margin="0,15,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <CheckBox Content="{localization:Text Settings_StartMinimized}" IsChecked="{Binding StartMinimized}" />
-                                <TextBlock Text="{Binding Notice}"
-                                           Margin="0,7,20,0"
-                                           Foreground="{StaticResource WarningBrush}"
-                                           TextWrapping="Wrap" />
-                            </StackPanel>
-                            <Button Grid.Column="1"
-                                    Content="{localization:Text Settings_Save}"
-                                    Command="{Binding SaveCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    VerticalAlignment="Top" />
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Border>
+            <TabItem Header="{localization:Text Settings_TabCurrency}" Style="{StaticResource SettingsTabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <StackPanel Margin="24">
+                        <Border Style="{StaticResource SettingsCardStyle}" Margin="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{localization:Text Settings_CurrencyTabTitle}" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Text="{localization:Text Settings_CurrencyTabDescription}"
+                                               Margin="0,5,0,13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               TextWrapping="Wrap" />
+                                    <Border Style="{StaticResource InsetPanelStyle}" Padding="14,11" Margin="0,0,0,13">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Content="{localization:Text Settings_TrackCurrencyTab}"
+                                                      IsChecked="{Binding IsCurrencyTrackingEnabled}"
+                                                      VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
+                                                <TextBlock Text="{localization:Text Settings_CaptureFrequency}"
+                                                           Style="{StaticResource EyebrowTextStyle}"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,9,0" />
+                                                <ComboBox Width="78"
+                                                          ItemsSource="{Binding CaptureFrequencies}"
+                                                          SelectedItem="{Binding SelectedCaptureFps}" />
+                                                <TextBlock Text="{localization:Text Settings_FramesPerSecond}"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           Margin="8,0,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <WrapPanel>
+                                            <Button Content="{localization:Text Settings_SelectCurrencyRegion}"
+                                                    Command="{Binding SelectCurrencyAreaCommand}"
+                                                    Margin="0,0,10,0" />
+                                            <Button Content="{localization:Text Settings_CalibrateCurrencySlots}"
+                                                    Command="{Binding CalibrateCurrencyCommand}" />
+                                        </WrapPanel>
+                                        <Button Grid.Column="1"
+                                                Content="{localization:Text Settings_Save}"
+                                                Command="{Binding SaveCommand}"
+                                                Style="{StaticResource PrimaryButtonStyle}" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding Notice}"
+                                               Margin="0,13,0,0"
+                                               Foreground="{StaticResource WarningBrush}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
-            <Border Style="{StaticResource SettingsCardStyle}" Margin="0,14,0,0" BorderBrush="{StaticResource WarningBrush}" BorderThickness="1">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Background="{StaticResource WarningBrush}" />
-                    <Grid Grid.Column="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{localization:Text Settings_ResetSectionIndex}" FontFamily="Palatino Linotype" FontSize="18" Foreground="{StaticResource WarningBrush}" />
-                            <TextBlock Text="{localization:Text Settings_FullReset}" Style="{StaticResource SectionTitleStyle}" />
-                        </DockPanel>
-                        <Grid Grid.Row="1" Margin="0,15,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{localization:Text Settings_FullResetDescription}"
-                                       Foreground="{StaticResource MutedTextBrush}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,20,0" />
-                            <Button Grid.Column="1"
-                                    Content="{localization:Text Settings_FullReset}"
-                                    Command="{Binding DataContext.FullResetCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                    VerticalAlignment="Top" />
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+            <TabItem Header="{localization:Text Settings_TabPublicTabs}" Style="{StaticResource SettingsTabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <StackPanel Margin="24">
+                        <Border Style="{StaticResource SettingsCardStyle}" Margin="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource AccentDarkBrush}" />
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{localization:Text Settings_PublicTabsTitle}" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBlock Text="{localization:Text Settings_PublicTabsDescription}"
+                                               Margin="0,5,0,5"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{localization:Text Settings_PublicTabsSelectionHint}"
+                                               Margin="0,0,0,14"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               TextWrapping="Wrap" />
+
+                                    <ItemsControl ItemsSource="{Binding PublicTabs}">
+                                        <ItemsControl.Style>
+                                            <Style TargetType="{x:Type ItemsControl}">
+                                                <Setter Property="IsEnabled" Value="True" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSynchronizingPublicTabs}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ItemsControl.Style>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource InsetPanelStyle}" Padding="12,10" Margin="0,0,0,7">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="32" />
+                                                            <ColumnDefinition Width="175" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="220" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox IsChecked="{Binding IsIncluded}" VerticalAlignment="Center" />
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Label}"
+                                                                   VerticalAlignment="Center"
+                                                                   FontWeight="SemiBold" />
+                                                        <StackPanel Grid.Column="2" Margin="10,0,20,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding RequiredName}"
+                                                                       FontFamily="Bahnschrift SemiCondensed"
+                                                                       Foreground="{StaticResource AccentBrightBrush}"
+                                                                       TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Text="{localization:Text Settings_PublicTabMarkerHint}"
+                                                                       Margin="0,2,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource MutedTextBrush}" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Status}"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource AccentBrush}" />
+                                                            <TextBlock Text="{Binding Detail}"
+                                                                       Margin="0,2,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Border BorderBrush="#493A27" BorderThickness="0,1,0,0" Margin="0,9,0,0" Padding="0,12,0,0">
+                                        <StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding PublicTabsSummary}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{localization:Text Settings_RefreshSchedule}"
+                                                           Margin="0,4,0,0"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           FontSize="12"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Notice}"
+                                                           Margin="0,7,0,0"
+                                                           Foreground="{StaticResource WarningBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                            <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Right">
+                                                <Button Content="{localization:Text Settings_CancelPublicTabsSynchronization}"
+                                                        Command="{Binding CancelPublicTabsSynchronizationCommand}"
+                                                        Visibility="{Binding IsSynchronizingPublicTabs, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        Margin="0,0,10,0" />
+                                                <Button Content="{localization:Text Settings_SynchronizePublicTabs}"
+                                                        Command="{Binding SynchronizePublicTabsCommand}"
+                                                        Margin="0,0,10,0" />
+                                                <Button Content="{localization:Text Settings_SavePublicTabs}"
+                                                        Command="{Binding SavePublicTabsCommand}"
+                                                        Style="{StaticResource PrimaryButtonStyle}" />
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{localization:Text Settings_TabReset}" Style="{StaticResource SettingsTabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <StackPanel Margin="24">
+                        <Border Style="{StaticResource SettingsCardStyle}"
+                                Margin="0"
+                                BorderBrush="{StaticResource WarningBrush}"
+                                BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource WarningBrush}" />
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{localization:Text Settings_FullReset}" Style="{StaticResource SectionTitleStyle}" />
+                                    <Grid Grid.Row="1" Margin="0,15,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{localization:Text Settings_FullResetDescription}"
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,20,0" />
+                                        <Button Grid.Column="1"
+                                                Content="{localization:Text Settings_FullReset}"
+                                                Command="{Binding DataContext.FullResetCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                VerticalAlignment="Top" />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </UserControl>
