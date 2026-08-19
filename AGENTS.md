@@ -48,4 +48,4 @@ dotnet build Poe2DesktopClock.sln -c Debug -p:Platform=x64 --no-restore
 dotnet test Poe2DesktopClock.sln -c Debug -p:Platform=x64 --no-restore
 ```
 
-The solution targets Windows x64 for capture-related projects. `run.ps1` starts WPF; `run-debug.ps1` starts the diagnostic console.
+The solution targets Windows x64 for capture-related projects. Run the WPF or diagnostic console project directly with `dotnet run --project <project-path> -p:Platform=x64`.

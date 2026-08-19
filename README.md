@@ -5,19 +5,19 @@ Windows-помощник для физических часов PoE 2. Он оц
 ## Запуск
 
 ```powershell
-.\run.ps1
+dotnet run --project .\src\Poe2DesktopClock.Desktop\Poe2DesktopClock.Desktop.csproj -c Debug -p:Platform=x64
 ```
 
 Только проверить сборку:
 
 ```powershell
-.\run.ps1 -BuildOnly
+dotnet build .\Poe2DesktopClock.sln -c Debug -p:Platform=x64
 ```
 
 Для прежних диагностических команд (`status`, `debug-frame`, `currency`, `public`, `worth`):
 
 ```powershell
-.\run-debug.ps1
+dotnet run --project .\src\Poe2DesktopClock.ConsoleDebug\Poe2DesktopClock.ConsoleDebug.csproj -c Debug -p:Platform=x64
 ```
 
 ## Первоначальная настройка
